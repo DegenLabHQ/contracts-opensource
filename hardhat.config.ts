@@ -48,6 +48,12 @@ const config: HardhatUserConfig = {
     },
   },
   networks: {
+    hardhat: {
+      gas: "auto",
+      gasPrice: "auto",
+      deploy: ["deploy/hardhat"],
+      tags: ["hardhat"],
+    },
     bnbMain: {
       url: process.env.BNB_CHAIN_URL || "",
       accounts: accounts,
@@ -92,16 +98,16 @@ const config: HardhatUserConfig = {
   },
   namedAccounts: {
     deployer: {
+      hardhat: 0,
       bnbTest: deployer,
       bnbTestStaging: deployer,
-      bnbMain: deployer,
       mumbai: deployer,
       scrollAlpha: deployer,
     },
     owner: {
+      hardhat: 0,
       bnbTest: owner,
       bnbTestStaging: owner,
-      bnbMain: owner,
       mumbai: owner,
       scrollAlpha: owner,
     },
