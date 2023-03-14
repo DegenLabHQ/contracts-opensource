@@ -46,6 +46,8 @@ contract RebornPortalStorage is IRebornDefination {
     // extra reward to parent referrer
     uint256 internal _extraReward;
 
+    bool internal _isBeta;
+
     /// @dev gap for potential variable
-    uint256[33] private _gap;
+    uint256[32] private _gap;
 }
