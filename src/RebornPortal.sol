@@ -63,7 +63,14 @@ contract RebornPortal is
         Innate memory innate,
         address referrer,
         uint256 _soupPrice
-    ) external payable override whenNotPaused nonReentrant {
+    )
+        external
+        payable
+        override
+        checkIncarnationCount
+        whenNotPaused
+        nonReentrant
+    {
         _refer(referrer);
         _incarnate(innate, _soupPrice);
     }
@@ -295,6 +302,14 @@ contract RebornPortal is
     function setVault(RewardVault vault_) external onlyOwner {
         vault = vault_;
         emit VaultSet(address(vault_));
+    }
+
+    /**
+     * @dev set incarnation limit
+     */
+    function setIncarnationLimit(uint256 limit) external onlyOwner {
+        _incarnateCountLimit = limit;
+        emit NewIncarnationLimit(limit);
     }
 
     /**
@@ -789,6 +804,17 @@ contract RebornPortal is
         if (_isBeta) {
             revert InBeta();
         }
+    }
+
+    /**
+     * @dev check incarnation Count and auto increment if it meets
+     */
+    modifier checkIncarnationCount() {
+        if (_incarnateCounts[msg.sender] >= _incarnateCountLimit) {
+            revert IncarnationExceedLimit();
+        }
+        _incarnateCounts[msg.sender] += 1;
+        _;
     }
 
     /**

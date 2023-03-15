@@ -36,14 +36,14 @@ const config: HardhatUserConfig = {
     version: "0.8.17",
     settings: {
       optimizer: {
-  enabled: true,
-  runs: 200,
-  details: {
-    yulDetails: {
-      optimizerSteps: "u",
-    },
-  },
-},
+        enabled: true,
+        runs: 200,
+        details: {
+          yulDetails: {
+            optimizerSteps: "u",
+          },
+        },
+      },
       viaIR: true,
     },
   },
@@ -60,6 +60,14 @@ const config: HardhatUserConfig = {
       gas: "auto",
       gasPrice: "auto",
       deploy: ["deploy/bnbMain"],
+      tags: ["production"],
+    },
+    bnbMainBeta: {
+      url: process.env.BNB_CHAIN_URL || "",
+      accounts: accounts,
+      gas: "auto",
+      gasPrice: "auto",
+      deploy: ["deploy/bnbMainBeta"],
       tags: ["production"],
     },
     bnbTestStaging: {
@@ -113,6 +121,7 @@ const config: HardhatUserConfig = {
     },
     degen_deployer: {
       bnbMain: degen_deployer,
+      bnbMainBeta: degen_deployer,
     },
   },
 
