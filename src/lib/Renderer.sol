@@ -27,7 +27,7 @@ library Renderer {
                                 details[tokenId].score,
                                 details[tokenId].round,
                                 details[tokenId].age,
-                                details[tokenId].creator,
+                                details[tokenId].creatorName,
                                 details[tokenId].cost
                             )
                         )
@@ -39,6 +39,7 @@ library Renderer {
                         details[tokenId].round,
                         details[tokenId].age,
                         details[tokenId].creator,
+                        details[tokenId].creatorName,
                         details[tokenId].reward,
                         details[tokenId].cost
                     ),
@@ -55,11 +56,11 @@ library Renderer {
         uint256 lifeScore,
         uint256 round,
         uint256 age,
-        address addr,
-        uint256 reward
+        string memory creator,
+        uint256 cost
     ) public pure returns (string memory) {
         string memory Part1 = _renderSvgPart1(seed, lifeScore, round, age);
-        string memory Part2 = _renderSvgPart2(addr, reward / 10 ** 18);
+        string memory Part2 = _renderSvgPart2(creator, cost);
         return string(abi.encodePacked(Part1, Part2));
     }
 
@@ -69,6 +70,7 @@ library Renderer {
         uint256 round,
         uint256 age,
         address creator,
+        string memory creatorName,
         uint256 reward,
         uint256 cost
     ) public pure returns (string memory) {
@@ -76,11 +78,7 @@ library Renderer {
             string(
                 abi.encodePacked(
                     _renderTraitPart1(seed, lifeScore, round, age),
-                    _renderTraitPart2(
-                        creator,
-                        reward / 10 ** 18,
-                        cost / 10 ** 18
-                    )
+                    _renderTraitPart2(creator, creatorName, reward, cost)
                 )
             );
     }
@@ -108,6 +106,7 @@ library Renderer {
 
     function _renderTraitPart2(
         address creator,
+        string memory creatorName,
         uint256 reward,
         uint256 cost
     ) internal pure returns (string memory) {
@@ -116,6 +115,8 @@ library Renderer {
                 abi.encodePacked(
                     '},{"trait_type": "Creator", "value": "',
                     Strings.toHexString(uint160(creator), 20),
+                    '"},{"trait_type": "CreatorName", "value": "',
+                    creatorName,
                     '"},{"trait_type": "Reward", "value": ',
                     Strings.toString(reward),
                     '},{"trait_type": "Cost", "value": ',
@@ -147,19 +148,44 @@ library Renderer {
     }
 
     function _renderSvgPart2(
-        address addr,
-        uint256 reward
+        string memory creator,
+        uint256 cost
     ) internal pure returns (string memory) {
         return
             string(
                 abi.encodePacked(
                     RenderConstant.P5(),
-                    _shortenAddr(addr),
+                    creator,
                     RenderConstant.P6(),
-                    _transformUint256(reward),
+                    _tranformWeiToDecimal2(cost),
                     RenderConstant.P7()
                 )
             );
+    }
+
+    function _tranformWeiToDecimal2(
+        uint256 value
+    ) public pure returns (string memory str) {
+        if (value > 100 ether) {
+            return Strings.toString(value / 1 ether);
+        } else {
+            uint256 secondFractional = value % (1 ether / 10);
+            uint256 firstFractional = (value - secondFractional) % (1 ether);
+            uint256 integer;
+            if (firstFractional != 0 || secondFractional != 0) {
+                integer = value - firstFractional - secondFractional;
+            } else {
+                integer = value;
+            }
+
+            return
+                string.concat(
+                    Strings.toString(integer / 1 ether),
+                    ".",
+                    Strings.toString(firstFractional / 10 ** 17),
+                    Strings.toString(secondFractional / 10 ** 16)
+                );
+        }
     }
 
     function _transformUint256(

@@ -8,14 +8,14 @@ import "src/lib/Renderer.sol";
 
 contract RendererTest is Test {
     function testRenderOne() public {
-        string memory minSvg = vm.readFile("resources/RIP.new.min.svg");
+        string memory minSvg = vm.readFile("resources/RIP.beta.min.svg");
         string memory svg = Renderer.renderSvg(
             hex"965f12d657ee47de669b9b94edcc47bbab9b886943233e46c81af970d72b6641",
             2222222,
             9999,
             101,
-            0x1E18EEEEeeeeEeEeEEEeEEEeEEeeEeeeeEeed8e5,
-            222222 * 10 ** 18
+            "Vitalik.eth",
+            10 ether + 12 ether / 100
         );
         assertEq(abi.encodePacked(minSvg), abi.encodePacked(svg));
     }
@@ -93,6 +93,64 @@ contract RendererTest is Test {
         Renderer._transformUint256(2222222222222222);
     }
 
+    function testTranformWeiToDecimal2() public {
+        assertEq(
+            abi.encodePacked("0.10"),
+            abi.encodePacked(Renderer._tranformWeiToDecimal2(1 ether / 10))
+        );
+        assertEq(
+            abi.encodePacked("0.01"),
+            abi.encodePacked(Renderer._tranformWeiToDecimal2(1 ether / 100))
+        );
+        assertEq(
+            abi.encodePacked("1.00"),
+            abi.encodePacked(Renderer._tranformWeiToDecimal2(1 ether))
+        );
+
+        assertEq(
+            abi.encodePacked("1.01"),
+            abi.encodePacked(
+                Renderer._tranformWeiToDecimal2(1 ether / 100 + 1 ether)
+            )
+        );
+        assertEq(
+            abi.encodePacked("1.10"),
+            abi.encodePacked(
+                Renderer._tranformWeiToDecimal2(1 ether / 10 + 1 ether)
+            )
+        );
+        assertEq(
+            abi.encodePacked("1.11"),
+            abi.encodePacked(
+                Renderer._tranformWeiToDecimal2(
+                    1 ether + 1 ether / 10 + 1 ether / 100
+                )
+            )
+        );
+        assertEq(
+            abi.encodePacked("10.11"),
+            abi.encodePacked(
+                Renderer._tranformWeiToDecimal2(
+                    10 ether + 1 ether / 10 + 1 ether / 100
+                )
+            )
+        );
+        assertEq(
+            abi.encodePacked("10.01"),
+            abi.encodePacked(
+                Renderer._tranformWeiToDecimal2(10 ether + 1 ether / 100)
+            )
+        );
+        assertEq(
+            abi.encodePacked("100"),
+            abi.encodePacked(
+                Renderer._tranformWeiToDecimal2(
+                    100 ether + 1 ether / 10 + 1 ether / 100
+                )
+            )
+        );
+    }
+
     function testTransformBytes32Seed() public {
         assertEq(
             abi.encodePacked(
@@ -127,13 +185,14 @@ contract RendererTest is Test {
             9999,
             101,
             0x1E18EEEEeeeeEeEeEEEeEEEeEEeeEeeeeEeed8e5,
+            "vitalik.eth",
             222222 * 10 ** 18,
             222222 * 10 ** 18
         );
         assertEq(
             abi.encodePacked(traits),
             abi.encodePacked(
-                '[{"trait_type": "Seed", "value": "0x965f12d657ee47de669b9b94edcc47bbab9b886943233e46c81af970d72b6641"},{"trait_type": "Life Score", "value": 2222222},{"trait_type": "Round", "value": 9999},{"trait_type": "Age", "value": 101},{"trait_type": "Creator", "value": "0x1e18eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeed8e5"},{"trait_type": "Reward", "value": 222222},{"trait_type": "Cost", "value": 222222}]'
+                '[{"trait_type": "Seed", "value": "0x965f12d657ee47de669b9b94edcc47bbab9b886943233e46c81af970d72b6641"},{"trait_type": "Life Score", "value": 2222222},{"trait_type": "Round", "value": 9999},{"trait_type": "Age", "value": 101},{"trait_type": "Creator", "value": "0x1e18eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeed8e5"},{"trait_type": "CreatorName", "value": "vitalik.eth"},{"trait_type": "Reward", "value": 222222000000000000000000},{"trait_type": "Cost", "value": 222222000000000000000000}]'
             )
         );
     }
