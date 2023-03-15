@@ -58,6 +58,7 @@ const func: DeployFunction = async function ({
   //   200,
   //   0
   // );
+
   // await execute(
   //   "RebornPortal",
   //   { from: owner, log: true },
@@ -66,11 +67,19 @@ const func: DeployFunction = async function ({
   //   200,
   //   0
   // );
+
   // await execute(
   //   "RebornPortal",
   //   { from: owner, log: true },
   //   "setExtraReward",
   //   parseEther("8")
+  // );
+
+  // await execute(
+  //   "RebornPortal",
+  //   { from: owner, log: true },
+  //   "setBeta",
+  //   true
   // );
 };
 func.tags = ["Portal"];

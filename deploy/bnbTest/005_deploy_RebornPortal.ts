@@ -73,6 +73,8 @@ const func: DeployFunction = async function ({
     "setExtraReward",
     parseEther("8")
   );
+
+  await execute("RebornPortal", { from: owner, log: true }, "setBeta", true);
 };
 func.tags = ["Portal"];
 
