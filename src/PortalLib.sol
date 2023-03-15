@@ -539,7 +539,7 @@ library PortalLib {
             );
 
         if (ref1Reward > 0) {
-            vault.reward(ref1, ref1Reward + extraReward);
+            vault.reward(ref1, ref1Reward);
         }
 
         if (ref2Reward > 0) {
@@ -549,7 +549,7 @@ library PortalLib {
         emit ReferReward(
             account,
             ref1,
-            ref1Reward + extraReward,
+            ref1Reward,
             ref2,
             ref2Reward,
             PortalLib.RewardType.RebornToken
