@@ -94,7 +94,7 @@
         lengthAdjust="spacing" fill="#FFFFFF">Age:101</text>
 
     <text dx="200" dy="425" dominant-baseline="central" text-anchor="left" font-family="VT323" font-weight="400"
-        font-size="78" fill="#FFFFFF">Vitalik.eth</text>
+        font-size="60" fill="#FFFFFF">Vitalik.eth</text>
 
     <text dx="975" dy="116" dominant-baseline="central" text-anchor="middle" style="height:100px"
         font-family="Black Ops One" font-size="56" fill="#FF8A01">DegenReborn</text>
