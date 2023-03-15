@@ -5,7 +5,7 @@ const func: DeployFunction = async function ({
   deployments,
   getNamedAccounts,
 }) {
-  const { deploy, get } = deployments;
+  const { deploy, get, execute } = deployments;
   const { deployer, owner } = await getNamedAccounts();
 
   const rbt = await get("RBT");
@@ -73,6 +73,8 @@ const func: DeployFunction = async function ({
     "setExtraReward",
     parseEther("8")
   );
+
+  await execute("RebornPortal", { from: owner, log: true }, "setBeta", true);
 };
 func.tags = ["Portal"];
 

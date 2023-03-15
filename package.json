@@ -9,7 +9,7 @@
   "scripts": {
     "compile": "hardhat compile",
     "test": "hardhat test",
-    "deploy": "hardhat deploy",
+    "deploy": "hardhat deploy --no-compile",
     "verify": "hardhat run ./verify.ts"
   },
   "author": "Devan Non <devanon@chainstride.capital>",
