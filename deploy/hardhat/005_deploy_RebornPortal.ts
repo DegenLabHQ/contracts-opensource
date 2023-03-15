@@ -1,5 +1,5 @@
+import { ethers } from "hardhat";
 import { DeployFunction } from "hardhat-deploy/types";
-import { parseEther } from "ethers/lib/utils";
 
 const func: DeployFunction = async function ({
   deployments,
@@ -9,6 +9,7 @@ const func: DeployFunction = async function ({
   const { deployer, owner } = await getNamedAccounts();
 
   const rbt = await get("RBT");
+  const render = await get("RenderEngine");
 
   await deploy("RebornPortal", {
     from: deployer,
@@ -30,7 +31,7 @@ const func: DeployFunction = async function ({
       },
     },
     libraries: {
-      RenderConstant: (await get("RenderConstant")).address,
+      RenderEngine: render.address,
       Renderer: (await get("Renderer")).address,
       FastArray: (await get("FastArray")).address,
       RankingRedBlackTree: (await get("RankingRedBlackTree")).address,
@@ -66,13 +67,6 @@ const func: DeployFunction = async function ({
   //   200,
   //   0
   // );
-
-  await execute(
-    "RebornPortal",
-    { from: owner, log: true },
-    "setExtraReward",
-    parseEther("8")
-  );
 };
 func.tags = ["Portal"];
 

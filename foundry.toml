@@ -8,6 +8,8 @@ viaIR = true
 
 fs_permissions = [{ access = "read", path = "./" }]
 
+# set debug when debug, set default to commit
+revert_strings = "default"
 [invariant]
 
 run = 1024
