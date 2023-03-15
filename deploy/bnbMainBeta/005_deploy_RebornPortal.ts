@@ -81,6 +81,13 @@ const func: DeployFunction = async function ({
   //   "setBeta",
   //   true
   // );
+
+  // await execute(
+  //   "RebornPortal",
+  //   { from: owner, log: true },
+  //   "setIncarnationLimit",
+  //   2
+  // );
 };
 func.tags = ["Portal"];
 
