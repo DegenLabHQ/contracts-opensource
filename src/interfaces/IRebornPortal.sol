@@ -100,6 +100,8 @@ interface IRebornDefination {
 
     event BetaStageSet(bool);
 
+    event NewIncarnationLimit(uint256 limit);
+
     /// @dev revert when msg.value is insufficient
     error InsufficientAmount();
     /// @dev revert when to caller is not signer
@@ -119,6 +121,9 @@ interface IRebornDefination {
 
     /// @dev revert when the status is beta
     error InBeta();
+
+    /// @dev revert when incarnation count exceed limit
+    error IncarnationExceedLimit();
 }
 
 interface IRebornPortal is IRebornDefination {

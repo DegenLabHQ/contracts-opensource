@@ -247,4 +247,54 @@ contract RebornPortalCommonTest is RebornPortalBaseTest {
         assertEq(ref1.balance, ref1Reward);
         assertEq(ref2.balance, ref2Reward);
     }
+
+    function mockIncarnate() public {
+        uint256 amount = 1 ether;
+        deal(_user, amount);
+        vm.prank(_user);
+        payable(address(portal)).call{value: amount}(
+            abi.encodeWithSignature(
+                "incarnate((uint256,uint256),address,uint256)",
+                0.1 ether,
+                0.5 ether,
+                address(1),
+                SOUP_PRICE
+            )
+        );
+    }
+
+    function testIncarnateLimitZero() public {
+        vm.prank(portal.owner());
+        portal.setIncarnationLimit(0);
+
+        vm.expectRevert(IRebornDefination.IncarnationExceedLimit.selector);
+        mockIncarnate();
+    }
+
+    function testIncarnateLimitOne() public {
+        vm.prank(portal.owner());
+        vm.expectEmit(true, true, true, true);
+        emit NewIncarnationLimit(0);
+
+        portal.setIncarnationLimit(0);
+
+        vm.expectRevert(IRebornDefination.IncarnationExceedLimit.selector);
+        mockIncarnate();
+    }
+
+    function testIncarnateLimitMany(uint256 nSeed) public {
+        uint256 n = bound(nSeed, 1, 1024);
+        vm.expectEmit(true, true, true, true);
+        emit NewIncarnationLimit(n);
+
+        vm.prank(portal.owner());
+        portal.setIncarnationLimit(n);
+
+        for (uint256 i = 0; i < n - 1; i++) {
+            mockIncarnate();
+        }
+
+        vm.expectRevert(IRebornDefination.IncarnationExceedLimit.selector);
+        mockIncarnate();
+    }
 }

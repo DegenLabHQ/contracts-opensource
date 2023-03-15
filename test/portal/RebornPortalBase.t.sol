@@ -53,8 +53,10 @@ contract RebornPortalBaseTest is Test, IRebornDefination, EventDefination {
         toAdd[0] = signer;
         address[] memory toRemove;
         portal.updateSigners(toAdd, toRemove);
-        vm.prank(owner);
+        vm.startPrank(owner);
         portal.setExtraReward(8 ether);
+        portal.setIncarnationLimit(type(uint256).max);
+        vm.stopPrank();
 
         // deploy burn pool
         burnPool = new BurnPool(address(portal), address(rbt));
