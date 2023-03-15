@@ -748,7 +748,8 @@ contract RebornPortal is
                 rewardFees,
                 account,
                 amount,
-                rewardType
+                rewardType,
+                _extraReward
             );
     }
 
