@@ -7,6 +7,7 @@
     "test": "test"
   },
   "scripts": {
+    "compile": "hardhat compile",
     "test": "hardhat test",
     "deploy": "hardhat deploy",
     "verify": "hardhat run ./verify.ts"
@@ -44,6 +45,7 @@
     "@openzeppelin/merkle-tree": "^1.0.2",
     "@openzeppelin/upgrades-core": "^1.21.0",
     "@p12/contracts-lib": "^0.0.8",
+    "hardhat-contract-sizer": "^2.8.0",
     "hardhat-deploy": "^0.11.22"
   }
 }

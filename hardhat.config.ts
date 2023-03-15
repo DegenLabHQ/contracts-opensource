@@ -7,6 +7,8 @@ import "@nomiclabs/hardhat-waffle";
 import "@typechain/hardhat";
 import "hardhat-deploy";
 import "hardhat-preprocessor";
+import "hardhat-contract-sizer";
+
 import { HardhatUserConfig, task } from "hardhat/config";
 
 import example from "./tasks/example";
@@ -38,11 +40,11 @@ const config: HardhatUserConfig = {
       optimizer: {
         enabled: true,
         runs: 200,
-        details: {
-          yulDetails: {
-            optimizerSteps: "u",
-          },
-        },
+        // details: {
+        //   yulDetails: {
+        //     optimizerSteps: "u",
+        //   },
+        // },
       },
       viaIR: true,
     },
@@ -163,6 +165,12 @@ const config: HardhatUserConfig = {
         },
       },
     ],
+  },
+  contractSizer: {
+    alphaSort: false,
+    disambiguatePaths: false,
+    runOnCompile: true,
+    strict: true,
   },
   external: {
     contracts: [
