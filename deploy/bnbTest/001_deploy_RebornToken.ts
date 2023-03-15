@@ -27,8 +27,6 @@ const func: DeployFunction = async function ({
     },
     log: true,
   });
-
-  // await execute("RBT", { from: owner }, "initAfterUpgrade");
 };
 func.tags = ["RBT"];
 

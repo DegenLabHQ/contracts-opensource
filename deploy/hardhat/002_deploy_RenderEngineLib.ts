@@ -17,6 +17,6 @@ const func: DeployFunction = async function ({
     libraries: { RenderConstant: (await get("RenderConstant")).address },
   });
 };
-func.tags = ["RenderEngine"];
+func.tags = ["RenderEngineLib"];
 
 export default func;
