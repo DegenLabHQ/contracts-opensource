@@ -413,7 +413,8 @@ library PortalLib {
         ReferrerRewardFees storage rewardFees,
         address account,
         uint256 amount,
-        RewardType rewardType
+        RewardType rewardType,
+        uint256 extraReward
     )
         public
         view
@@ -441,7 +442,8 @@ library PortalLib {
         if (rewardType == RewardType.RebornToken) {
             ref1Reward = ref1 == address(0)
                 ? 0
-                : (amount * rewardFees.vaultRef1Fee) /
+                : extraReward +
+                    (amount * rewardFees.vaultRef1Fee) /
                     PortalLib.PERCENTAGE_BASE;
             ref2Reward = ref2 == address(0)
                 ? 0
@@ -489,7 +491,8 @@ library PortalLib {
                 rewardFees,
                 account,
                 amount,
-                PortalLib.RewardType.NativeToken
+                PortalLib.RewardType.NativeToken,
+                0
             );
 
         if (ref1Reward > 0) {
@@ -531,11 +534,12 @@ library PortalLib {
                 rewardFees,
                 account,
                 amount,
-                PortalLib.RewardType.RebornToken
+                PortalLib.RewardType.RebornToken,
+                extraReward
             );
 
         if (ref1Reward > 0) {
-            vault.reward(ref1, ref1Reward + extraReward);
+            vault.reward(ref1, ref1Reward);
         }
 
         if (ref2Reward > 0) {
@@ -545,7 +549,7 @@ library PortalLib {
         emit ReferReward(
             account,
             ref1,
-            ref1Reward + extraReward,
+            ref1Reward,
             ref2,
             ref2Reward,
             PortalLib.RewardType.RebornToken
