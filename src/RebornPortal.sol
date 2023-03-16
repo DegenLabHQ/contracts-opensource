@@ -791,6 +791,13 @@ contract RebornPortal is
     }
 
     /**
+     * @dev return the jackpot amount of current season
+     */
+    function getJackPot() public view returns (uint256) {
+        return _seasonData[_season]._jackpot;
+    }
+
+    /**
      * @dev check signer implementation
      */
     function _checkSigner() internal view {
