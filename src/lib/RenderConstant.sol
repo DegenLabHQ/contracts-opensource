@@ -13,7 +13,7 @@ library RenderConstant {
     string internal constant _P4 =
         '</text><text dx="955" dy="425" dominant-baseline="central" font-family="VT323" font-weight="400" font-size="78" fill="#FFF">Age:';
     string internal constant _P5 =
-        '</text><text dx="200" dy="425" dominant-baseline="central" text-anchor="left" font-family="VT323" font-weight="400" font-size="78" fill="#FFF">';
+        '</text><text dx="200" dy="425" dominant-baseline="central" text-anchor="left" font-family="VT323" font-weight="400" font-size="60" fill="#FFF">';
     string internal constant _P6 =
         '</text><text dx="975" dy="116" dominant-baseline="central" text-anchor="middle" style="height:100px" font-family="Black Ops One" font-size="56" fill="#FF8A01">DegenReborn</text><text dx="1070" dy="230" dominant-baseline="central" text-anchor="end" font-family="VT323" font-weight="400" font-size="96" fill="url(#prefix__p75)">';
     string internal constant _P7 =

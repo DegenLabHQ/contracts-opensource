@@ -5,8 +5,11 @@ import "@openzeppelin/contracts/utils/Strings.sol";
 import {RenderConstant} from "src/lib/RenderConstant.sol";
 import {Base64} from "@openzeppelin/contracts/utils/Base64.sol";
 import {IRebornDefination} from "src/interfaces/IRebornPortal.sol";
+import {strings} from "src/lib/strings.sol";
 
 library Renderer {
+    using strings for *;
+
     function renderByTokenId(
         mapping(uint256 => IRebornDefination.LifeDetail) storage details,
         uint256 tokenId
@@ -56,11 +59,11 @@ library Renderer {
         uint256 lifeScore,
         uint256 round,
         uint256 age,
-        string memory creator,
+        string memory creatorName,
         uint256 cost
     ) public pure returns (string memory) {
         string memory Part1 = _renderSvgPart1(seed, lifeScore, round, age);
-        string memory Part2 = _renderSvgPart2(creator, cost);
+        string memory Part2 = _renderSvgPart2(creatorName, cost);
         return string(abi.encodePacked(Part1, Part2));
     }
 
@@ -155,7 +158,7 @@ library Renderer {
             string(
                 abi.encodePacked(
                     RenderConstant.P5(),
-                    creator,
+                    _compressUtf8(creator),
                     RenderConstant.P6(),
                     _tranformWeiToDecimal2(cost),
                     RenderConstant.P7()
@@ -280,5 +283,29 @@ library Renderer {
             result[i - startIndex] = strBytes[i];
         }
         return string(result);
+    }
+
+    function _compressUtf8(
+        string memory str
+    ) public pure returns (string memory res) {
+        strings.slice memory sl = str.toSlice();
+        strings.slice memory resl = res.toSlice();
+
+        uint256 length = sl.len();
+        if (length > 12) {
+            for (uint256 i = 0; i < 5; i++) {
+                resl = resl.concat(sl.nextRune()).toSlice();
+            }
+            for (uint256 i = 5; i < length - 7; i++) {
+                sl.nextRune().toString();
+            }
+
+            resl = resl.concat(unicode"…".toSlice()).toSlice();
+            for (uint256 i = length - 7; i < length; i++) {
+                resl = resl.concat(sl.nextRune()).toSlice();
+            }
+            return resl.toString();
+        }
+        return str;
     }
 }

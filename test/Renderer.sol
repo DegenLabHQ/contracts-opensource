@@ -151,6 +151,27 @@ contract RendererTest is Test {
         );
     }
 
+    function testCompressUtf8() public {
+        assertEq(
+            abi.encodePacked(Renderer._compressUtf8("@1234567890abcdefgh")),
+            abi.encodePacked(unicode"@1234…bcdefgh")
+        );
+        assertEq(
+            abi.encodePacked(Renderer._compressUtf8("vitalik.eth")),
+            abi.encodePacked("vitalik.eth")
+        );
+        assertEq(
+            abi.encodePacked(Renderer._compressUtf8("Rekooooooooo.cyber")),
+            abi.encodePacked(unicode"Rekoo…o.cyber")
+        );
+        assertEq(
+            abi.encodePacked(
+                Renderer._compressUtf8(unicode"通用汽车&巨大的泵.eth")
+            ),
+            abi.encodePacked(unicode"通用汽车&…大的泵.eth")
+        );
+    }
+
     function testTransformBytes32Seed() public {
         assertEq(
             abi.encodePacked(
