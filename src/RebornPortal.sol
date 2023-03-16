@@ -212,18 +212,6 @@ contract RebornPortal is
     }
 
     /**
-     * @dev use only in test environment
-     * @dev flatten Reward Debt, for fix in dev mode
-     */
-    function flattenRewardDebt(uint256 tokenId) external {
-        PortalLib.Pool storage pool = _seasonData[_season].pools[tokenId];
-        PortalLib.Portfolio storage portfolio = _seasonData[_season].portfolios[
-            msg.sender
-        ][tokenId];
-        PortalLib._flattenRewardDebt(pool, portfolio);
-    }
-
-    /**
      * @dev Upkeep perform of chainlink automation
      */
     function performUpkeep(
