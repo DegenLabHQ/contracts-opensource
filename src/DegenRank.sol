@@ -26,7 +26,10 @@ library DegenRank {
             uint256 tokenIdWithMinmalScore = _seasonData._scoreRank.get(99, 1)[
                 0
             ];
-            _seasonData._scoreRank.remove(tokenIdWithMinmalScore, _seasonData._minScore);
+            _seasonData._scoreRank.remove(
+                tokenIdWithMinmalScore,
+                _seasonData._minScore
+            );
 
             // also remove it from tvl rank
             _seasonData._isTopHundredScore.unset(tokenIdWithMinmalScore);
@@ -83,6 +86,7 @@ library DegenRank {
 
     /**
      * @dev if the tokenId's value is zero, it exits the ranking
+     * @dev reduce rank size and release some gas
      * @param tokenId pool tokenId
      */
     function _exitTvlRank(

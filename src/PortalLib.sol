@@ -453,7 +453,7 @@ library PortalLib {
     }
 
     /**
-     * @notice mul 100 when set. eg: 8% -> 800 18%-> 1800
+     * @notice mul 10000 when set. eg: 8% -> 800 18%-> 1800
      * @dev set percentage of referrer reward
      * @param rewardType 0: incarnate reward 1: engrave reward
      */

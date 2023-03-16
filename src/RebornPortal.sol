@@ -36,12 +36,20 @@ contract RebornPortal is
     using BitMapsUpgradeable for BitMapsUpgradeable.BitMap;
     using FastArray for FastArray.Data;
 
+    /**
+     * @dev initialize function
+     * @param rebornToken_ $REBORN token address
+     * @param owner_ owner address
+     * @param name_ ERC712 name
+     * @param symbol_ ERC721 symbol
+     * @param vrfCoordinator_ chainlink vrf coordinator_ address
+     */
     function initialize(
         RBT rebornToken_,
         address owner_,
         string memory name_,
         string memory symbol_,
-        address _vrfCoordinator
+        address vrfCoordinator_
     ) public initializer {
         if (address(rebornToken_) == address(0)) {
             revert ZeroAddressSet();
@@ -51,7 +59,7 @@ contract RebornPortal is
         __ERC721_init(name_, symbol_);
         __ReentrancyGuard_init();
         __Pausable_init();
-        __VRFConsumerBaseV2_init(_vrfCoordinator);
+        __VRFConsumerBaseV2_init(vrfCoordinator_);
     }
 
     // solhint-disable-next-line no-empty-blocks
@@ -59,6 +67,9 @@ contract RebornPortal is
         address newImplementation
     ) internal override onlyOwner {}
 
+    /**
+     * @inheritdoc IRebornPortal
+     */
     function incarnate(
         Innate memory innate,
         address referrer,
@@ -496,7 +507,7 @@ contract RebornPortal is
     }
 
     /**
-     * @dev record referrer relationship, only one layer
+     * @dev record referrer relationship
      */
     function _refer(address referrer) internal {
         if (
