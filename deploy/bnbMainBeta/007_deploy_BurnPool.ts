@@ -4,7 +4,7 @@ const func: DeployFunction = async function ({
   deployments,
   getNamedAccounts,
 }) {
-  const { deploy, get } = deployments;
+  const { deploy, get, execute } = deployments;
   const { degen_deployer } = await getNamedAccounts();
 
   const rbt = await get("RBT");
@@ -16,14 +16,14 @@ const func: DeployFunction = async function ({
     log: true,
   });
 
-  // const burnPool = await get("BurnPool");
+  const burnPool = await get("BurnPool");
   //   set burn pool for portal
-  // await execute(
-  //   "RebornPortal",
-  //   { from: owner, log: true },
-  //   "setBurnPool",
-  //   burnPool.address
-  // );
+  await execute(
+    "RebornPortal",
+    { from: degen_deployer, log: true },
+    "setBurnPool",
+    burnPool.address
+  );
 };
 
 func.tags = ["BurnPool"];

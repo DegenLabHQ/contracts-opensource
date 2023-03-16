@@ -19,8 +19,9 @@ const func: DeployFunction = async function ({
           args: [
             "CZ DegenReborn Token",
             "$CZ",
-            parseEther(Number(10 ** 9).toString()),
-            "0xa23a69CB8aE1259937F1e6b51e76a53F3DEaA988",
+            // 100 trillion
+            parseEther(Number(10 ** 14).toString()),
+            degen_deployer,
           ],
         },
       },

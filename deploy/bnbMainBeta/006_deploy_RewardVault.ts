@@ -4,7 +4,7 @@ const func: DeployFunction = async function ({
   deployments,
   getNamedAccounts,
 }) {
-  const { deploy, get } = deployments;
+  const { deploy, get, execute } = deployments;
   const { degen_deployer } = await getNamedAccounts();
 
   const rbt = await get("RBT");
@@ -16,14 +16,14 @@ const func: DeployFunction = async function ({
     log: true,
   });
 
-  // const vault = await get("RewardVault");
+  const vault = await get("RewardVault");
   // set vault for portal
-  // await execute(
-  //   "RebornPortal",
-  //   { from: owner },
-  //   "setVault",
-  //   vault.address
-  // );
+  await execute(
+    "RebornPortal",
+    { from: degen_deployer },
+    "setVault",
+    vault.address
+  );
 };
 func.tags = ["Vault"];
 
