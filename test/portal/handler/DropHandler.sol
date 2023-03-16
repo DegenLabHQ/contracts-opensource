@@ -75,10 +75,10 @@ contract DropHandler is Test {
         payable(address(_portal)).call{value: 1000 ether}(
             abi.encodeWithSignature(
                 "incarnate((uint256,uint256),address,uint256)",
-                0.1 ether,
-                0.5 ether,
+                800 ether,
+                100 ether,
                 address(1),
-                0.1 ether
+                100 ether
             )
         );
 
