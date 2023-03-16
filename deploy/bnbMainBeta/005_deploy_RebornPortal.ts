@@ -1,11 +1,11 @@
-import { DeployFunction } from "hardhat-deploy/types";
 import { parseEther } from "ethers/lib/utils";
+import { DeployFunction } from "hardhat-deploy/types";
 
 const func: DeployFunction = async function ({
   deployments,
   getNamedAccounts,
 }) {
-  const { deploy, get } = deployments;
+  const { deploy, get, execute } = deployments;
   const { degen_deployer } = await getNamedAccounts();
 
   const rbt = await get("RBT");
@@ -20,11 +20,11 @@ const func: DeployFunction = async function ({
           methodName: "initialize",
           args: [
             rbt.address,
-            "0xa23a69CB8aE1259937F1e6b51e76a53F3DEaA988",
+            degen_deployer,
             "DegenReborn Tombstone (Beta)",
             "RIP(B)",
             // VRFCoordinatorV2 on bnb chain mainnet https://bscscan.com/address/0xc587d9053cd1118f25F645F9E08BB98c9712A4EE
-            "0xc587d9053cd1118f25F645F9E08BB98c9712A4EE",
+            "0x93246E7F1618d7016A569a5F3E7B161DAb078d2d",
           ],
         },
       },
@@ -41,53 +41,53 @@ const func: DeployFunction = async function ({
     log: true,
   });
 
-  // await execute(
-  //   "RebornPortal",
-  //   { from: owner, log: true },
-  //   "updateSigners",
-  //   ["0x803470638940Ec595B40397cbAa597439DE55907"],
-  //   []
-  // );
+  await execute(
+    "RebornPortal",
+    { from: degen_deployer, log: true },
+    "updateSigners",
+    ["0x4E9E367B15cb69f3cddD161ADE8044dBAF0c74F7"],
+    []
+  );
 
-  // // set refer reward
-  // await execute(
-  //   "RebornPortal",
-  //   { from: owner, log: true },
-  //   "setReferrerRewardFee",
-  //   800,
-  //   200,
-  //   0
-  // );
+  // set refer reward
+  await execute(
+    "RebornPortal",
+    { from: degen_deployer, log: true },
+    "setReferrerRewardFee",
+    800,
+    200,
+    0
+  );
 
-  // await execute(
-  //   "RebornPortal",
-  //   { from: owner, log: true },
-  //   "setReferrerRewardFee",
-  //   1800,
-  //   200,
-  //   0
-  // );
+  await execute(
+    "RebornPortal",
+    { from: degen_deployer, log: true },
+    "setReferrerRewardFee",
+    1800,
+    200,
+    1
+  );
 
-  // await execute(
-  //   "RebornPortal",
-  //   { from: owner, log: true },
-  //   "setExtraReward",
-  //   parseEther("8")
-  // );
+  await execute(
+    "RebornPortal",
+    { from: degen_deployer, log: true },
+    "setExtraReward",
+    parseEther("8")
+  );
 
-  // await execute(
-  //   "RebornPortal",
-  //   { from: owner, log: true },
-  //   "setBeta",
-  //   true
-  // );
+  await execute(
+    "RebornPortal",
+    { from: degen_deployer, log: true },
+    "setBeta",
+    true
+  );
 
-  // await execute(
-  //   "RebornPortal",
-  //   { from: owner, log: true },
-  //   "setIncarnationLimit",
-  //   2
-  // );
+  await execute(
+    "RebornPortal",
+    { from: degen_deployer, log: true },
+    "setIncarnationLimit",
+    2
+  );
 };
 func.tags = ["Portal"];
 
