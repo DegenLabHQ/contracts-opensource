@@ -480,7 +480,7 @@ library PortalLib {
         ReferrerRewardFees storage rewardFees,
         address account,
         uint256 amount
-    ) public {
+    ) public returns (uint256 total) {
         (
             address ref1,
             uint256 ref1Reward,
@@ -502,6 +502,8 @@ library PortalLib {
         if (ref2Reward > 0) {
             payable(ref2).transfer(ref2Reward);
         }
+
+        total = ref1Reward + ref2Reward;
 
         emit ReferReward(
             account,

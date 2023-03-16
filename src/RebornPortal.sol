@@ -492,11 +492,11 @@ contract RebornPortal is
         // transfer redundant native token back
         payable(msg.sender).transfer(msg.value - totalFee);
 
-        // native token to to jackpot
-        _seasonData[_season]._jackpot += msg.value;
-
         // reward referrers
-        _sendRewardToRefs(msg.sender, totalFee);
+        uint256 referAmount = _sendRewardToRefs(msg.sender, totalFee);
+
+        // rest native token to to jackpot
+        _seasonData[_season]._jackpot += totalFee - referAmount;
 
         emit Incarnate(
             msg.sender,
@@ -671,8 +671,12 @@ contract RebornPortal is
     /**
      * @dev send NativeToken to referrers
      */
-    function _sendRewardToRefs(address account, uint256 amount) internal {
-        PortalLib._sendRewardToRefs(referrals, rewardFees, account, amount);
+    function _sendRewardToRefs(
+        address account,
+        uint256 amount
+    ) internal returns (uint256) {
+        return
+            PortalLib._sendRewardToRefs(referrals, rewardFees, account, amount);
     }
 
     /**
