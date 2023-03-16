@@ -119,9 +119,6 @@ interface IRebornDefination {
     /// @dev revert when the drop is not on
     error DropOff();
 
-    /// @dev revert when the status is beta
-    error InBeta();
-
     /// @dev revert when incarnation count exceed limit
     error IncarnationExceedLimit();
 }
@@ -233,9 +230,4 @@ interface IRebornPortal is IRebornDefination {
      * @dev switch to next season, call by owner
      */
     function toNextSeason() external;
-
-    /**
-     * @dev set the stage to beta to disable some func
-     */
-    function setBeta(bool isBeta_) external;
 }

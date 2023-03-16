@@ -149,7 +149,7 @@ contract RebornPortal is
     function infuse(
         uint256 tokenId,
         uint256 amount
-    ) external override whenNotBeta whenNotPaused {
+    ) external override whenNotPaused {
         _claimPoolDrop(tokenId);
         _infuse(tokenId, amount);
     }
@@ -165,7 +165,7 @@ contract RebornPortal is
         bytes32 r,
         bytes32 s,
         uint8 v
-    ) external override whenNotBeta whenNotPaused {
+    ) external override whenNotPaused {
         _claimPoolDrop(tokenId);
         _permit(permitAmount, deadline, r, s, v);
         _infuse(tokenId, amount);
@@ -178,7 +178,7 @@ contract RebornPortal is
         uint256 fromTokenId,
         uint256 toTokenId,
         uint256 amount
-    ) external override whenNotBeta whenNotPaused {
+    ) external override whenNotPaused {
         _claimPoolDrop(fromTokenId);
         _claimPoolDrop(toTokenId);
         _decreaseFromPool(fromTokenId, amount);
@@ -190,7 +190,7 @@ contract RebornPortal is
      */
     function claimDrops(
         uint256[] calldata tokenIds
-    ) external override whenNotBeta whenNotPaused {
+    ) external override whenNotPaused {
         for (uint256 i = 0; i < tokenIds.length; i++) {
             _claimPoolDrop(tokenIds[i]);
         }
@@ -201,7 +201,7 @@ contract RebornPortal is
      */
     function claimNativeDrops(
         uint256[] calldata tokenIds
-    ) external override whenNotBeta whenNotPaused {
+    ) external override whenNotPaused {
         for (uint256 i = 0; i < tokenIds.length; i++) {
             PortalLib._claimPoolNativeDrop(tokenIds[i], _seasonData[_season]);
         }
@@ -212,7 +212,7 @@ contract RebornPortal is
      */
     function claimRebornDrops(
         uint256[] calldata tokenIds
-    ) external override whenNotBeta whenNotPaused {
+    ) external override whenNotPaused {
         for (uint256 i = 0; i < tokenIds.length; i++) {
             PortalLib._claimPoolRebornDrop(
                 tokenIds[i],
@@ -284,14 +284,6 @@ contract RebornPortal is
     ) external override onlyOwner {
         _vrfConf = conf;
         emit PortalLib.NewVrfConf(conf);
-    }
-
-    /**
-     * @inheritdoc IRebornPortal
-     */
-    function setBeta(bool isBeta_) external override onlyOwner {
-        _isBeta = isBeta_;
-        emit BetaStageSet(isBeta_);
     }
 
     /**
@@ -807,17 +799,6 @@ contract RebornPortal is
     }
 
     /**
-     * @dev check whether the current status is beta or not
-     * @dev if beta, revert
-     * @dev if not beta, pass
-     */
-    function _checkNotBeta() internal view {
-        if (_isBeta) {
-            revert InBeta();
-        }
-    }
-
-    /**
      * @dev check incarnation Count and auto increment if it meets
      */
     modifier checkIncarnationCount() {
@@ -843,11 +824,6 @@ contract RebornPortal is
         if (_dropConf._dropOn == 0) {
             revert DropOff();
         }
-        _;
-    }
-
-    modifier whenNotBeta() {
-        _checkNotBeta();
         _;
     }
 }

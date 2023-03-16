@@ -46,7 +46,8 @@ contract RebornPortalStorage is IRebornDefination {
     // extra reward to parent referrer
     uint256 internal _extraReward;
 
-    bool internal _isBeta;
+    // uesless var for backward compatibility
+    bool internal _g;
 
     // user address => count
     mapping(address => uint256) internal _incarnateCounts;
