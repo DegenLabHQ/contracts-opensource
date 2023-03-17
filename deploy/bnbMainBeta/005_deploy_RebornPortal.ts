@@ -41,53 +41,46 @@ const func: DeployFunction = async function ({
     log: true,
   });
 
-  await execute(
-    "RebornPortal",
-    { from: degen_deployer, log: true },
-    "updateSigners",
-    ["0x4E9E367B15cb69f3cddD161ADE8044dBAF0c74F7"],
-    []
-  );
+  // await execute(
+  //   "RebornPortal",
+  //   { from: degen_deployer, log: true },
+  //   "updateSigners",
+  //   [],
+  //   []
+  // );
 
   // set refer reward
-  await execute(
-    "RebornPortal",
-    { from: degen_deployer, log: true },
-    "setReferrerRewardFee",
-    800,
-    200,
-    0
-  );
+  // await execute(
+  //   "RebornPortal",
+  //   { from: degen_deployer, log: true },
+  //   "setReferrerRewardFee",
+  //   800,
+  //   200,
+  //   0
+  // );
 
-  await execute(
-    "RebornPortal",
-    { from: degen_deployer, log: true },
-    "setReferrerRewardFee",
-    1800,
-    200,
-    1
-  );
+  // await execute(
+  //   "RebornPortal",
+  //   { from: degen_deployer, log: true },
+  //   "setReferrerRewardFee",
+  //   1800,
+  //   200,
+  //   1
+  // );
 
-  await execute(
-    "RebornPortal",
-    { from: degen_deployer, log: true },
-    "setExtraReward",
-    parseEther("8")
-  );
+  // await execute(
+  //   "RebornPortal",
+  //   { from: degen_deployer, log: true },
+  //   "setExtraReward",
+  //   parseEther("8")
+  // );
 
-  await execute(
-    "RebornPortal",
-    { from: degen_deployer, log: true },
-    "setBeta",
-    true
-  );
-
-  await execute(
-    "RebornPortal",
-    { from: degen_deployer, log: true },
-    "setIncarnationLimit",
-    2
-  );
+  // await execute(
+  //   "RebornPortal",
+  //   { from: degen_deployer, log: true },
+  //   "setIncarnationLimit",
+  //   2
+  // );
 };
 func.tags = ["Portal"];
 
