@@ -71,7 +71,7 @@ contract RebornPortal is
      * @inheritdoc IRebornPortal
      */
     function incarnate(
-        Innate memory innate,
+        Innate calldata innate,
         address referrer,
         uint256 _soupPrice
     )
@@ -482,7 +482,7 @@ contract RebornPortal is
     /**
      * @dev implementation of incarnate
      */
-    function _incarnate(Innate memory innate, uint256 _soupPrice) internal {
+    function _incarnate(Innate calldata innate, uint256 _soupPrice) internal {
         uint256 totalFee = _soupPrice +
             innate.talentPrice +
             innate.propertyPrice;

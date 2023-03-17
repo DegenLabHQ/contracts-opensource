@@ -18,7 +18,7 @@ library DegenRank {
         }
         // only when length is larger than 100, remove
         if (SingleRanking.length(_seasonData._scoreRank) >= 100) {
-            // get the 100th value and compare, if new value is smaller, nothing happen
+            // get the min value and compare, if new value is not larger, nothing happen
             if (value <= _seasonData._minScore) {
                 return;
             }
