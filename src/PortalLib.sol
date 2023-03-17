@@ -184,7 +184,7 @@ library PortalLib {
 
         // if no portfolio, no pending reward
         if (portfolio.accumulativeAmount == 0) {
-            return (0, 0);
+            return (pendingNative, pendingReborn);
         }
 
         pendingNative =
