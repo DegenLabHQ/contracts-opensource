@@ -13,11 +13,14 @@ import "forge-std/Vm.sol";
  */
 contract RebornPortalReg is Test {
     uint256 bnbTest;
+    uint256 bnbMain;
     RebornPortal portal;
 
     function setUp() public {
         string memory bnbTestRpcUrl = vm.envString("BNB_CHAIN_TEST_URL");
+        string memory bnbMainRpcUrl = vm.envString("BNB_CHAIN_URL");
         bnbTest = vm.createFork(bnbTestRpcUrl);
+        bnbMain = vm.createFork(bnbMainRpcUrl);
         vm.selectFork(bnbTest);
         portal = RebornPortal(0xF6D95a75464B0C2C717407867eEF377ab1fe7046);
     }
@@ -30,9 +33,24 @@ contract RebornPortalReg is Test {
     }
 
     function testPerformUpkeep() public {
-        vm.rollFork(27692275);
-        bytes memory b = abi.encode(1);
+        portal = RebornPortal(0xA751c9Ad92472D1E4eb6B6F9803311E22C5FbA9F);
+        vm.selectFork(bnbMain);
+        vm.rollFork(26540827);
+        (bool up, bytes memory b) = portal.checkUpkeep(abi.encode(0));
         portal.performUpkeep(b);
+    }
+
+    function testSimulateAntiCheat() public {
+        portal = RebornPortal(0xA751c9Ad92472D1E4eb6B6F9803311E22C5FbA9F);
+        vm.selectFork(bnbMain);
+        vm.rollFork(26542903);
+        mockUpgradeToDevVersion();
+
+        vm.startPrank(portal.owner());
+        portal.antiCheat(56000000000000004072, 149019);
+        portal.antiCheat(56000000000000004081, 149019);
+
+        vm.stopPrank();
     }
 
     function testSimulatePendingDrop() public {
