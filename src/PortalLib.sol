@@ -101,10 +101,10 @@ library PortalLib {
             return;
         }
 
-        uint256 pendingReborn = portfolio.pendingOwnerRebornReward +
-            ((portfolio.accumulativeAmount * pool.accRebornPerShare) /
-                PERSHARE_BASE) -
-            portfolio.rebornRewardDebt;
+        uint256 pendingReborn = ((portfolio.accumulativeAmount *
+            pool.accRebornPerShare) / PERSHARE_BASE) -
+            portfolio.rebornRewardDebt +
+            portfolio.pendingOwnerRebornReward;
 
         // set current amount as debt
         portfolio.rebornRewardDebt =
@@ -134,10 +134,10 @@ library PortalLib {
             return;
         }
 
-        uint256 pendingNative = portfolio.pendingOwnerNativeReward +
-            ((portfolio.accumulativeAmount * pool.accNativePerShare) /
-                PERSHARE_BASE) -
-            portfolio.nativeRewardDebt;
+        uint256 pendingNative = ((portfolio.accumulativeAmount *
+            pool.accNativePerShare) / PERSHARE_BASE) -
+            portfolio.nativeRewardDebt +
+            portfolio.pendingOwnerNativeReward;
 
         // set current amount as debt
         portfolio.nativeRewardDebt =
@@ -188,16 +188,16 @@ library PortalLib {
         }
 
         pendingNative =
-            portfolio.pendingOwnerNativeReward +
             ((portfolio.accumulativeAmount * pool.accNativePerShare) /
                 PERSHARE_BASE) -
-            portfolio.nativeRewardDebt;
+            portfolio.nativeRewardDebt +
+            portfolio.pendingOwnerNativeReward;
 
         pendingReborn =
-            portfolio.pendingOwnerRebornReward +
             ((portfolio.accumulativeAmount * pool.accRebornPerShare) /
                 PERSHARE_BASE) -
-            portfolio.rebornRewardDebt;
+            portfolio.rebornRewardDebt +
+            portfolio.pendingOwnerRebornReward;
     }
 
     /**
