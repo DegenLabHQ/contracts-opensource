@@ -24,7 +24,7 @@ const func: DeployFunction = async function ({
             "DegenReborn Tombstone (Beta)",
             "RIP(B)",
             // VRFCoordinatorV2 on bnb chain mainnet https://bscscan.com/address/0xc587d9053cd1118f25F645F9E08BB98c9712A4EE
-            "0x93246E7F1618d7016A569a5F3E7B161DAb078d2d",
+            "0xc587d9053cd1118f25F645F9E08BB98c9712A4EE",
           ],
         },
       },

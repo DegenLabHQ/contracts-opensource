@@ -102,6 +102,8 @@ interface IRebornDefination {
 
     event NewIncarnationLimit(uint256 limit);
 
+    event VrfCorSet(address);
+
     /// @dev revert when msg.value is insufficient
     error InsufficientAmount();
     /// @dev revert when to caller is not signer
