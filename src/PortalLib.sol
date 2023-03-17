@@ -223,6 +223,8 @@ library PortalLib {
         AirdropConf storage _dropConf,
         IRebornDefination.SeasonData storage _seasonData
     ) external {
+        uint256 dropAmount = (_dropConf._nativeTopDropRatio *
+            _seasonData._jackpot) / PERCENTAGE_BASE;
         for (uint256 i = 0; i < tokenIds.length; i++) {
             uint256 tokenId = tokenIds[i];
             // if tokenId is zero , return
@@ -237,9 +239,6 @@ library PortalLib {
             if (pool.totalAmount == 0) {
                 return;
             }
-
-            uint256 dropAmount = (_dropConf._nativeTopDropRatio *
-                _seasonData._jackpot) / PERCENTAGE_BASE;
 
             // 80% to pool
             pool.accNativePerShare +=
@@ -262,6 +261,9 @@ library PortalLib {
         AirdropConf storage _dropConf,
         IRebornDefination.SeasonData storage _seasonData
     ) external {
+        uint256 dropAmount = (_dropConf._nativeRaffleDropRatio *
+            _seasonData._jackpot) / PERCENTAGE_BASE;
+
         for (uint256 i = 0; i < tokenIds.length; i++) {
             uint256 tokenId = tokenIds[i];
             // if tokenId is zero , return
@@ -276,9 +278,6 @@ library PortalLib {
             if (pool.totalAmount == 0) {
                 return;
             }
-
-            uint256 dropAmount = (_dropConf._nativeRaffleDropRatio *
-                _seasonData._jackpot) / PERCENTAGE_BASE;
 
             // 80% to pool
             pool.accNativePerShare +=
@@ -301,6 +300,7 @@ library PortalLib {
         AirdropConf storage _dropConf,
         IRebornDefination.SeasonData storage _seasonData
     ) external {
+        uint256 dropAmount = uint256(_dropConf._rebornTopEthAmount) * 1 ether;
         for (uint256 i = 0; i < tokenIds.length; i++) {
             uint256 tokenId = tokenIds[i];
 
@@ -315,9 +315,6 @@ library PortalLib {
             if (pool.totalAmount == 0) {
                 return;
             }
-
-            uint256 dropAmount = uint256(_dropConf._rebornTopEthAmount) *
-                1 ether;
 
             // 80% to pool
             pool.accRebornPerShare +=
@@ -340,6 +337,8 @@ library PortalLib {
         AirdropConf storage _dropConf,
         IRebornDefination.SeasonData storage _seasonData
     ) external {
+        uint256 dropAmount = uint256(_dropConf._rebornRaffleEthAmount) *
+            1 ether;
         for (uint256 i = 0; i < tokenIds.length; i++) {
             uint256 tokenId = tokenIds[i];
 
@@ -354,9 +353,6 @@ library PortalLib {
             if (pool.totalAmount == 0) {
                 return;
             }
-
-            uint256 dropAmount = uint256(_dropConf._rebornRaffleEthAmount) *
-                1 ether;
 
             // 80% to pool
             pool.accRebornPerShare +=
