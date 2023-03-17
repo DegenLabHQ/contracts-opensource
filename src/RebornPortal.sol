@@ -287,6 +287,14 @@ contract RebornPortal is
     }
 
     /**
+     * @dev set vrf coordinator
+     */
+    function setVrfCoordinator(address vrfCor_) external onlyOwner {
+        vrfCoordinator = vrfCor_;
+        emit VrfCorSet(vrfCor_);
+    }
+
+    /**
      * @dev set vault
      * @param vault_ new vault address
      */
