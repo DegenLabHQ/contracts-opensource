@@ -74,8 +74,6 @@ const func: DeployFunction = async function ({
     parseEther("8")
   );
 
-  await execute("RebornPortal", { from: owner, log: true }, "setBeta", false);
-
   await execute(
     "RebornPortal",
     { from: owner, log: true },
