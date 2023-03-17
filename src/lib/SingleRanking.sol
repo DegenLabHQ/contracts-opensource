@@ -56,11 +56,7 @@ library SingleRanking {
         uint _offset,
         uint _count
     ) public view returns (uint[] memory) {
-        require(_offset >= 0, "Offet can not be negative");
-        require(
-            _count >= 0 && _count <= 100,
-            "Count must be between 0 and 100"
-        );
+        require(_count > 0 && _count <= 100, "Count must be between 0 and 100");
 
         uint[] memory result = new uint[](_count);
         uint size = 0;
@@ -92,7 +88,7 @@ library SingleRanking {
                 _count -= FastArray.length(keys) - _offset;
                 _offset = 0;
             } else {
-                uint index = _count - 1;
+                uint index = _offset + _count - 1;
 
                 while (index >= _offset) {
                     uint key = keys.get(index);
