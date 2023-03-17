@@ -84,7 +84,7 @@ library PortalLib {
         uint256 amount1,
         address indexed ref2,
         uint256 amount2,
-        PortalLib.RewardType rewardType
+        RewardType rewardType
     );
 
     function _claimPoolRebornDrop(
@@ -101,11 +101,10 @@ library PortalLib {
             return;
         }
 
-        uint256 pendingReborn = (portfolio.accumulativeAmount *
-            pool.accRebornPerShare) /
-            PERSHARE_BASE -
-            portfolio.rebornRewardDebt +
-            portfolio.pendingOwnerRebornReward;
+        uint256 pendingReborn = portfolio.pendingOwnerRebornReward +
+            ((portfolio.accumulativeAmount * pool.accRebornPerShare) /
+                PERSHARE_BASE) -
+            portfolio.rebornRewardDebt;
 
         // set current amount as debt
         portfolio.rebornRewardDebt =
@@ -116,11 +115,10 @@ library PortalLib {
         portfolio.pendingOwnerRebornReward = 0;
 
         /// @dev send drop
-        if (pendingReborn != 0) {
+        if (pendingReborn > 0) {
             vault.reward(msg.sender, pendingReborn);
+            emit ClaimRebornDrop(tokenId, pendingReborn);
         }
-
-        emit ClaimRebornDrop(tokenId, pendingReborn);
     }
 
     function _claimPoolNativeDrop(
@@ -136,11 +134,10 @@ library PortalLib {
             return;
         }
 
-        uint256 pendingNative = (portfolio.accumulativeAmount *
-            pool.accNativePerShare) /
-            PERSHARE_BASE -
-            portfolio.nativeRewardDebt +
-            portfolio.pendingOwnerNativeReward;
+        uint256 pendingNative = portfolio.pendingOwnerNativeReward +
+            ((portfolio.accumulativeAmount * pool.accNativePerShare) /
+                PERSHARE_BASE) -
+            portfolio.nativeRewardDebt;
 
         // set current amount as debt
         portfolio.nativeRewardDebt =
@@ -151,7 +148,7 @@ library PortalLib {
         portfolio.pendingOwnerNativeReward = 0;
 
         /// @dev send drop
-        if (pendingNative != 0) {
+        if (pendingNative > 0) {
             payable(msg.sender).transfer(pendingNative);
 
             emit ClaimNativeDrop(tokenId, pendingNative);
@@ -187,20 +184,20 @@ library PortalLib {
 
         // if no portfolio, no pending reward
         if (portfolio.accumulativeAmount == 0) {
-            return (pendingNative, pendingReborn);
+            return (0, 0);
         }
 
         pendingNative =
-            (portfolio.accumulativeAmount * pool.accNativePerShare) /
-            PERSHARE_BASE -
-            portfolio.nativeRewardDebt +
-            portfolio.pendingOwnerNativeReward;
+            portfolio.pendingOwnerNativeReward +
+            ((portfolio.accumulativeAmount * pool.accNativePerShare) /
+                PERSHARE_BASE) -
+            portfolio.nativeRewardDebt;
 
         pendingReborn =
-            (portfolio.accumulativeAmount * pool.accRebornPerShare) /
-            PERSHARE_BASE -
-            portfolio.rebornRewardDebt +
-            portfolio.pendingOwnerRebornReward;
+            portfolio.pendingOwnerRebornReward +
+            ((portfolio.accumulativeAmount * pool.accRebornPerShare) /
+                PERSHARE_BASE) -
+            portfolio.rebornRewardDebt;
     }
 
     /**
@@ -431,12 +428,10 @@ library PortalLib {
         if (rewardType == RewardType.NativeToken) {
             ref1Reward = ref1 == address(0)
                 ? 0
-                : (amount * rewardFees.incarnateRef1Fee) /
-                    PortalLib.PERCENTAGE_BASE;
+                : (amount * rewardFees.incarnateRef1Fee) / PERCENTAGE_BASE;
             ref2Reward = ref2 == address(0)
                 ? 0
-                : (amount * rewardFees.incarnateRef2Fee) /
-                    PortalLib.PERCENTAGE_BASE;
+                : (amount * rewardFees.incarnateRef2Fee) / PERCENTAGE_BASE;
         }
 
         if (rewardType == RewardType.RebornToken) {
@@ -444,11 +439,10 @@ library PortalLib {
                 ? 0
                 : extraReward +
                     (amount * rewardFees.vaultRef1Fee) /
-                    PortalLib.PERCENTAGE_BASE;
+                    PERCENTAGE_BASE;
             ref2Reward = ref2 == address(0)
                 ? 0
-                : (amount * rewardFees.vaultRef2Fee) /
-                    PortalLib.PERCENTAGE_BASE;
+                : (amount * rewardFees.vaultRef2Fee) / PERCENTAGE_BASE;
         }
     }
 
@@ -461,12 +455,12 @@ library PortalLib {
         ReferrerRewardFees storage rewardFees,
         uint16 refL1Fee,
         uint16 refL2Fee,
-        PortalLib.RewardType rewardType
+        RewardType rewardType
     ) external {
-        if (rewardType == PortalLib.RewardType.NativeToken) {
+        if (rewardType == RewardType.NativeToken) {
             rewardFees.incarnateRef1Fee = refL1Fee;
             rewardFees.incarnateRef2Fee = refL2Fee;
-        } else if (rewardType == PortalLib.RewardType.RebornToken) {
+        } else if (rewardType == RewardType.RebornToken) {
             rewardFees.vaultRef1Fee = refL1Fee;
             rewardFees.vaultRef2Fee = refL2Fee;
         }
@@ -491,7 +485,7 @@ library PortalLib {
                 rewardFees,
                 account,
                 amount,
-                PortalLib.RewardType.NativeToken,
+                RewardType.NativeToken,
                 0
             );
 
@@ -511,7 +505,7 @@ library PortalLib {
             ref1Reward,
             ref2,
             ref2Reward,
-            PortalLib.RewardType.NativeToken
+            RewardType.NativeToken
         );
     }
 
@@ -536,7 +530,7 @@ library PortalLib {
                 rewardFees,
                 account,
                 amount,
-                PortalLib.RewardType.RebornToken,
+                RewardType.RebornToken,
                 extraReward
             );
 
@@ -554,7 +548,7 @@ library PortalLib {
             ref1Reward,
             ref2,
             ref2Reward,
-            PortalLib.RewardType.RebornToken
+            RewardType.RebornToken
         );
     }
 }
