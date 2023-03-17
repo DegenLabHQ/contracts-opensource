@@ -364,6 +364,19 @@ contract RebornPortal is
     }
 
     /**
+     * @dev anticheat, downgrade score and remove from rank
+     */
+    function antiCheat(uint256 tokenId, uint256 score) external onlyOwner {
+        LifeDetail storage detail = details[tokenId];
+        uint256 oldScore = detail.score;
+
+        detail.score = score;
+
+        // make this tokenId exit rank
+        _exitRank(tokenId, oldScore);
+    }
+
+    /**
      * @dev withdraw native token for reward distribution
      * @dev amount how much to withdraw
      */

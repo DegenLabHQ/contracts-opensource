@@ -4,11 +4,13 @@ pragma solidity 0.8.17;
 import {RankingRedBlackTree} from "src/lib/RankingRedBlackTree.sol";
 import {SingleRanking} from "src/lib/SingleRanking.sol";
 import {RebornPortalStorage} from "src/RebornPortalStorage.sol";
+import {BitMapsUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/structs/BitMapsUpgradeable.sol";
 
 import {DegenRank} from "src/DegenRank.sol";
 
 abstract contract RankUpgradeable is RebornPortalStorage {
     using SingleRanking for SingleRanking.Data;
+    using BitMapsUpgradeable for BitMapsUpgradeable.BitMap;
 
     /**
      * @dev set tokenId to rank, only top 100 into rank
@@ -30,6 +32,21 @@ abstract contract RankUpgradeable is RebornPortalStorage {
             _seasonData[_season]._oldStakeAmounts,
             tokenId,
             value
+        );
+    }
+
+    function _exitRank(uint256 tokenId, uint256 oldValue) internal {
+        // remove from score rank
+        _seasonData[_season]._scoreRank.remove(tokenId, oldValue);
+
+        // also remove it from top hundred score
+        _seasonData[_season]._isTopHundredScore.unset(tokenId);
+
+        // also remove it from tvl rank
+        DegenRank._exitTvlRank(
+            _seasonData[_season]._tributeRank,
+            _seasonData[_season]._oldStakeAmounts,
+            tokenId
         );
     }
 
