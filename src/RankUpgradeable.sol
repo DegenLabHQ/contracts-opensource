@@ -36,22 +36,7 @@ abstract contract RankUpgradeable is RebornPortalStorage {
     }
 
     function _exitRank(uint256 tokenId, uint256 oldValue) internal {
-        // if it's not top 100 hundred, do nothing
-        if (!_seasonData[_season]._isTopHundredScore.get(tokenId)) {
-            return;
-        }
-        // remove from score rank
-        _seasonData[_season]._scoreRank.remove(tokenId, oldValue);
-
-        // also remove it from top hundred score
-        _seasonData[_season]._isTopHundredScore.unset(tokenId);
-
-        // also remove it from tvl rank
-        DegenRank._exitTvlRank(
-            _seasonData[_season]._tributeRank,
-            _seasonData[_season]._oldStakeAmounts,
-            tokenId
-        );
+        DegenRank._exitRank(_seasonData[_season], tokenId, oldValue);
     }
 
     /**

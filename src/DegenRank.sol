@@ -99,4 +99,33 @@ library DegenRank {
             delete _oldStakeAmounts[tokenId];
         }
     }
+
+    /**
+     * @dev exit from score rank and tvl rank, used when anti Cheat
+     * @param _seasonData season data storage
+     * @param tokenId tokenId
+     * @param oldValue old value
+     */
+    function _exitRank(
+        IRebornPortal.SeasonData storage _seasonData,
+        uint256 tokenId,
+        uint256 oldValue
+    ) internal {
+        // if it's not top 100 hundred, do nothing
+        if (!_seasonData._isTopHundredScore.get(tokenId)) {
+            return;
+        }
+        // remove from score rank
+        _seasonData._scoreRank.remove(tokenId, oldValue);
+
+        // also remove it from top hundred score
+        _seasonData._isTopHundredScore.unset(tokenId);
+
+        // also remove it from tvl rank
+        _exitTvlRank(
+            _seasonData._tributeRank,
+            _seasonData._oldStakeAmounts,
+            tokenId
+        );
+    }
 }
