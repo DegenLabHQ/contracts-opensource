@@ -531,6 +531,13 @@ contract RebornPortal is
      * @dev raffle 10 from top 11 - top 100
      */
     function _fulfillDropReborn(uint256 requestId) internal onlyDropOn {
+        RequestStatus storage rs = _vrfRequests[requestId];
+        if (rs.executed == true) {
+            revert VrfRequestExecuted(requestId);
+        }
+
+        rs.executed = true;
+
         uint256[] memory topTens = _getTopNTokenId(10);
         uint256[] memory topTenToHundreds = _getFirstNTokenIdByOffSet(10, 90);
 
@@ -541,9 +548,6 @@ contract RebornPortal is
         );
 
         uint256[] memory selectedTokenIds = new uint256[](10);
-
-        RequestStatus storage rs = _vrfRequests[requestId];
-        rs.executed = true;
 
         for (uint256 i = 0; i < 10; i++) {
             selectedTokenIds[i] = topTenToHundreds[rs.randomWords[i] % 90];
@@ -564,6 +568,12 @@ contract RebornPortal is
      * @dev raffle 10 from top 11 - top 100
      */
     function _fulfillDropNative(uint256 requestId) internal onlyDropOn {
+        RequestStatus storage rs = _vrfRequests[requestId];
+        if (rs.executed == true) {
+            revert VrfRequestExecuted(requestId);
+        }
+
+        rs.executed = true;
         uint256[] memory topTens = _getTopNTokenId(10);
         uint256[] memory topTenToHundreds = _getFirstNTokenIdByOffSet(10, 90);
 
@@ -574,9 +584,6 @@ contract RebornPortal is
         );
 
         uint256[] memory selectedTokenIds = new uint256[](10);
-
-        RequestStatus storage rs = _vrfRequests[requestId];
-        rs.executed = true;
 
         for (uint256 i = 0; i < 10; i++) {
             selectedTokenIds[i] = topTenToHundreds[rs.randomWords[i] % 90];
