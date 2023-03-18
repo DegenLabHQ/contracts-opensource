@@ -54,16 +54,26 @@ contract RebornPortalReg is Test {
     }
 
     function testSimulatePendingDrop() public {
-        // vm.rollFork(27717594);
-        // mockUpgradeToDevVersion();
-        // uint256[] memory arr = new uint256[](1);
-        // (arr[0]) = (97000000000000000036);
-        // vm.startPrank(0x8A1f5030dBdcC7A630af068Cc0440Bb05bDD8220);
-        // portal.flattenRewardDebt(97000000000000000036);
-        // (uint256 n, uint256 t) = portal.pendingDrop(arr);
-        // assertEq(n, 0);
-        // assertEq(t, 0);
-        // vm.stopPrank();
+        vm.selectFork(bnbMain);
+        portal = RebornPortal(0xA751c9Ad92472D1E4eb6B6F9803311E22C5FbA9F);
+        vm.rollFork(26550446);
+        mockUpgradeToDevVersion();
+        uint256[] memory arr = new uint256[](1);
+        (arr[0]) = (56000000000000005954);
+        vm.startPrank(0x4083041Be3E2a7657724b5f7d088C0abEEDCdB33);
+        (uint256 n, uint256 t) = portal.pendingDrop(arr);
+        assertEq(n, 23545723434902000);
+        assertEq(t, 160033661380102754324);
+
+        vm.expectEmit(true, true, true, true);
+        emit PortalLib.ClaimRebornDrop(
+            56000000000000005954,
+            160033661380102754324
+        );
+        emit PortalLib.ClaimNativeDrop(56000000000000005954, 23545723434902000);
+
+        portal.claimDrops(arr);
+        vm.stopPrank();
     }
 
     function testClaimRebornDrop() public {

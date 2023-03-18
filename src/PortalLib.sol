@@ -97,13 +97,18 @@ library PortalLib {
             tokenId
         ];
 
+        uint256 pendingTributeReborn;
+        // if no portfolio, no pending tribute reward
         if (portfolio.accumulativeAmount == 0) {
-            return;
+            pendingTributeReborn = 0;
+        } else {
+            pendingTributeReborn =
+                ((portfolio.accumulativeAmount * pool.accRebornPerShare) /
+                    PERSHARE_BASE) -
+                portfolio.rebornRewardDebt;
         }
 
-        uint256 pendingReborn = ((portfolio.accumulativeAmount *
-            pool.accRebornPerShare) / PERSHARE_BASE) -
-            portfolio.rebornRewardDebt +
+        uint256 pendingReborn = pendingTributeReborn +
             portfolio.pendingOwnerRebornReward;
 
         // set current amount as debt
@@ -130,13 +135,18 @@ library PortalLib {
             tokenId
         ];
 
+        uint256 pendingTributeNative;
+        // if no portfolio, no pending tribute reward
         if (portfolio.accumulativeAmount == 0) {
-            return;
+            pendingTributeNative = 0;
+        } else {
+            pendingTributeNative =
+                (portfolio.accumulativeAmount * pool.accNativePerShare) /
+                PERSHARE_BASE -
+                portfolio.nativeRewardDebt;
         }
 
-        uint256 pendingNative = ((portfolio.accumulativeAmount *
-            pool.accNativePerShare) / PERSHARE_BASE) -
-            portfolio.nativeRewardDebt +
+        uint256 pendingNative = pendingTributeNative +
             portfolio.pendingOwnerNativeReward;
 
         // set current amount as debt
@@ -182,21 +192,30 @@ library PortalLib {
             tokenId
         ];
 
-        // if no portfolio, no pending reward
+        uint256 pendingTributeNative;
+        uint256 pendingTributeReborn;
+        // if no portfolio, no pending tribute reward
         if (portfolio.accumulativeAmount == 0) {
-            return (pendingNative, pendingReborn);
+            pendingTributeNative = 0;
+            pendingTributeReborn = 0;
+        } else {
+            pendingTributeNative =
+                (portfolio.accumulativeAmount * pool.accNativePerShare) /
+                PERSHARE_BASE -
+                portfolio.nativeRewardDebt;
+
+            pendingTributeReborn =
+                ((portfolio.accumulativeAmount * pool.accRebornPerShare) /
+                    PERSHARE_BASE) -
+                portfolio.rebornRewardDebt;
         }
 
         pendingNative =
-            ((portfolio.accumulativeAmount * pool.accNativePerShare) /
-                PERSHARE_BASE) -
-            portfolio.nativeRewardDebt +
+            pendingTributeNative +
             portfolio.pendingOwnerNativeReward;
 
         pendingReborn =
-            ((portfolio.accumulativeAmount * pool.accRebornPerShare) /
-                PERSHARE_BASE) -
-            portfolio.rebornRewardDebt +
+            pendingTributeReborn +
             portfolio.pendingOwnerRebornReward;
     }
 
