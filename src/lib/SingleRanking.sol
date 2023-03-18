@@ -43,6 +43,8 @@ library SingleRanking {
                 _singleRanking.tree.minusFromCount(_value, 1);
             }
         }
+        // if FastArray.length(keys) is zero, it means logic error and should revert
+        // but no revert here to reduce gas. use remove with caution
 
         _singleRanking.length -= 1;
     }
