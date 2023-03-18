@@ -70,41 +70,56 @@ library SingleRanking {
             FastArray.Data storage keys = _singleRanking.keys[value];
 
             if (_offset >= FastArray.length(keys)) {
-                _offset -= FastArray.length(keys);
+                unchecked {
+                    _offset -= FastArray.length(keys);
+                }
             } else if (FastArray.length(keys) < _offset + _count) {
-                uint index = FastArray.length(keys) - 1;
-
+                uint index;
+                unchecked {
+                    index = FastArray.length(keys) - 1;
+                }
                 while (index >= _offset) {
                     uint key = keys.get(index);
 
-                    result[size] = key;
-                    size += 1;
-
+                    unchecked {
+                        result[size] = key;
+                        size += 1;
+                    }
                     if (index == 0) {
                         break;
                     }
 
-                    index -= 1;
+                    unchecked {
+                        index -= 1;
+                    }
                 }
 
-                _count -= FastArray.length(keys) - _offset;
-                _offset = 0;
+                unchecked {
+                    _count -= FastArray.length(keys) - _offset;
+                    _offset = 0;
+                }
             } else {
-                uint index = _offset + _count - 1;
-
+                uint index;
+                unchecked {
+                    index = _offset + _count - 1;
+                }
                 while (index >= _offset) {
                     uint key = keys.get(index);
 
                     result[size] = key;
-                    size += 1;
+                    unchecked {
+                        size += 1;
+                    }
 
                     if (index == 0) {
                         break;
                     }
 
-                    index -= 1;
+                    unchecked {
+                        index -= 1;
+                    }
                 }
-                // result[size] = value;
+
                 break;
             }
 

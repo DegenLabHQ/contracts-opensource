@@ -241,12 +241,10 @@ library PortalLib {
 
     function _directDropNativeToTopTokenIds(
         uint256[] memory tokenIds,
-        AirdropConf storage _dropConf,
+        uint256 dropAmount,
         IRebornDefination.SeasonData storage _seasonData
     ) external {
-        uint256 dropAmount = (_dropConf._nativeTopDropRatio *
-            _seasonData._jackpot) / PERCENTAGE_BASE;
-        for (uint256 i = 0; i < tokenIds.length; i++) {
+        for (uint256 i = 0; i < tokenIds.length; ) {
             uint256 tokenId = tokenIds[i];
             // if tokenId is zero , return
             if (tokenId == 0) {
@@ -261,30 +259,36 @@ library PortalLib {
                 return;
             }
 
-            // 80% to pool
-            pool.accNativePerShare +=
-                (4 * dropAmount * PERSHARE_BASE) /
-                (5 * pool.totalAmount);
-
-            // 20% to owner
             address owner = IERC721(address(this)).ownerOf(tokenId);
             Portfolio storage portfolio = _seasonData.portfolios[owner][
                 tokenId
             ];
-            portfolio.pendingOwnerNativeReward += (dropAmount * 1) / 5;
+
+            unchecked {
+                // 80% to pool
+                pool.accNativePerShare +=
+                    (4 * dropAmount * PERSHARE_BASE) /
+                    (5 * pool.totalAmount);
+
+                // 20% to owner
+
+                portfolio.pendingOwnerNativeReward += (dropAmount * 1) / 5;
+            }
 
             emit DropNative(tokenId, dropAmount);
+
+            // i auto increment
+            unchecked {
+                i++;
+            }
         }
     }
 
     function _directDropNativeToRaffleTokenIds(
         uint256[] memory tokenIds,
-        AirdropConf storage _dropConf,
+        uint256 dropAmount,
         IRebornDefination.SeasonData storage _seasonData
     ) external {
-        uint256 dropAmount = (_dropConf._nativeRaffleDropRatio *
-            _seasonData._jackpot) / PERCENTAGE_BASE;
-
         for (uint256 i = 0; i < tokenIds.length; i++) {
             uint256 tokenId = tokenIds[i];
             // if tokenId is zero , return
@@ -300,17 +304,20 @@ library PortalLib {
                 return;
             }
 
-            // 80% to pool
-            pool.accNativePerShare +=
-                (4 * dropAmount * PERSHARE_BASE) /
-                (5 * pool.totalAmount);
-
-            // 20% to owner
             address owner = IERC721(address(this)).ownerOf(tokenId);
             Portfolio storage portfolio = _seasonData.portfolios[owner][
                 tokenId
             ];
-            portfolio.pendingOwnerNativeReward += (dropAmount * 1) / 5;
+
+            unchecked {
+                // 80% to pool
+                pool.accNativePerShare +=
+                    (4 * dropAmount * PERSHARE_BASE) /
+                    (5 * pool.totalAmount);
+
+                // 20% to owner
+                portfolio.pendingOwnerNativeReward += (dropAmount * 1) / 5;
+            }
 
             emit DropNative(tokenId, dropAmount);
         }

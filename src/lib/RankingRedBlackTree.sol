@@ -88,7 +88,9 @@ library RankingRedBlackTree {
         uint key = last(self);
 
         while (key != EMPTY && _offset > self.nodes[key].count) {
-            _offset -= self.nodes[key].count;
+            unchecked {
+                _offset -= self.nodes[key].count;
+            }
             key = prev(self, key);
         }
 

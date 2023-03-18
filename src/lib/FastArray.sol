@@ -27,11 +27,18 @@ library FastArray {
     function remove(Data storage _fastArray, uint256 _value) internal {
         uint256 index = _fastArray.indexMap[_value];
 
-        _fastArray.array[index] = _fastArray.array[_fastArray.length - 1];
-        delete _fastArray.indexMap[_value];
-        delete _fastArray.array[_fastArray.length - 1];
+        uint256 oldIndex;
+        unchecked {
+            oldIndex = _fastArray.length - 1;
+        }
 
-        _fastArray.length -= 1;
+        _fastArray.array[index] = _fastArray.array[oldIndex];
+        delete _fastArray.indexMap[_value];
+        delete _fastArray.array[oldIndex];
+
+        unchecked {
+            _fastArray.length -= 1;
+        }
     }
 
     /**
