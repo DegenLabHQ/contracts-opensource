@@ -133,7 +133,6 @@ library SingleRanking {
         Data storage _singleRanking,
         uint n
     ) public view returns (uint) {
-        require(n >= 0, "order can not be negative");
         (uint256 id, ) = _singleRanking.tree.lastByOffset(n);
         uint value = _singleRanking.tree.value(id);
         return value;
