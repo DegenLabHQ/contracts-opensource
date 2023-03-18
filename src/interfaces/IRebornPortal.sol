@@ -121,9 +121,6 @@ interface IRebornDefination {
 
     /// @dev revert when incarnation count exceed limit
     error IncarnationExceedLimit();
-
-    /// @dev revert when the airdrop vrf request is executed
-    error VrfRequestExecuted(uint256 requestId);
 }
 
 interface IRebornPortal is IRebornDefination {
