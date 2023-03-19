@@ -372,7 +372,7 @@ contract RebornPortal is
 
         detail.score = score;
 
-        // make this tokenId exit rank
+        // if it's top one hundred make this tokenId exit rank
         _exitRank(tokenId, oldScore);
     }
 

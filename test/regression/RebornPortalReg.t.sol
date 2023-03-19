@@ -40,7 +40,7 @@ contract RebornPortalReg is Test {
         portal.performUpkeep(b);
     }
 
-    function testSimulateAntiCheat() public {
+    function testSimulateAntiCheatCaseOne() public {
         portal = RebornPortal(0xA751c9Ad92472D1E4eb6B6F9803311E22C5FbA9F);
         vm.selectFork(bnbMain);
         vm.rollFork(26542903);
@@ -49,6 +49,31 @@ contract RebornPortalReg is Test {
         vm.startPrank(portal.owner());
         portal.antiCheat(56000000000000004072, 149019);
         portal.antiCheat(56000000000000004081, 149019);
+
+        vm.stopPrank();
+    }
+
+    function testSimulateAntiCheatCaseTwo() public {
+        portal = RebornPortal(0xA751c9Ad92472D1E4eb6B6F9803311E22C5FbA9F);
+        vm.selectFork(bnbMain);
+        vm.rollFork(26575852);
+        mockUpgradeToDevVersion();
+
+        vm.startPrank(portal.owner());
+        portal.antiCheat(56000000000000013610, 71);
+        portal.antiCheat(56000000000000013260, 38);
+        portal.antiCheat(56000000000000014148, 17);
+        portal.antiCheat(56000000000000013192, 18);
+        portal.antiCheat(56000000000000013234, 31);
+        portal.antiCheat(56000000000000013695, 34);
+        portal.antiCheat(56000000000000013848, 23);
+        portal.antiCheat(56000000000000013417, 167);
+        portal.antiCheat(56000000000000013282, 31);
+        portal.antiCheat(56000000000000013396, 38);
+        portal.antiCheat(56000000000000013224, 22);
+        portal.antiCheat(56000000000000013068, 79);
+        portal.antiCheat(56000000000000013936, 47);
+        portal.antiCheat(56000000000000013509, 308);
 
         vm.stopPrank();
     }
