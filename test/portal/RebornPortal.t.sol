@@ -299,12 +299,12 @@ contract RebornPortalCommonTest is RebornPortalBaseTest {
     }
 
     function testStopBeta() public {
-        uint256 stopTimestapConfig = 1679299200;
+        uint256 stopBetaBlockNumber = 26623000;
 
         vm.prank(owner);
-        portal.setStopTimestamp(stopTimestapConfig);
+        portal.setBetaStopedBlockNumber(stopBetaBlockNumber);
 
-        vm.warp(1679299201);
+        vm.roll(26623001);
         vm.expectRevert(BetaStoped.selector);
         mockIncarnate();
 

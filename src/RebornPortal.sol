@@ -360,10 +360,12 @@ contract RebornPortal is
     /**
      * @dev set stop timestamp
      */
-    function setStopTimestamp(uint256 stopTimestampConfig) external onlyOwner {
-        _stopTimestampConfig = stopTimestampConfig;
+    function setBetaStopedBlockNumber(
+        uint256 stopBetaBlockNumber
+    ) external onlyOwner {
+        _stopBetaBlockNumber = stopBetaBlockNumber;
 
-        emit NewStopTimestampConfig(stopTimestampConfig);
+        emit NewStopBetaBlockNumberConfig(stopBetaBlockNumber);
     }
 
     /**
@@ -815,9 +817,7 @@ contract RebornPortal is
     }
 
     function _checkStoped() internal view {
-        if (
-            _stopTimestampConfig > 0 && block.timestamp > _stopTimestampConfig
-        ) {
+        if (_stopBetaBlockNumber > 0 && block.number > _stopBetaBlockNumber) {
             revert BetaStoped();
         }
     }
