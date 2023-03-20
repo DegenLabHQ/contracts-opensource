@@ -97,7 +97,7 @@ contract RebornPortalReg is Test {
         );
         emit PortalLib.ClaimNativeDrop(56000000000000005954, 23545723434902000);
 
-        portal.claimDrops(arr);
+        // portal.claimDrops(arr);
         vm.stopPrank();
     }
 

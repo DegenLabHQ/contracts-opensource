@@ -299,9 +299,7 @@ contract RebornPortalCommonTest is RebornPortalBaseTest {
     }
 
     function testStopBeta() public {
-        StopTimestamp memory stopTimestapConfig = StopTimestamp({
-            stopBetaTimestap: 1679299200
-        });
+        uint256 stopTimestapConfig = 1679299200;
 
         vm.prank(owner);
         portal.setStopTimestamp(stopTimestapConfig);

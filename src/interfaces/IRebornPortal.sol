@@ -38,10 +38,6 @@ interface IRebornDefination {
         uint256 _jackpot;
     }
 
-    struct StopTimestamp {
-        uint32 stopBetaTimestap; // stop beta timestamp
-    }
-
     enum AirdropVrfType {
         Invalid,
         DropReborn,
@@ -94,7 +90,7 @@ interface IRebornDefination {
     );
 
     event Drop(uint256[] tokenIds);
-    event NewStopTimestampConfig(StopTimestamp stopTimestamp);
+    event NewStopTimestampConfig(uint256 stopTimestamp);
 
     /// @dev event about the vault address is set
     event VaultSet(address rewardVault);
@@ -232,7 +228,7 @@ interface IRebornPortal is IRebornDefination {
      * @dev user claim many pools' airdrop
      * @param tokenIds pools' tokenId array to claim
      */
-    function claimDrops(uint256[] calldata tokenIds) external;
+    // function claimDrops(uint256[] calldata tokenIds) external;
 
     /**
      * @dev switch to next season, call by owner

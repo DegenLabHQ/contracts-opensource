@@ -74,15 +74,8 @@ contract RebornPortal is
         Innate calldata innate,
         address referrer,
         uint256 _soupPrice
-    )
-        external
-        payable
-        override
-        checkIncarnationCount
-        whenNotPaused
-        whenBetaNotStoped
-        nonReentrant
-    {
+    ) external payable override checkIncarnationCount nonReentrant {
+        _checkStoped();
         _refer(referrer);
         _incarnate(innate, _soupPrice);
     }
@@ -98,7 +91,7 @@ contract RebornPortal is
         uint256 age,
         uint256 cost,
         string calldata creatorName
-    ) external override onlySigner whenNotPaused {
+    ) external override onlySigner {
         if (_seeds.get(uint256(seed))) {
             revert SameSeed();
         }
@@ -147,10 +140,8 @@ contract RebornPortal is
     /**
      * @inheritdoc IRebornPortal
      */
-    function infuse(
-        uint256 tokenId,
-        uint256 amount
-    ) external override whenNotPaused whenBetaNotStoped {
+    function infuse(uint256 tokenId, uint256 amount) external override {
+        _checkStoped();
         _claimPoolDrop(tokenId);
         _infuse(tokenId, amount);
     }
@@ -166,7 +157,8 @@ contract RebornPortal is
         bytes32 r,
         bytes32 s,
         uint8 v
-    ) external override whenNotPaused whenBetaNotStoped {
+    ) external override {
+        _checkStoped();
         _claimPoolDrop(tokenId);
         _permit(permitAmount, deadline, r, s, v);
         _infuse(tokenId, amount);
@@ -179,7 +171,8 @@ contract RebornPortal is
         uint256 fromTokenId,
         uint256 toTokenId,
         uint256 amount
-    ) external override whenNotPaused whenBetaNotStoped {
+    ) external override {
+        _checkStoped();
         _claimPoolDrop(fromTokenId);
         _claimPoolDrop(toTokenId);
         _decreaseFromPool(fromTokenId, amount);
@@ -189,13 +182,13 @@ contract RebornPortal is
     /**
      * @inheritdoc IRebornPortal
      */
-    function claimDrops(
-        uint256[] calldata tokenIds
-    ) external override whenNotPaused {
-        for (uint256 i = 0; i < tokenIds.length; i++) {
-            _claimPoolDrop(tokenIds[i]);
-        }
-    }
+    // function claimDrops(
+    //     uint256[] calldata tokenIds
+    // ) external override whenNotPaused {
+    //     for (uint256 i = 0; i < tokenIds.length; i++) {
+    //         _claimPoolDrop(tokenIds[i]);
+    //     }
+    // }
 
     /**
      * @inheritdoc IRebornPortal
@@ -367,9 +360,7 @@ contract RebornPortal is
     /**
      * @dev set stop timestamp
      */
-    function setStopTimestamp(
-        StopTimestamp calldata stopTimestampConfig
-    ) external onlyOwner {
+    function setStopTimestamp(uint256 stopTimestampConfig) external onlyOwner {
         _stopTimestampConfig = stopTimestampConfig;
 
         emit NewStopTimestampConfig(stopTimestampConfig);
@@ -823,6 +814,14 @@ contract RebornPortal is
         }
     }
 
+    function _checkStoped() internal view {
+        if (
+            _stopTimestampConfig > 0 && block.timestamp > _stopTimestampConfig
+        ) {
+            revert BetaStoped();
+        }
+    }
+
     /**
      * @dev check incarnation Count and auto increment if it meets
      */
@@ -848,16 +847,6 @@ contract RebornPortal is
     modifier onlyDropOn() {
         if (_dropConf._dropOn == 0) {
             revert DropOff();
-        }
-        _;
-    }
-
-    modifier whenBetaNotStoped() {
-        if (
-            _stopTimestampConfig.stopBetaTimestap > 0 &&
-            block.timestamp > _stopTimestampConfig.stopBetaTimestap
-        ) {
-            revert BetaStoped();
         }
         _;
     }

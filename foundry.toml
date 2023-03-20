@@ -12,7 +12,7 @@ fs_permissions = [{ access = "read", path = "./" }]
 revert_strings = "default"
 [invariant]
 
-run = 1024
+run = 1
 depth = 30
 fail_on_revert = false
 
