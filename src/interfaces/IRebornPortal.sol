@@ -38,6 +38,10 @@ interface IRebornDefination {
         uint256 _jackpot;
     }
 
+    struct StopTimestamp {
+        uint32 stopBetaTimestap; // stop beta timestamp
+    }
+
     enum AirdropVrfType {
         Invalid,
         DropReborn,
@@ -90,6 +94,7 @@ interface IRebornDefination {
     );
 
     event Drop(uint256[] tokenIds);
+    event NewStopTimestampConfig(StopTimestamp stopTimestamp);
 
     /// @dev event about the vault address is set
     event VaultSet(address rewardVault);
@@ -121,6 +126,9 @@ interface IRebornDefination {
 
     /// @dev revert when incarnation count exceed limit
     error IncarnationExceedLimit();
+
+    /// @dev revert user continue play game when beta stoped
+    error BetaStoped();
 }
 
 interface IRebornPortal is IRebornDefination {

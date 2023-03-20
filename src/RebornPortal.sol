@@ -80,6 +80,7 @@ contract RebornPortal is
         override
         checkIncarnationCount
         whenNotPaused
+        whenBetaNotStoped
         nonReentrant
     {
         _refer(referrer);
@@ -149,7 +150,7 @@ contract RebornPortal is
     function infuse(
         uint256 tokenId,
         uint256 amount
-    ) external override whenNotPaused {
+    ) external override whenNotPaused whenBetaNotStoped {
         _claimPoolDrop(tokenId);
         _infuse(tokenId, amount);
     }
@@ -165,7 +166,7 @@ contract RebornPortal is
         bytes32 r,
         bytes32 s,
         uint8 v
-    ) external override whenNotPaused {
+    ) external override whenNotPaused whenBetaNotStoped {
         _claimPoolDrop(tokenId);
         _permit(permitAmount, deadline, r, s, v);
         _infuse(tokenId, amount);
@@ -178,7 +179,7 @@ contract RebornPortal is
         uint256 fromTokenId,
         uint256 toTokenId,
         uint256 amount
-    ) external override whenNotPaused {
+    ) external override whenNotPaused whenBetaNotStoped {
         _claimPoolDrop(fromTokenId);
         _claimPoolDrop(toTokenId);
         _decreaseFromPool(fromTokenId, amount);
@@ -361,6 +362,17 @@ contract RebornPortal is
             revert ZeroAddressSet();
         }
         burnPool = burnPool_;
+    }
+
+    /**
+     * @dev set stop timestamp
+     */
+    function setStopTimestamp(
+        StopTimestamp calldata stopTimestampConfig
+    ) external onlyOwner {
+        _stopTimestampConfig = stopTimestampConfig;
+
+        emit NewStopTimestampConfig(stopTimestampConfig);
     }
 
     /**
@@ -836,6 +848,16 @@ contract RebornPortal is
     modifier onlyDropOn() {
         if (_dropConf._dropOn == 0) {
             revert DropOff();
+        }
+        _;
+    }
+
+    modifier whenBetaNotStoped() {
+        if (
+            _stopTimestampConfig.stopBetaTimestap > 0 &&
+            block.timestamp > _stopTimestampConfig.stopBetaTimestap
+        ) {
+            revert BetaStoped();
         }
         _;
     }

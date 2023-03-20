@@ -297,4 +297,25 @@ contract RebornPortalCommonTest is RebornPortalBaseTest {
         vm.expectRevert(IRebornDefination.IncarnationExceedLimit.selector);
         mockIncarnate();
     }
+
+    function testStopBeta() public {
+        StopTimestamp memory stopTimestapConfig = StopTimestamp({
+            stopBetaTimestap: 1679299200
+        });
+
+        vm.prank(owner);
+        portal.setStopTimestamp(stopTimestapConfig);
+
+        vm.warp(1679299201);
+        vm.expectRevert(BetaStoped.selector);
+        mockIncarnate();
+
+        // mockInfuse
+        deal(address(rbt), _user, 1 ether);
+        vm.startPrank(_user);
+        rbt.approve(address(portal), 1 ether);
+        vm.expectRevert(BetaStoped.selector);
+        portal.infuse(1, 1 ether);
+        vm.stopPrank();
+    }
 }
