@@ -5,6 +5,7 @@ import "@openzeppelin/contracts-upgradeable/utils/cryptography/MerkleProofUpgrad
 import "@openzeppelin/contracts-upgradeable/utils/CountersUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/utils/StringsUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 
 import "./DegenERC721URIStorageUpgradeable.sol";
 import "src/interfaces/nft/INFTManager.sol";
@@ -13,6 +14,7 @@ import "src/interfaces/nft/IChainlinkVRFProxy.sol";
 contract NFTManager is
     DegenERC721URIStorageUpgradeable,
     OwnableUpgradeable,
+    UUPSUpgradeable,
     INFTManager
 {
     uint256 public constant TOTAL_MINT = 2009;
@@ -66,6 +68,10 @@ contract NFTManager is
         __Ownable_init_unchained();
         _transferOwnership(owner);
     }
+
+    function _authorizeUpgrade(
+        address newImplementation
+    ) internal override onlyOwner {}
 
     /**
      * @inheritdoc INFTManager
