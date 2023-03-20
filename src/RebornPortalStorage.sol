@@ -55,6 +55,8 @@ contract RebornPortalStorage is IRebornDefination {
     // max incarnation count
     uint256 internal _incarnateCountLimit;
 
+    uint256 internal _stopBetaBlockNumber;
+
     /// @dev gap for potential variable
-    uint256[30] private _gap;
+    uint256[29] private _gap;
 }

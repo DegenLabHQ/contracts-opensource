@@ -90,6 +90,7 @@ interface IRebornDefination {
     );
 
     event Drop(uint256[] tokenIds);
+    event NewStopBetaBlockNumberConfig(uint256 stopBetaBlockNumber);
 
     /// @dev event about the vault address is set
     event VaultSet(address rewardVault);
@@ -121,6 +122,9 @@ interface IRebornDefination {
 
     /// @dev revert when incarnation count exceed limit
     error IncarnationExceedLimit();
+
+    /// @dev revert user continue play game when beta stoped
+    error BetaStoped();
 }
 
 interface IRebornPortal is IRebornDefination {
@@ -224,7 +228,7 @@ interface IRebornPortal is IRebornDefination {
      * @dev user claim many pools' airdrop
      * @param tokenIds pools' tokenId array to claim
      */
-    function claimDrops(uint256[] calldata tokenIds) external;
+    // function claimDrops(uint256[] calldata tokenIds) external;
 
     /**
      * @dev switch to next season, call by owner
