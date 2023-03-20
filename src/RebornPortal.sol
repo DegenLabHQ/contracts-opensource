@@ -74,7 +74,14 @@ contract RebornPortal is
         Innate calldata innate,
         address referrer,
         uint256 _soupPrice
-    ) external payable override checkIncarnationCount nonReentrant {
+    )
+        external
+        payable
+        override
+        checkIncarnationCount
+        whenNotPaused
+        nonReentrant
+    {
         _checkStoped();
         _refer(referrer);
         _incarnate(innate, _soupPrice);
@@ -91,7 +98,7 @@ contract RebornPortal is
         uint256 age,
         uint256 cost,
         string calldata creatorName
-    ) external override onlySigner {
+    ) external override onlySigner whenNotPaused {
         if (_seeds.get(uint256(seed))) {
             revert SameSeed();
         }
@@ -140,7 +147,10 @@ contract RebornPortal is
     /**
      * @inheritdoc IRebornPortal
      */
-    function infuse(uint256 tokenId, uint256 amount) external override {
+    function infuse(
+        uint256 tokenId,
+        uint256 amount
+    ) external override whenNotPaused {
         _checkStoped();
         _claimPoolDrop(tokenId);
         _infuse(tokenId, amount);
@@ -157,7 +167,7 @@ contract RebornPortal is
         bytes32 r,
         bytes32 s,
         uint8 v
-    ) external override {
+    ) external override whenNotPaused {
         _checkStoped();
         _claimPoolDrop(tokenId);
         _permit(permitAmount, deadline, r, s, v);
@@ -171,7 +181,7 @@ contract RebornPortal is
         uint256 fromTokenId,
         uint256 toTokenId,
         uint256 amount
-    ) external override {
+    ) external override whenNotPaused {
         _checkStoped();
         _claimPoolDrop(fromTokenId);
         _claimPoolDrop(toTokenId);
@@ -182,13 +192,13 @@ contract RebornPortal is
     /**
      * @inheritdoc IRebornPortal
      */
-    // function claimDrops(
-    //     uint256[] calldata tokenIds
-    // ) external override whenNotPaused {
-    //     for (uint256 i = 0; i < tokenIds.length; i++) {
-    //         _claimPoolDrop(tokenIds[i]);
-    //     }
-    // }
+    function claimDrops(
+        uint256[] calldata tokenIds
+    ) external override whenNotPaused {
+        for (uint256 i = 0; i < tokenIds.length; i++) {
+            _claimPoolDrop(tokenIds[i]);
+        }
+    }
 
     /**
      * @inheritdoc IRebornPortal

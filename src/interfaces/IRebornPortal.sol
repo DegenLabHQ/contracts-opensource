@@ -228,7 +228,7 @@ interface IRebornPortal is IRebornDefination {
      * @dev user claim many pools' airdrop
      * @param tokenIds pools' tokenId array to claim
      */
-    // function claimDrops(uint256[] calldata tokenIds) external;
+    function claimDrops(uint256[] calldata tokenIds) external;
 
     /**
      * @dev switch to next season, call by owner

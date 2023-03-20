@@ -157,7 +157,7 @@ contract AirdropTest is RebornPortalBaseTest {
             uint256[] memory ds = new uint256[](1);
             ds[0] = tokenId;
             vm.prank(users[i]);
-            // portal.claimDrops(ds);
+            portal.claimDrops(ds);
             mockInfuse(user, tokenId, amount);
 
             vm.stopPrank();
