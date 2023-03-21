@@ -74,14 +74,19 @@ abstract contract PausableUpgradeable is Initializable, ContextUpgradeable {
      * @dev Throws if the contract is paused.
      */
     function _requireNotPaused() internal view virtual {
-        require(!paused(), "Pausable: paused");
+        // require(!paused(), "Pausable: paused");
+        if (paused()) {
+            revert PausablePaused();
+        }
     }
 
     /**
      * @dev Throws if the contract is not paused.
      */
     function _requirePaused() internal view virtual {
-        require(paused(), "Pausable: not paused");
+        if (!paused()) {
+            revert PausableNotPaused();
+        }
     }
 
     /**

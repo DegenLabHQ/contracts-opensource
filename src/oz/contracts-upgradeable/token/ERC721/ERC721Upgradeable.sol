@@ -11,7 +11,6 @@ import "../../utils/ContextUpgradeable.sol";
 import "../../utils/StringsUpgradeable.sol";
 import "../../utils/introspection/ERC165Upgradeable.sol";
 import "../../proxy/utils/Initializable.sol";
-import "../../ICustomError.sol";
 
 /**
  * @dev Implementation of https://eips.ethereum.org/EIPS/eip-721[ERC721] Non-Fungible Token Standard, including
@@ -19,7 +18,6 @@ import "../../ICustomError.sol";
  * {ERC721Enumerable}.
  */
 contract ERC721Upgradeable is
-    ICustomError,
     Initializable,
     ContextUpgradeable,
     ERC165Upgradeable,
@@ -89,10 +87,13 @@ contract ERC721Upgradeable is
     function balanceOf(
         address owner
     ) public view virtual override returns (uint256) {
-        require(
-            owner != address(0),
-            "ERC721: address zero is not a valid owner"
-        );
+        // require(
+        //     owner != address(0),
+        //     "ERC721: address zero is not a valid owner"
+        // );
+        if (owner == address(0)) {
+            revert ZeroOwnerSet();
+        }
         return _balances[owner];
     }
 
@@ -103,7 +104,9 @@ contract ERC721Upgradeable is
         uint256 tokenId
     ) public view virtual override returns (address) {
         address owner = _ownerOf(tokenId);
-        require(owner != address(0), "ERC721: invalid token ID");
+        if (owner == address(0)) {
+            revert InvalidTokenID();
+        }
         return owner;
     }
 
@@ -150,12 +153,13 @@ contract ERC721Upgradeable is
      */
     function approve(address to, uint256 tokenId) public virtual override {
         address owner = ERC721Upgradeable.ownerOf(tokenId);
-        require(to != owner, "ERC721: approval to current owner");
+        if (to == owner) {
+            revert ApproveToCurrentOwner();
+        }
 
-        require(
-            _msgSender() == owner || isApprovedForAll(owner, _msgSender()),
-            "ERC721: approve caller is not token owner or approved for all"
-        );
+        if (_msgSender() != owner && !isApprovedForAll(owner, _msgSender())) {
+            revert CallerNotTokenOwnerOrApproved();
+        }
 
         _approve(to, tokenId);
     }
@@ -200,10 +204,9 @@ contract ERC721Upgradeable is
         uint256 tokenId
     ) public virtual override {
         //solhint-disable-next-line max-line-length
-        require(
-            _isApprovedOrOwner(_msgSender(), tokenId),
-            "ERC721: caller is not token owner or approved"
-        );
+        if (!_isApprovedOrOwner(_msgSender(), tokenId)) {
+            revert CallerNotTokenOwnerOrApproved();
+        }
 
         _transfer(from, to, tokenId);
     }
@@ -228,10 +231,9 @@ contract ERC721Upgradeable is
         uint256 tokenId,
         bytes memory data
     ) public virtual override {
-        require(
-            _isApprovedOrOwner(_msgSender(), tokenId),
-            "ERC721: caller is not token owner or approved"
-        );
+        if (!_isApprovedOrOwner(_msgSender(), tokenId)) {
+            revert CallerNotTokenOwnerOrApproved();
+        }
         _safeTransfer(from, to, tokenId, data);
     }
 
@@ -260,10 +262,9 @@ contract ERC721Upgradeable is
         bytes memory data
     ) internal virtual {
         _transfer(from, to, tokenId);
-        require(
-            _checkOnERC721Received(from, to, tokenId, data),
-            "ERC721: transfer to non ERC721Receiver implementer"
-        );
+        if (!_checkOnERC721Received(from, to, tokenId, data)) {
+            revert TransferToNonERC721ReceiverImplementer();
+        }
     }
 
     /**
@@ -326,10 +327,9 @@ contract ERC721Upgradeable is
         bytes memory data
     ) internal virtual {
         _mint(to, tokenId);
-        require(
-            _checkOnERC721Received(address(0), to, tokenId, data),
-            "ERC721: transfer to non ERC721Receiver implementer"
-        );
+        if (!_checkOnERC721Received(address(0), to, tokenId, data)) {
+            revert TransferToNonERC721ReceiverImplementer();
+        }
     }
 
     /**
@@ -345,13 +345,20 @@ contract ERC721Upgradeable is
      * Emits a {Transfer} event.
      */
     function _mint(address to, uint256 tokenId) internal virtual {
-        require(to != address(0), "ERC721: mint to the zero address");
-        require(!_exists(tokenId), "ERC721: token already minted");
+        if (to == address(0)) {
+            revert MintToZeroAddress();
+        }
+
+        if (_exists(tokenId)) {
+            revert TokenAlreadyMinted();
+        }
 
         _beforeTokenTransfer(address(0), to, tokenId, 1);
 
         // Check that tokenId was not minted by `_beforeTokenTransfer` hook
-        require(!_exists(tokenId), "ERC721: token already minted");
+        if (_exists(tokenId)) {
+            revert TokenAlreadyMinted();
+        }
 
         unchecked {
             // Will not overflow unless all 2**256 token ids are minted to the same owner.
@@ -418,19 +425,20 @@ contract ERC721Upgradeable is
         address to,
         uint256 tokenId
     ) internal virtual {
-        require(
-            ERC721Upgradeable.ownerOf(tokenId) == from,
-            "ERC721: transfer from incorrect owner"
-        );
-        require(to != address(0), "ERC721: transfer to the zero address");
+        if (ERC721Upgradeable.ownerOf(tokenId) != from) {
+            revert TransferFromIncorrectOwner();
+        }
+
+        if (to == address(0)) {
+            revert TransferToZeroAddress();
+        }
 
         _beforeTokenTransfer(from, to, tokenId, 1);
 
         // Check that tokenId was not transferred by `_beforeTokenTransfer` hook
-        require(
-            ERC721Upgradeable.ownerOf(tokenId) == from,
-            "ERC721: transfer from incorrect owner"
-        );
+        if (ERC721Upgradeable.ownerOf(tokenId) != from) {
+            revert TransferFromIncorrectOwner();
+        }
 
         // Clear approvals from the previous owner
         delete _tokenApprovals[tokenId];
@@ -471,7 +479,9 @@ contract ERC721Upgradeable is
         address operator,
         bool approved
     ) internal virtual {
-        require(owner != operator, "ERC721: approve to caller");
+        if (owner == operator) {
+            revert ApproveToCaller();
+        }
         _operatorApprovals[owner][operator] = approved;
         emit ApprovalForAll(owner, operator, approved);
     }
@@ -480,7 +490,9 @@ contract ERC721Upgradeable is
      * @dev Reverts if the `tokenId` has not been minted yet.
      */
     function _requireMinted(uint256 tokenId) internal view virtual {
-        require(_exists(tokenId), "ERC721: invalid token ID");
+        if (!_exists(tokenId)) {
+            revert InvalidTokenID();
+        }
     }
 
     /**
@@ -513,9 +525,7 @@ contract ERC721Upgradeable is
                     IERC721ReceiverUpgradeable.onERC721Received.selector;
             } catch (bytes memory reason) {
                 if (reason.length == 0) {
-                    revert(
-                        "ERC721: transfer to non ERC721Receiver implementer"
-                    );
+                    revert TransferToNonERC721ReceiverImplementer();
                 } else {
                     /// @solidity memory-safe-assembly
                     assembly {
