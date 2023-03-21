@@ -395,8 +395,11 @@ contract RebornPortal is
      * @dev withdraw native token for reward distribution
      * @dev amount how much to withdraw
      */
-    function withdrawNativeToken(uint256 amount) external whenPaused onlyOwner {
-        payable(msg.sender).transfer(amount);
+    function withdrawNativeToken(
+        address to,
+        uint256 amount
+    ) external whenPaused onlyOwner {
+        payable(to).transfer(amount);
     }
 
     /**
