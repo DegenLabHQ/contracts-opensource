@@ -91,10 +91,10 @@ contract RewardDistributor is IRewardDistributor, Ownable {
     /**
      * @dev withdraw remaining native tokens.
      */
-    function withdraw() external onlyOwner {
+    function withdraw(address to) external onlyOwner {
         uint256 balance = (address(this)).balance;
-        payable(msg.sender).transfer(balance);
-        emit WithDrawn(msg.sender, balance);
+        payable(to).transfer(balance);
+        emit WithDrawn(to, balance);
     }
 
     /**
