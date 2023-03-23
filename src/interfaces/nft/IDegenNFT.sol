@@ -56,4 +56,6 @@ interface IDegenNFT is IDegenNFTDefination {
     function exists(uint256 tokenId) external view returns (bool);
 
     function nextTokenId() external view returns (uint256);
+
+    function level() external view returns (uint256);
 }

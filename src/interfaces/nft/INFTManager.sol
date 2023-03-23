@@ -13,7 +13,7 @@ interface INFTManagerDefination {
 
     struct BurnRefundConfig {
         uint256 nativeToken;
-        uint256 RebornToken;
+        uint256 rebornToken;
     }
 
     /**********************************************
@@ -33,6 +33,7 @@ interface INFTManagerDefination {
     error MintFeeNotEnough();
     error InvalidParams();
     error InvalidMintTime();
+    error TokenIdNotExsis();
 
     /**********************************************
      * events
@@ -51,7 +52,12 @@ interface INFTManagerDefination {
         uint256 tokenId2,
         uint256 newTokenId
     );
-    event BurnToken(address account, uint256 tokenId);
+    event BurnToken(
+        address account,
+        uint256 tokenId,
+        uint256 refundNativeToken,
+        uint256 refundRebornToken
+    );
     event ChangedChainlinkVRFProxy(address chainlinkVRFProxy);
     event OpenMysteryBoxFailed(uint256 tokenId);
     event OpenMysteryBoxSuccess(uint256 tokenId, uint256 metadataId);
@@ -93,4 +99,6 @@ interface INFTManager is INFTManagerDefination {
     function setMerkleRoot(bytes32 root) external;
 
     function exists(uint256 tokenId) external view returns (bool);
+
+    function withdraw(address to, uint256 amount) external;
 }

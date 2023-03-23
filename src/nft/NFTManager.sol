@@ -167,15 +167,31 @@ contract NFTManager is
         emit MergeTokens(msg.sender, tokenId1, tokenId2, tokenId);
     }
 
-    // TODO: refund
     function burn(uint256 tokenId) external override {
+        if (!degenNFT.exists(tokenId)) {
+            revert TokenIdNotExsis();
+        }
+
         _checkOwner(msg.sender, tokenId);
 
         degenNFT.burn(tokenId);
 
         // refund fees
+        BurnRefundConfig memory refundConfig = burnRefundConfigs[
+            degenNFT.level()
+        ];
 
-        emit BurnToken(msg.sender, tokenId);
+        // refund NativeToken
+        if (refundConfig.nativeToken > 0) {
+            payable(msg.sender).transfer(refundConfig.nativeToken);
+        }
+
+        emit BurnToken(
+            msg.sender,
+            tokenId,
+            refundConfig.nativeToken,
+            refundConfig.rebornToken
+        );
     }
 
     function updateSigners(
@@ -266,6 +282,10 @@ contract NFTManager is
             burnRefundConfigs[i] = configs[i];
         }
         emit SetBurnRefundConfig(burnRefundConfigs);
+    }
+
+    function withdraw(address to, uint256 amount) external onlyOwner {
+        payable(to).transfer(amount);
     }
 
     /**********************************************
