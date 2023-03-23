@@ -10,50 +10,17 @@ import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 import "./DegenERC721URIStorageUpgradeable.sol";
 import "src/interfaces/nft/INFTManager.sol";
 import "src/interfaces/nft/IChainlinkVRFProxy.sol";
+import "./NFTManagerStorage.sol";
 
 contract NFTManager is
-    DegenERC721URIStorageUpgradeable,
-    OwnableUpgradeable,
     UUPSUpgradeable,
-    INFTManager
+    OwnableUpgradeable,
+    INFTManager,
+    DegenERC721URIStorageUpgradeable,
+    NFTManagerStorage
 {
-    uint256 public constant TOTAL_MINT = 2009;
+    uint256 public constant SUPPORT_MAX_MINT_COUNT = 2009;
     using CountersUpgradeable for CountersUpgradeable.Counter;
-    /**********************************************
-     * storage
-     **********************************************/
-
-    CountersUpgradeable.Counter private _tokenIds;
-
-    // latest index of metadata map
-    uint16 public latestMetadataIdx;
-
-    address public chainlinkVRFProxy;
-
-    // white list merkle tree root
-    bytes32 public merkleRoot;
-
-    mapping(address => bool) public signers;
-
-    mapping(address => bool) public minted;
-
-    // id => metadata map
-    mapping(uint256 => Properties) metadatas;
-
-    // Mapping from requestId to tokenId
-    mapping(uint256 => uint256) requestIdToTokenId;
-
-    // Mapping metadataId to wether has been bind to NFT
-    mapping(uint256 => bool) metadataUsed;
-
-    // Mapping from tokenId to wether has been bind metadata
-    mapping(uint256 => bool) opened;
-
-    string public baseURI;
-
-    uint256[] private openFailedBoxs;
-
-    uint256[48] private _gap;
 
     /**********************************************
      * write functions
@@ -62,8 +29,8 @@ contract NFTManager is
         string calldata name_,
         string calldata symbol_,
         address owner
-    ) public initializer {
-        __ERC721_init_unchained(name_, symbol_);
+    ) public initializerERC721A initializer {
+        __ERC721A_init(name_, symbol_);
         __ERC721URIStorage_init_unchained();
         __Ownable_init_unchained();
         _transferOwnership(owner);
@@ -73,45 +40,78 @@ contract NFTManager is
         address newImplementation
     ) internal override onlyOwner {}
 
-    /**
-     * @inheritdoc INFTManager
-     */
-    function mint(bytes32[] calldata merkleProof) public override {
-        bytes32 leaf = keccak256(
-            bytes.concat(keccak256(abi.encode(msg.sender)))
-        );
+    function whitelistMint(bytes32[] calldata merkleProof) public payable {
+        _checkMintTime(MintType.WhitelistMint);
 
-        bool verified = MerkleProofUpgradeable.verify(
-            merkleProof,
-            merkleRoot,
-            leaf
-        );
+        if (minted[msg.sender]) {
+            revert AlreadyMinted();
+        }
+
+        if (_totalMinted() >= SUPPORT_MAX_MINT_COUNT) {
+            revert OutOfMaxMintCount();
+        }
+
+        if (msg.value < mintFee) {
+            revert MintFeeNotEnough();
+        }
+
+        bool verified = checkWhiteList(merkleProof);
 
         if (!verified) {
             revert InvalidProof();
         }
 
-        uint256 tokenId = _mintTo(msg.sender, true);
-
-        emit Minted(msg.sender, tokenId);
+        _mintTo(msg.sender, 1);
+        minted[msg.sender] = true;
     }
 
-    /**
-     * @inheritdoc INFTManager
-     */
-    function airdrop(
-        address[] calldata receivers
-    ) external override onlySigner {
-        for (uint256 i = 0; i < receivers.length; i++) {
-            uint256 tokenId = _mintTo(receivers[i], true);
+    function publicMint(uint256 quantity) public payable {
+        _checkMintTime(MintType.PublicMint);
 
-            emit Minted(receivers[i], tokenId);
+        if (_totalMinted() + quantity > SUPPORT_MAX_MINT_COUNT) {
+            revert OutOfMaxMintCount();
+        }
+
+        if (quantity == 0) {
+            revert InvalidParams();
+        }
+
+        if (msg.value < mintFee * quantity) {
+            revert MintFeeNotEnough();
+        }
+
+        _mintTo(msg.sender, quantity);
+    }
+
+    function airdrop(
+        address[] calldata receivers,
+        uint256[] calldata quantities
+    ) external payable onlyOwner {
+        if (receivers.length != quantities.length) {
+            revert InvalidParams();
+        }
+
+        uint256 totalCount;
+        for (uint256 i = 0; i < quantities.length; i++) {
+            totalCount += quantities[i];
+            if (quantities[i] == 0) {
+                revert InvalidParams();
+            }
+        }
+
+        if (msg.value < totalCount * mintFee) {
+            revert MintFeeNotEnough();
+        }
+
+        if (_totalMinted() + totalCount > SUPPORT_MAX_MINT_COUNT) {
+            revert OutOfMaxMintCount();
+        }
+
+        for (uint256 i = 0; i < receivers.length; i++) {
+            _mintTo(receivers[i], quantities[i]);
         }
     }
 
-    /**
-     * @inheritdoc INFTManager
-     */
     function openMysteryBox(
         uint256[] calldata tokenIds
     ) external override onlySigner {
@@ -159,7 +159,9 @@ contract NFTManager is
         _burn(tokenId1);
         _burn(tokenId2);
 
-        uint256 tokenId = _mintTo(msg.sender, false);
+        uint256 tokenId = _nextTokenId();
+
+        _mintTo(msg.sender, 1);
         _setTokenURIOf(tokenId, tokenId);
 
         emit MergeTokens(msg.sender, tokenId1, tokenId2, tokenId);
@@ -230,6 +232,33 @@ contract NFTManager is
         emit SetBaseURI(baseURI_);
     }
 
+    function setMintFee(uint256 mintFee_) external onlyOwner {
+        mintFee = mintFee_;
+
+        emit MintFeeSet(mintFee);
+    }
+
+    function setMintTime(
+        MintType mintType_,
+        MintTime calldata mintTime_
+    ) external onlyOwner {
+        if (mintTime_.startTime >= mintTime_.endTime) {
+            revert InvalidParams();
+        }
+
+        mintTime[mintType_] = mintTime_;
+
+        emit SetMintTime(mintType_, mintTime_);
+    }
+
+    function _setProperties(
+        uint256 tokenId,
+        Properties memory _properties
+    ) internal {
+        properties[tokenId] = _properties;
+        emit SetProperties(_properties);
+    }
+
     /**********************************************
      * read functions
      **********************************************/
@@ -249,34 +278,38 @@ contract NFTManager is
         return properties;
     }
 
-    function getLatestTokenId() external view returns (uint256) {
-        return _tokenIds.current();
+    function checkWhiteList(
+        bytes32[] calldata merkleProof
+    ) public view returns (bool verified) {
+        bytes32 leaf = keccak256(
+            bytes.concat(keccak256(abi.encode(msg.sender)))
+        );
+
+        verified = MerkleProofUpgradeable.verify(merkleProof, merkleRoot, leaf);
+    }
+
+    function propertyOf(
+        uint256 tokenId
+    ) public view returns (Properties memory) {
+        return properties[tokenId];
     }
 
     /**********************************************
      * internal functions
      **********************************************/
-    function _mintTo(
-        address to,
-        bool checkTotal
-    ) internal returns (uint256 tokenId) {
-        // tokenId from 1 to TOTAL_MINT
-        _tokenIds.increment();
+    function _mintTo(address to, uint256 quantity) internal {
+        uint256 startTokenId = _nextTokenId();
 
-        tokenId = _tokenIds.current();
+        _mint(to, quantity);
+        emit Minted(msg.sender, quantity, startTokenId);
 
-        if (checkTotal) {
-            if (tokenId > TOTAL_MINT) {
-                revert MintIsMaxedOut();
-            }
-
-            if (minted[to]) {
-                revert AlreadyMinted();
-            }
-        }
-
-        _mint(to, tokenId);
-        minted[to] = true;
+        // for (
+        //     uint256 tokenId = nextTokenId;
+        //     tokenId <= _nextTokenId();
+        //     tokenId++
+        // ) {
+        //     emit Minted(msg.sender, tokenId);
+        // }
     }
 
     function _checkOwner(address owner, uint256 tokenId) internal view {
@@ -287,6 +320,20 @@ contract NFTManager is
 
     function _baseURI() internal view override returns (string memory) {
         return baseURI;
+    }
+
+    // tokenId start from 1
+    function _startTokenId() internal pure override returns (uint256) {
+        return 1;
+    }
+
+    function _checkMintTime(MintType mintType) internal view {
+        if (
+            block.timestamp < mintTime[mintType].startTime ||
+            block.timestamp > mintTime[mintType].endTime
+        ) {
+            revert InvalidMintTime();
+        }
     }
 
     // only name && tokenType equal means token1 and token2 can merge
@@ -305,11 +352,11 @@ contract NFTManager is
 
     function _openMysteryBoxOf(uint256 tokenId, uint256 randomWord) internal {
         uint256 tempRandomWord = randomWord;
-        uint256 randomMetadataId = tempRandomWord % TOTAL_MINT;
+        uint256 randomMetadataId = tempRandomWord % SUPPORT_MAX_MINT_COUNT;
         bool metadataHasUsed = metadataUsed[randomMetadataId];
         while (metadataHasUsed && tempRandomWord > 0) {
             tempRandomWord = tempRandomWord / 1000;
-            randomMetadataId = tempRandomWord % TOTAL_MINT;
+            randomMetadataId = tempRandomWord % SUPPORT_MAX_MINT_COUNT;
             metadataHasUsed = metadataUsed[randomMetadataId];
         }
 
@@ -364,4 +411,9 @@ contract NFTManager is
         }
         _;
     }
+
+    /**********************************************
+     * required functions
+     **********************************************/
+    receive() external payable {}
 }

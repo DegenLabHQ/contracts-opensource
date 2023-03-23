@@ -3,15 +3,16 @@
 
 pragma solidity ^0.8.0;
 
-import "./DegenERC721Upgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
+import "@openzeppelin/contracts-upgradeable/utils/StringsUpgradeable.sol";
+import "erc721a-upgradeable/contracts/ERC721AUpgradeable.sol";
 
 /**
  * @dev ERC721 token with storage based token URI management.
  */
 abstract contract DegenERC721URIStorageUpgradeable is
     Initializable,
-    DegenERC721Upgradeable
+    ERC721AUpgradeable
 {
     function __ERC721URIStorage_init() internal onlyInitializing {}
 
@@ -74,6 +75,13 @@ abstract contract DegenERC721URIStorageUpgradeable is
         if (bytes(_tokenURIs[tokenId]).length != 0) {
             delete _tokenURIs[tokenId];
         }
+    }
+
+    /**
+     * @dev Reverts if the `tokenId` has not been minted yet.
+     */
+    function _requireMinted(uint256 tokenId) internal view virtual {
+        require(_exists(tokenId), "ERC721: invalid token ID");
     }
 
     /**

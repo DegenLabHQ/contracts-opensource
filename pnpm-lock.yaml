@@ -21,6 +21,7 @@ specifiers:
   '@types/node': ^17.0.35
   chai: ^4.3.6
   dotenv: ^16.0.3
+  erc721a-upgradeable: ^4.2.3
   ethereum-waffle: ^3.2.0
   ethers: ^5.7.2
   fs-extra: ^11.1.0
@@ -55,6 +56,7 @@ devDependencies:
   '@types/node': 17.0.45
   chai: 4.3.7
   dotenv: 16.0.3
+  erc721a-upgradeable: 4.2.3
   ethereum-waffle: 3.4.4_typescript@4.9.4
   ethers: 5.7.2
   fs-extra: 11.1.0
@@ -3045,6 +3047,10 @@ packages:
   /env-paths/2.2.1:
     resolution: {integrity: sha512-+h1lkLKhZMTYjog1VEpJNG7NZJWcuc2DDk/qsqSTRRCOXiLjeQ1d1/udrUGhqMxUgAlwKNZ0cf2uqan5GLuS2A==}
     engines: {node: '>=6'}
+    dev: true
+
+  /erc721a-upgradeable/4.2.3:
+    resolution: {integrity: sha512-EaHbOVDau9drDNpi/gWUHHaopCh35NMATa+3+9ZmdHokw9kfPiDD5RhGRlXA1aZA0ZfYvqPEbaKuSH3PaCY2Ug==}
     dev: true
 
   /errno/0.1.8:
