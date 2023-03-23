@@ -2,18 +2,20 @@
 pragma solidity 0.8.17;
 
 import {INFTManagerDefination} from "src/interfaces/nft/INFTManager.sol";
+import {IDegenNFT, IDegenNFTDefination} from "src/interfaces/nft/IDegenNFT.sol";
 
 contract NFTManagerStorage is INFTManagerDefination {
+    // degen nft address
+    IDegenNFT public degenNFT;
+
+    // chainlink vrf proxy address
+    address public chainlinkVRFProxy;
+
     // latest index of metadata map
     uint16 public latestMetadataIdx;
 
-    address public chainlinkVRFProxy;
-
     // white list merkle tree root
     bytes32 public merkleRoot;
-
-    // Mapping from token ID to Properties
-    mapping(uint256 => Properties) internal properties;
 
     mapping(address => bool) public signers;
 
@@ -21,7 +23,7 @@ contract NFTManagerStorage is INFTManagerDefination {
     mapping(address => bool) public minted;
 
     // id => metadata map
-    mapping(uint256 => Properties) metadatas;
+    mapping(uint256 => IDegenNFTDefination.Property) metadatas;
 
     // Mapping from requestId to tokenId
     mapping(uint256 => uint256) requestIdToTokenId;
@@ -40,8 +42,6 @@ contract NFTManagerStorage is INFTManagerDefination {
 
     // public mint pay mint fee
     uint256 public mintFee;
-
-    string public baseURI;
 
     uint256[] private openFailedBoxs;
 

@@ -2,12 +2,15 @@
 pragma solidity 0.8.17;
 
 import "forge-std/Test.sol";
+import "src/nft/DegenNFT.sol";
 import "src/nft/NFTManager.sol";
 import "murky/Merkle.sol";
 import "src/mock/ChainlinkVRFProxyMock.sol";
 import {INFTManager, INFTManagerDefination} from "src/interfaces/nft/INFTManager.sol";
+import {IDegenNFTDefination, IDegenNFT} from "src/interfaces/nft/IDegenNFT.sol";
 
 contract NFTManagerTest is Test, INFTManagerDefination {
+    DegenNFT degenNFT;
     NFTManager nftManager;
     ChainlinkVRFProxyMock chainlinkVRFProxyMock;
     address owner;
@@ -17,6 +20,7 @@ contract NFTManagerTest is Test, INFTManagerDefination {
         owner = vm.addr(1);
         signer = vm.addr(2);
 
+        degenNFT = new DegenNFT();
         nftManager = new NFTManager();
         _initialize();
         _updateSigners();
@@ -27,7 +31,7 @@ contract NFTManagerTest is Test, INFTManagerDefination {
         chainlinkVRFProxyMock.setController(address(nftManager));
 
         vm.prank(owner);
-        nftManager.setBaseURI("https://www.baseuri.com/");
+        degenNFT.setBaseURI("https://www.baseuri.com/");
     }
 
     function testWhitelistMint() public {
@@ -54,8 +58,8 @@ contract NFTManagerTest is Test, INFTManagerDefination {
         nftManager.whitelistMint{value: 0.2 ether}(proof);
         vm.stopPrank();
 
-        assertEq(nftManager.balanceOf(address(12)), 1);
-        assertEq(nftManager.ownerOf(1), address(12));
+        assertEq(degenNFT.balanceOf(address(12)), 1);
+        assertEq(degenNFT.ownerOf(1), address(12));
     }
 
     function testPublicMint() public {
@@ -109,9 +113,9 @@ contract NFTManagerTest is Test, INFTManagerDefination {
         nftManager.airdrop{value: totalFee}(receivers, quantities);
         vm.stopPrank();
 
-        assertEq(nftManager.balanceOf(address(10)), 2);
-        assertEq(nftManager.balanceOf(address(11)), 3);
-        assertEq(nftManager.ownerOf(2), address(10));
+        assertEq(degenNFT.balanceOf(address(10)), 2);
+        assertEq(degenNFT.balanceOf(address(11)), 3);
+        assertEq(degenNFT.ownerOf(2), address(10));
     }
 
     function testSetMetadatas() public {
@@ -134,7 +138,13 @@ contract NFTManagerTest is Test, INFTManagerDefination {
     // }
 
     function _initialize() internal {
-        nftManager.initialize("TestNFT", "TNFT", owner);
+        degenNFT.initialize("TestNFT", "TNFT", owner);
+        nftManager.initialize(owner);
+
+        vm.startPrank(owner);
+        degenNFT.setManager(address(nftManager));
+        nftManager.setDegenNFT(address(degenNFT));
+        vm.stopPrank();
     }
 
     function _updateSigners() internal {
@@ -179,39 +189,39 @@ contract NFTManagerTest is Test, INFTManagerDefination {
     }
 
     function _setMetadataList() internal {
-        INFTManager.Properties[]
-            memory metadataList = new INFTManager.Properties[](4);
-        metadataList[0] = INFTManagerDefination.Properties({
+        IDegenNFTDefination.Property[]
+            memory metadataList = new IDegenNFTDefination.Property[](4);
+        metadataList[0] = IDegenNFTDefination.Property({
             name: "CZ",
-            rarity: INFTManagerDefination.Rarity.Legendary,
-            tokenType: INFTManagerDefination.TokenType.Shard
+            rarity: IDegenNFTDefination.Rarity.Legendary,
+            tokenType: IDegenNFTDefination.TokenType.Shard
         });
-        metadataList[0] = INFTManagerDefination.Properties({
+        metadataList[0] = IDegenNFTDefination.Property({
             name: "CZ",
-            rarity: INFTManagerDefination.Rarity.Legendary,
-            tokenType: INFTManagerDefination.TokenType.Shard
+            rarity: IDegenNFTDefination.Rarity.Legendary,
+            tokenType: IDegenNFTDefination.TokenType.Shard
         });
-        metadataList[0] = INFTManagerDefination.Properties({
+        metadataList[0] = IDegenNFTDefination.Property({
             name: "SBF",
-            rarity: INFTManagerDefination.Rarity.Legendary,
-            tokenType: INFTManagerDefination.TokenType.Shard
+            rarity: IDegenNFTDefination.Rarity.Legendary,
+            tokenType: IDegenNFTDefination.TokenType.Shard
         });
-        metadataList[0] = INFTManagerDefination.Properties({
+        metadataList[0] = IDegenNFTDefination.Property({
             name: "SBF",
-            rarity: INFTManagerDefination.Rarity.Legendary,
-            tokenType: INFTManagerDefination.TokenType.Shard
+            rarity: IDegenNFTDefination.Rarity.Legendary,
+            tokenType: IDegenNFTDefination.TokenType.Shard
         });
 
         vm.prank(owner);
         nftManager.setMetadatas(metadataList);
     }
 
-    function _generateTokenIds() internal pure returns (uint256[] memory) {
-        uint256[] memory tokenIds = new uint256[](4);
-        tokenIds[0] = 1;
-        tokenIds[1] = 2;
-        tokenIds[2] = 3;
-        tokenIds[3] = 4;
-        return tokenIds;
-    }
+    // function _generateTokenIds() internal pure returns (uint256[] memory) {
+    //     uint256[] memory tokenIds = new uint256[](4);
+    //     tokenIds[0] = 1;
+    //     tokenIds[1] = 2;
+    //     tokenIds[2] = 3;
+    //     tokenIds[3] = 4;
+    //     return tokenIds;
+    // }
 }

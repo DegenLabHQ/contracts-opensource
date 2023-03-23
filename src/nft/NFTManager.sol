@@ -9,6 +9,7 @@ import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 
 import "./DegenERC721URIStorageUpgradeable.sol";
 import "src/interfaces/nft/INFTManager.sol";
+import "src/interfaces/nft/IDegenNFT.sol";
 import "src/interfaces/nft/IChainlinkVRFProxy.sol";
 import "./NFTManagerStorage.sol";
 
@@ -16,7 +17,6 @@ contract NFTManager is
     UUPSUpgradeable,
     OwnableUpgradeable,
     INFTManager,
-    DegenERC721URIStorageUpgradeable,
     NFTManagerStorage
 {
     uint256 public constant SUPPORT_MAX_MINT_COUNT = 2009;
@@ -25,13 +25,11 @@ contract NFTManager is
     /**********************************************
      * write functions
      **********************************************/
-    function initialize(
-        string calldata name_,
-        string calldata symbol_,
-        address owner
-    ) public initializerERC721A initializer {
-        __ERC721A_init(name_, symbol_);
-        __ERC721URIStorage_init_unchained();
+    function initialize(address owner) public initializer {
+        if (owner == address(0)) {
+            revert ZeroOwnerSet();
+        }
+
         __Ownable_init_unchained();
         _transferOwnership(owner);
     }
@@ -49,7 +47,7 @@ contract NFTManager is
             revert AlreadyMinted();
         }
 
-        if (_totalMinted() >= SUPPORT_MAX_MINT_COUNT) {
+        if (degenNFT.totalMinted() >= SUPPORT_MAX_MINT_COUNT) {
             revert OutOfMaxMintCount();
         }
 
@@ -70,7 +68,7 @@ contract NFTManager is
     function publicMint(uint256 quantity) public payable override {
         _checkMintTime(MintType.PublicMint);
 
-        if (_totalMinted() + quantity > SUPPORT_MAX_MINT_COUNT) {
+        if (degenNFT.totalMinted() + quantity > SUPPORT_MAX_MINT_COUNT) {
             revert OutOfMaxMintCount();
         }
 
@@ -105,7 +103,7 @@ contract NFTManager is
             revert MintFeeNotEnough();
         }
 
-        if (_totalMinted() + totalCount > SUPPORT_MAX_MINT_COUNT) {
+        if (degenNFT.totalMinted() + totalCount > SUPPORT_MAX_MINT_COUNT) {
             revert OutOfMaxMintCount();
         }
 
@@ -158,10 +156,10 @@ contract NFTManager is
             revert InvalidTokens();
         }
 
-        _burn(tokenId1);
-        _burn(tokenId2);
+        degenNFT.burn(tokenId1);
+        degenNFT.burn(tokenId2);
 
-        uint256 tokenId = _nextTokenId();
+        uint256 tokenId = degenNFT.nextTokenId();
 
         _mintTo(msg.sender, 1);
         _setTokenURIOf(tokenId, tokenId);
@@ -173,7 +171,7 @@ contract NFTManager is
     function burn(uint256 tokenId) external override {
         _checkOwner(msg.sender, tokenId);
 
-        _burn(tokenId);
+        degenNFT.burn(tokenId);
 
         // refund fees
 
@@ -211,7 +209,7 @@ contract NFTManager is
      * latestMetadata is useed for compatible sence with multiple times to setting
      */
     function setMetadatas(
-        Properties[] calldata metadataList
+        IDegenNFTDefination.Property[] calldata metadataList
     ) external onlyOwner {
         for (uint256 i = 0; i < metadataList.length; i++) {
             metadatas[latestMetadataIdx] = metadataList[i];
@@ -231,16 +229,18 @@ contract NFTManager is
         emit ChangedChainlinkVRFProxy(chainlinkVRFProxy_);
     }
 
-    function setBaseURI(string calldata baseURI_) external onlyOwner {
-        baseURI = baseURI_;
-
-        emit SetBaseURI(baseURI_);
-    }
-
     function setMintFee(uint256 mintFee_) external onlyOwner {
         mintFee = mintFee_;
 
         emit MintFeeSet(mintFee);
+    }
+
+    function setDegenNFT(address degenNFT_) external onlyOwner {
+        if (degenNFT_ == address(0)) {
+            revert ZeroAddressSet();
+        }
+        degenNFT = IDegenNFT(degenNFT_);
+        emit SetDegenNFT(degenNFT_);
     }
 
     function setMintTime(
@@ -268,27 +268,20 @@ contract NFTManager is
         emit SetBurnRefundConfig(burnRefundConfigs);
     }
 
-    function _setProperties(
-        uint256 tokenId,
-        Properties memory _properties
-    ) internal {
-        properties[tokenId] = _properties;
-        emit SetProperties(_properties);
-    }
-
     /**********************************************
      * read functions
      **********************************************/
     function exists(uint256 tokenId) external view returns (bool) {
-        return _exists(tokenId);
+        return degenNFT.exists(tokenId);
     }
 
     // get metadata config list
     function getMetadataList(
         uint16 length,
         uint256 offset
-    ) external view returns (Properties[] memory) {
-        Properties[] memory properties = new Properties[](length);
+    ) external view returns (IDegenNFTDefination.Property[] memory) {
+        IDegenNFTDefination.Property[]
+            memory properties = new IDegenNFTDefination.Property[](length);
         for (uint256 i = offset; i < length; i++) {
             properties[i] = metadatas[i];
         }
@@ -307,8 +300,8 @@ contract NFTManager is
 
     function propertyOf(
         uint256 tokenId
-    ) public view returns (Properties memory) {
-        return properties[tokenId];
+    ) public view returns (IDegenNFTDefination.Property memory) {
+        return degenNFT.getProperty(tokenId);
     }
 
     function getBurnRefundConfigs()
@@ -323,33 +316,16 @@ contract NFTManager is
      * internal functions
      **********************************************/
     function _mintTo(address to, uint256 quantity) internal {
-        uint256 startTokenId = _nextTokenId();
+        uint256 startTokenId = degenNFT.nextTokenId();
+        degenNFT.mint(to, quantity);
 
-        _mint(to, quantity);
         emit Minted(msg.sender, quantity, startTokenId);
-
-        // for (
-        //     uint256 tokenId = nextTokenId;
-        //     tokenId <= _nextTokenId();
-        //     tokenId++
-        // ) {
-        //     emit Minted(msg.sender, tokenId);
-        // }
     }
 
     function _checkOwner(address owner, uint256 tokenId) internal view {
-        if (ownerOf(tokenId) != owner) {
+        if (degenNFT.ownerOf(tokenId) != owner) {
             revert NotTokenOwner();
         }
-    }
-
-    function _baseURI() internal view override returns (string memory) {
-        return baseURI;
-    }
-
-    // tokenId start from 1
-    function _startTokenId() internal pure override returns (uint256) {
-        return 1;
     }
 
     function _checkMintTime(MintType mintType) internal view {
@@ -366,8 +342,10 @@ contract NFTManager is
         uint256 tokenId1,
         uint256 tokenId2
     ) internal view returns (bool) {
-        Properties memory token1Property = propertyOf(tokenId1);
-        Properties memory token2Property = propertyOf(tokenId2);
+        IDegenNFTDefination.Property memory token1Property = degenNFT
+            .getProperty(tokenId1);
+        IDegenNFTDefination.Property memory token2Property = degenNFT
+            .getProperty(tokenId2);
 
         return
             keccak256(bytes(token1Property.name)) ==
@@ -402,8 +380,8 @@ contract NFTManager is
         uint256 tokenId,
         uint256 metadataId
     ) internal {
-        Properties memory property = metadatas[metadataId];
-        _setProperties(tokenId, property);
+        IDegenNFTDefination.Property memory property = metadatas[metadataId];
+        degenNFT.setProperties(tokenId, property);
 
         _setTokenURIOf(tokenId, metadataId);
 
@@ -414,7 +392,7 @@ contract NFTManager is
     }
 
     function _setTokenURIOf(uint256 tokenId, uint256 metadataId) internal {
-        _setTokenURI(
+        degenNFT.setTokenURI(
             tokenId,
             string.concat(StringsUpgradeable.toString(metadataId), ".json")
         );

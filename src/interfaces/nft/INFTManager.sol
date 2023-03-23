@@ -6,29 +6,9 @@ interface INFTManagerDefination {
         WhitelistMint,
         PublicMint
     }
-
-    enum Rarity {
-        Legendary,
-        Epic,
-        Rare,
-        Uncommon,
-        Common
-    }
-
-    enum TokenType {
-        Standard,
-        Shard
-    }
-
     struct MintTime {
         uint256 startTime;
         uint256 endTime; // mint end time,if no need set 4294967295(2106-02-07 14:28:15)
-    }
-
-    struct Properties {
-        string name;
-        Rarity rarity;
-        TokenType tokenType;
     }
 
     struct BurnRefundConfig {
@@ -75,9 +55,8 @@ interface INFTManagerDefination {
     event ChangedChainlinkVRFProxy(address chainlinkVRFProxy);
     event OpenMysteryBoxFailed(uint256 tokenId);
     event OpenMysteryBoxSuccess(uint256 tokenId, uint256 metadataId);
-    event SetBaseURI(string baseURI);
+    event SetDegenNFT(address degenNFT);
     event MintFeeSet(uint256 mintFee);
-    event SetProperties(Properties properties);
     event SetMintTime(MintType mintType, MintTime mintTime);
     event SetBurnRefundConfig(BurnRefundConfig[] burnRefundConfigs);
 }
