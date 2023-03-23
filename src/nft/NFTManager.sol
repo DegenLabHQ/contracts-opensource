@@ -40,7 +40,9 @@ contract NFTManager is
         address newImplementation
     ) internal override onlyOwner {}
 
-    function whitelistMint(bytes32[] calldata merkleProof) public payable {
+    function whitelistMint(
+        bytes32[] calldata merkleProof
+    ) public payable override {
         _checkMintTime(MintType.WhitelistMint);
 
         if (minted[msg.sender]) {
@@ -65,7 +67,7 @@ contract NFTManager is
         minted[msg.sender] = true;
     }
 
-    function publicMint(uint256 quantity) public payable {
+    function publicMint(uint256 quantity) public payable override {
         _checkMintTime(MintType.PublicMint);
 
         if (_totalMinted() + quantity > SUPPORT_MAX_MINT_COUNT) {
@@ -86,7 +88,7 @@ contract NFTManager is
     function airdrop(
         address[] calldata receivers,
         uint256[] calldata quantities
-    ) external payable onlyOwner {
+    ) external payable override onlyOwner {
         if (receivers.length != quantities.length) {
             revert InvalidParams();
         }
@@ -167,10 +169,13 @@ contract NFTManager is
         emit MergeTokens(msg.sender, tokenId1, tokenId2, tokenId);
     }
 
+    // TODO: refund
     function burn(uint256 tokenId) external override {
         _checkOwner(msg.sender, tokenId);
 
         _burn(tokenId);
+
+        // refund fees
 
         emit BurnToken(msg.sender, tokenId);
     }
@@ -251,6 +256,18 @@ contract NFTManager is
         emit SetMintTime(mintType_, mintTime_);
     }
 
+    function setBurnRefundConfig(
+        BurnRefundConfig[] calldata configs
+    ) external onlyOwner {
+        delete burnRefundConfigs;
+
+        // burnRefundConfigs = configs;
+        for (uint256 i = 0; i < configs.length; i++) {
+            burnRefundConfigs[i] = configs[i];
+        }
+        emit SetBurnRefundConfig(burnRefundConfigs);
+    }
+
     function _setProperties(
         uint256 tokenId,
         Properties memory _properties
@@ -292,6 +309,14 @@ contract NFTManager is
         uint256 tokenId
     ) public view returns (Properties memory) {
         return properties[tokenId];
+    }
+
+    function getBurnRefundConfigs()
+        public
+        view
+        returns (BurnRefundConfig[] memory)
+    {
+        return burnRefundConfigs;
     }
 
     /**********************************************

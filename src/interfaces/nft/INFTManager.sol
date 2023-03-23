@@ -31,6 +31,11 @@ interface INFTManagerDefination {
         TokenType tokenType;
     }
 
+    struct BurnRefundConfig {
+        uint256 nativeToken;
+        uint256 RebornToken;
+    }
+
     /**********************************************
      * errors
      **********************************************/
@@ -74,6 +79,7 @@ interface INFTManagerDefination {
     event MintFeeSet(uint256 mintFee);
     event SetProperties(Properties properties);
     event SetMintTime(MintType mintType, MintTime mintTime);
+    event SetBurnRefundConfig(BurnRefundConfig[] burnRefundConfigs);
 }
 
 interface INFTManager is INFTManagerDefination {
