@@ -55,7 +55,7 @@ contract NFTManager is
             revert MintFeeNotEnough();
         }
 
-        bool verified = checkWhiteList(merkleProof);
+        bool verified = checkWhiteList(merkleProof, msg.sender);
 
         if (!verified) {
             revert InvalidProof();
@@ -309,12 +309,10 @@ contract NFTManager is
     }
 
     function checkWhiteList(
-        bytes32[] calldata merkleProof
+        bytes32[] calldata merkleProof,
+        address account
     ) public view returns (bool verified) {
-        bytes32 leaf = keccak256(
-            bytes.concat(keccak256(abi.encode(msg.sender)))
-        );
-
+        bytes32 leaf = keccak256(abi.encodePacked(account));
         verified = MerkleProofUpgradeable.verify(merkleProof, merkleRoot, leaf);
     }
 
