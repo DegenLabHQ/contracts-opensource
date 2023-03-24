@@ -138,7 +138,7 @@ contract NFTManagerTest is Test, INFTManagerDefination {
     // }
 
     function _initialize() internal {
-        degenNFT.initialize("TestNFT", "TNFT", owner);
+        degenNFT.initialize("Degen2009", "Degen2009", owner);
         nftManager.initialize(owner);
 
         vm.startPrank(owner);
