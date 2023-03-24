@@ -3,9 +3,11 @@ pragma solidity 0.8.17;
 
 import "@openzeppelin/contracts-upgradeable/utils/cryptography/MerkleProofUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/utils/CountersUpgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
+// import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
+import {SafeOwnableUpgradeable} from "@p12/contracts-lib/contracts/access/SafeOwnableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/utils/StringsUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
+import {BitMapsUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/structs/BitMapsUpgradeable.sol";
 
 import "./DegenERC721URIStorageUpgradeable.sol";
 import "src/interfaces/nft/INFTManager.sol";
@@ -15,23 +17,23 @@ import "./NFTManagerStorage.sol";
 
 contract NFTManager is
     UUPSUpgradeable,
-    OwnableUpgradeable,
+    SafeOwnableUpgradeable,
     INFTManager,
     NFTManagerStorage
 {
     uint256 public constant SUPPORT_MAX_MINT_COUNT = 2009;
     using CountersUpgradeable for CountersUpgradeable.Counter;
+    using BitMapsUpgradeable for BitMapsUpgradeable.BitMap;
 
     /**********************************************
      * write functions
      **********************************************/
-    function initialize(address owner) public initializer {
-        if (owner == address(0)) {
+    function initialize(address owner_) public initializer {
+        if (owner_ == address(0)) {
             revert ZeroOwnerSet();
         }
 
-        __Ownable_init_unchained();
-        _transferOwnership(owner);
+        __Ownable_init(owner_);
     }
 
     function _authorizeUpgrade(
@@ -40,10 +42,8 @@ contract NFTManager is
 
     function whitelistMint(
         bytes32[] calldata merkleProof
-    ) public payable override {
-        _checkMintTime(MintType.WhitelistMint);
-
-        if (minted[msg.sender]) {
+    ) public payable override onlyMintTime(MintType.WhitelistMint) {
+        if (hasMinted.get(uint160(msg.sender))) {
             revert AlreadyMinted();
         }
 
@@ -62,12 +62,12 @@ contract NFTManager is
         }
 
         _mintTo(msg.sender, 1);
-        minted[msg.sender] = true;
+        hasMinted.set(uint160(msg.sender));
     }
 
-    function publicMint(uint256 quantity) public payable override {
-        _checkMintTime(MintType.PublicMint);
-
+    function publicMint(
+        uint256 quantity
+    ) public payable override onlyMintTime(MintType.PublicMint) {
         if (degenNFT.totalMinted() + quantity > SUPPORT_MAX_MINT_COUNT) {
             revert OutOfMaxMintCount();
         }
@@ -178,7 +178,7 @@ contract NFTManager is
 
         // refund fees
         BurnRefundConfig memory refundConfig = burnRefundConfigs[
-            degenNFT.level()
+            degenNFT.getLevel(tokenId)
         ];
 
         // refund NativeToken
@@ -330,6 +330,10 @@ contract NFTManager is
         return burnRefundConfigs;
     }
 
+    function minted(address account) external view returns (bool) {
+        return hasMinted.get(uint160(account));
+    }
+
     /**********************************************
      * internal functions
      **********************************************/
@@ -430,6 +434,11 @@ contract NFTManager is
         if (msg.sender != chainlinkVRFProxy) {
             revert OnlyChainlinkVRFProxy();
         }
+        _;
+    }
+
+    modifier onlyMintTime(MintType mintType) {
+        _checkMintTime(mintType);
         _;
     }
 

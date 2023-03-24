@@ -43,7 +43,7 @@ interface IDegenNFT is IDegenNFTDefination {
         Property memory _properties
     ) external;
 
-    function setLevel(uint256 level_) external;
+    function setLevel(uint256 tokenId, uint256 level) external;
 
     function setTokenURI(uint256 tokenId, string memory tokenURI) external;
 
@@ -57,5 +57,5 @@ interface IDegenNFT is IDegenNFTDefination {
 
     function nextTokenId() external view returns (uint256);
 
-    function level() external view returns (uint256);
+    function getLevel(uint256 tokenId) external view returns (uint256);
 }

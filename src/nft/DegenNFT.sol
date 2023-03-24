@@ -20,8 +20,8 @@ contract DegenNFT is
 
     string public baseURI;
 
-    // NFT level in game
-    uint256 public level;
+    // Mapping tokenId to level
+    mapping(uint256 => uint256) internal levels;
 
     uint256[48] private _gap;
 
@@ -72,8 +72,8 @@ contract DegenNFT is
         emit SetProperties(_property);
     }
 
-    function setLevel(uint256 level_) external onlyManager {
-        level = level_;
+    function setLevel(uint256 tokenId, uint256 level) external onlyManager {
+        levels[tokenId] = level;
     }
 
     function setTokenURI(
@@ -99,6 +99,10 @@ contract DegenNFT is
 
     function nextTokenId() external view returns (uint256) {
         return _nextTokenId();
+    }
+
+    function getLevel(uint256 tokenId) external view returns (uint256) {
+        return levels[tokenId];
     }
 
     function _baseURI() internal view override returns (string memory) {

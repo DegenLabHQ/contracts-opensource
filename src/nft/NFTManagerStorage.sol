@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity 0.8.17;
 
+import {BitMapsUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/structs/BitMapsUpgradeable.sol";
 import {INFTManagerDefination} from "src/interfaces/nft/INFTManager.sol";
 import {IDegenNFT, IDegenNFTDefination} from "src/interfaces/nft/IDegenNFT.sol";
 
@@ -20,7 +21,8 @@ contract NFTManagerStorage is INFTManagerDefination {
     mapping(address => bool) public signers;
 
     // record minted users to avoid whitelist users mint more than once
-    mapping(address => bool) public minted;
+    // mapping(address => bool) public minted;
+    BitMapsUpgradeable.BitMap internal hasMinted;
 
     // id => metadata map
     mapping(uint256 => IDegenNFTDefination.Property) metadatas;

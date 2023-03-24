@@ -16,6 +16,8 @@ contract NFTManagerTest is Test, INFTManagerDefination {
     address owner;
     address signer;
 
+    error CallerNotOwner();
+
     function setUp() public {
         owner = vm.addr(1);
         signer = vm.addr(2);
@@ -100,7 +102,7 @@ contract NFTManagerTest is Test, INFTManagerDefination {
         // only owner
         deal(address(3), 10 ether);
         vm.prank(address(3));
-        vm.expectRevert("Ownable: caller is not the owner");
+        vm.expectRevert(CallerNotOwner.selector);
         nftManager.airdrop{value: totalFee}(receivers, quantities);
 
         // should pay enough mint fee fees
