@@ -312,7 +312,7 @@ contract NFTManager is
         bytes32[] calldata merkleProof,
         address account
     ) public view returns (bool verified) {
-        bytes32 leaf = keccak256(abi.encodePacked(account));
+        bytes32 leaf = keccak256(bytes.concat(keccak256(abi.encode(account))));
         verified = MerkleProofUpgradeable.verify(merkleProof, merkleRoot, leaf);
     }
 

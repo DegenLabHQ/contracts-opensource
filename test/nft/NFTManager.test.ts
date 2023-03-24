@@ -1,7 +1,11 @@
 import { ethers } from "hardhat";
 import { expect } from "chai";
 
-import { keccak256, solidityKeccak256 } from "ethers/lib/utils";
+import {
+  keccak256,
+  solidityKeccak256,
+  defaultAbiCoder,
+} from "ethers/lib/utils";
 import { MerkleTree } from "merkletreejs";
 import { generageTestAccount } from "./helper";
 
@@ -19,7 +23,7 @@ describe("NFTManager Test", async function () {
   it("should merkle tree verified", async function () {
     const accountList = await generageTestAccount(10);
     const whitelist = accountList.map((account) =>
-      solidityKeccak256(["address"], [account])
+      keccak256(keccak256(defaultAbiCoder.encode(["address"], [account])))
     );
 
     const tree = new MerkleTree(whitelist, keccak256, { sort: true });
@@ -28,7 +32,9 @@ describe("NFTManager Test", async function () {
     await this.nftManager.setMerkleRoot(root);
 
     for (const account of accountList) {
-      const leaf = solidityKeccak256(["address"], [account]);
+      const leaf = keccak256(
+        keccak256(defaultAbiCoder.encode(["address"], [account]))
+      );
       const proof = tree.getHexProof(leaf);
       const verified = await this.nftManager.checkWhiteList(proof, account);
       expect(verified).to.be.eq(true);
