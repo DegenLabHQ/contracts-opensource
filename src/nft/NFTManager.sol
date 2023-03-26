@@ -172,6 +172,11 @@ contract NFTManager is
             revert TokenIdNotExsis();
         }
 
+        uint256 level = degenNFT.getLevel(tokenId);
+        if (level == 0) {
+            revert LevelZeroCannotBurn();
+        }
+
         _checkOwner(msg.sender, tokenId);
 
         degenNFT.burn(tokenId);
