@@ -43,7 +43,7 @@ abstract contract DegenERC721URIStorageUpgradeable is
             return string(abi.encodePacked(base, _tokenURI));
         }
 
-        return super.tokenURI(tokenId);
+        return string.concat(super.tokenURI(tokenId), ".json");
     }
 
     /**

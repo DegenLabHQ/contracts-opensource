@@ -39,10 +39,10 @@ contract NFTManagerTest is Test, INFTManagerDefination {
     function testWhitelistMint() public {
         Merkle m = new Merkle();
         bytes32[] memory data = new bytes32[](4);
-        data[0] = keccak256(abi.encodePacked(address(10)));
-        data[1] = keccak256(abi.encodePacked(address(11)));
-        data[2] = keccak256(abi.encodePacked(address(12)));
-        data[3] = keccak256(abi.encodePacked(address(13)));
+        data[0] = keccak256(bytes.concat(keccak256(abi.encode(address(10)))));
+        data[1] = keccak256(bytes.concat(keccak256(abi.encode(address(11)))));
+        data[2] = keccak256(bytes.concat(keccak256(abi.encode(address(12)))));
+        data[3] = keccak256(bytes.concat(keccak256(abi.encode(address(13)))));
 
         // set merkle tree root
         bytes32 root = m.getRoot(data);
@@ -58,10 +58,12 @@ contract NFTManagerTest is Test, INFTManagerDefination {
 
         vm.warp(block.timestamp + 60);
         nftManager.whitelistMint{value: 0.2 ether}(proof);
+
         vm.stopPrank();
 
         assertEq(degenNFT.balanceOf(address(12)), 1);
         assertEq(degenNFT.ownerOf(1), address(12));
+        console.log(degenNFT.tokenURI(1));
     }
 
     function testPublicMint() public {
