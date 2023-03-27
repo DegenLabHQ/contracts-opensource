@@ -196,24 +196,24 @@ contract NFTManagerTest is Test, INFTManagerDefination {
         IDegenNFTDefination.Property[]
             memory metadataList = new IDegenNFTDefination.Property[](4);
         metadataList[0] = IDegenNFTDefination.Property({
-            name: "CZ",
-            rarity: IDegenNFTDefination.Rarity.Legendary,
-            tokenType: IDegenNFTDefination.TokenType.Shard
+            nameId: 1001,
+            rarity: 1,
+            tokenType: 0
         });
-        metadataList[0] = IDegenNFTDefination.Property({
-            name: "CZ",
-            rarity: IDegenNFTDefination.Rarity.Legendary,
-            tokenType: IDegenNFTDefination.TokenType.Shard
+        metadataList[1] = IDegenNFTDefination.Property({
+            nameId: 1001,
+            rarity: 1,
+            tokenType: 0
         });
-        metadataList[0] = IDegenNFTDefination.Property({
-            name: "SBF",
-            rarity: IDegenNFTDefination.Rarity.Legendary,
-            tokenType: IDegenNFTDefination.TokenType.Shard
+        metadataList[2] = IDegenNFTDefination.Property({
+            nameId: 1001,
+            rarity: 2,
+            tokenType: 0
         });
-        metadataList[0] = IDegenNFTDefination.Property({
-            name: "SBF",
-            rarity: IDegenNFTDefination.Rarity.Legendary,
-            tokenType: IDegenNFTDefination.TokenType.Shard
+        metadataList[3] = IDegenNFTDefination.Property({
+            nameId: 1001,
+            rarity: 2,
+            tokenType: 0
         });
 
         vm.prank(owner);

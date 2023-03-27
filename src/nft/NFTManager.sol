@@ -375,8 +375,7 @@ contract NFTManager is
             .getProperty(tokenId2);
 
         return
-            keccak256(bytes(token1Property.name)) ==
-            keccak256(bytes(token2Property.name)) &&
+            token1Property.nameId == token2Property.nameId &&
             token1Property.tokenType == token2Property.tokenType;
     }
 

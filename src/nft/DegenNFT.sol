@@ -12,8 +12,8 @@ contract DegenNFT is
     IDegenNFT,
     OwnableUpgradeable
 {
-    // Mapping from tokenId to Properties
-    mapping(uint256 => Property) internal properties;
+    // Mapping from tokenId to Property
+    mapping(uint256 => uint16) internal properties;
 
     // NFTManager
     address public manager;
@@ -67,8 +67,12 @@ contract DegenNFT is
         uint256 tokenId,
         Property memory _property
     ) external onlyManager {
-        properties[tokenId] = _property;
+        uint16 property;
+        property = (property << 12) | _property.nameId;
+        property = (property << 3) | _property.rarity;
+        property = (property << 1) | _property.tokenType;
 
+        properties[tokenId] = property;
         emit SetProperties(_property);
     }
 
@@ -90,7 +94,13 @@ contract DegenNFT is
     function getProperty(
         uint256 tokenId
     ) external view returns (Property memory) {
-        return properties[tokenId];
+        uint16 property = properties[tokenId];
+        return
+            Property({
+                nameId: (property >> 4) & 0x0fff,
+                rarity: (property >> 1) & 0x07,
+                tokenType: property & 0x01
+            });
     }
 
     function exists(uint256 tokenId) external view returns (bool) {

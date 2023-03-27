@@ -4,23 +4,29 @@ pragma solidity 0.8.17;
 import "erc721a-upgradeable/contracts/IERC721AUpgradeable.sol";
 
 interface IDegenNFTDefination is IERC721AUpgradeable {
-    enum Rarity {
-        Legendary,
-        Epic,
-        Rare,
-        Uncommon,
-        Common
-    }
+    // enum Rarity {
+    //     Legendary,
+    //     Epic,
+    //     Rare,
+    //     Uncommon,
+    //     Common
+    // }
 
-    enum TokenType {
-        Standard,
-        Shard
-    }
+    // enum TokenType {
+    //     Standard,
+    //     Shard
+    // }
+
+    // struct Property {
+    //     string name;
+    //     Rarity rarity;
+    //     TokenType tokenType;
+    // }
 
     struct Property {
-        string name;
-        Rarity rarity;
-        TokenType tokenType;
+        uint16 nameId;
+        uint16 rarity;
+        uint16 tokenType;
     }
 
     error ZeroAddressSet();
