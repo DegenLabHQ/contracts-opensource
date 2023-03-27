@@ -17,10 +17,10 @@ const func: DeployFunction = async function ({
         init: {
           methodName: "initialize",
           args: [
-            "Degen Reborn Token",
-            "$REBORN",
-            parseEther(Number(10 ** 9).toString()),
-            "0xa23a69CB8aE1259937F1e6b51e76a53F3DEaA988",
+            "DegenReborn Token",
+            "DEGEN",
+            parseEther(Number(10 ** 14).toString()),
+            degen_deployer,
           ],
         },
       },

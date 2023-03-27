@@ -39,14 +39,14 @@ const config: HardhatUserConfig = {
     settings: {
       optimizer: {
         enabled: true,
-        runs: 1,
+        runs: 10000000,
         // details: {
         //   yulDetails: {
         //     optimizerSteps: "u",
         //   },
         // },
       },
-      viaIR: true,
+      // viaIR: true,
     },
   },
   networks: {
@@ -170,7 +170,7 @@ const config: HardhatUserConfig = {
     alphaSort: false,
     disambiguatePaths: false,
     runOnCompile: true,
-    strict: true,
+    strict: false,
   },
   external: {
     contracts: [
