@@ -14,7 +14,7 @@ contract DegenNFT is
     IDegenNFT
 {
     // Mapping from tokenId to Property
-    mapping(uint256 => uint16) internal properties;
+    mapping(uint256 => uint256) internal properties;
 
     // NFTManager
     address public manager;
@@ -67,12 +67,18 @@ contract DegenNFT is
         uint256 tokenId,
         Property memory _property
     ) external onlyManager {
+        // encode property
         uint16 property;
         property = (property << 12) | _property.nameId;
         property = (property << 3) | _property.rarity;
         property = (property << 1) | _property.tokenType;
 
-        properties[tokenId] = property;
+        // storage property
+        uint256 bucket = tokenId >> 4;
+        uint256 mask = properties[bucket];
+        mask |= uint256(property) << ((tokenId % 16) * 16);
+        properties[bucket] = mask;
+
         emit SetProperties(_property);
     }
 
@@ -94,7 +100,10 @@ contract DegenNFT is
     function getProperty(
         uint256 tokenId
     ) external view returns (Property memory) {
-        uint16 property = properties[tokenId];
+        uint256 bucket = tokenId >> 4;
+        uint256 mask = properties[bucket];
+        uint16 property = uint16((mask >> ((tokenId % 16) * 16)) & 0xffff);
+
         return
             Property({
                 nameId: (property >> 4) & 0x0fff,
