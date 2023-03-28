@@ -3,13 +3,14 @@ pragma solidity 0.8.17;
 
 import {UUPSUpgradeable} from "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 import {IDegenNFT} from "src/interfaces/nft/IDegenNFT.sol";
-import {DegenERC721URIStorageUpgradeable} from "src/nft/DegenERC721URIStorageUpgradeable.sol";
 import {SafeOwnableUpgradeable} from "@p12/contracts-lib/contracts/access/SafeOwnableUpgradeable.sol";
+
+import {ERC721AUpgradeable} from "erc721a-upgradeable/contracts/ERC721AUpgradeable.sol";
 
 contract DegenNFT is
     SafeOwnableUpgradeable,
     UUPSUpgradeable,
-    DegenERC721URIStorageUpgradeable,
+    ERC721AUpgradeable,
     IDegenNFT
 {
     // Mapping from tokenId to Property
@@ -35,7 +36,6 @@ contract DegenNFT is
         address owner_ // upgrade owner
     ) public initializerERC721A initializer {
         __ERC721A_init(name_, symbol_);
-        __ERC721URIStorage_init_unchained();
         __Ownable_init_unchained(owner_);
     }
 
@@ -85,13 +85,6 @@ contract DegenNFT is
         levels[tokenId] = level;
     }
 
-    function setTokenURI(
-        uint256 tokenId,
-        string memory tokenURI_
-    ) external onlyManager {
-        _setTokenURI(tokenId, tokenURI_);
-    }
-
     function totalMinted() external view returns (uint256) {
         return _totalMinted();
     }
@@ -109,6 +102,15 @@ contract DegenNFT is
                 rarity: (property >> 1) & 0x07,
                 tokenType: property & 0x01
             });
+    }
+
+    /**
+     * @dev See {IERC721Metadata-tokenURI}.
+     */
+    function tokenURI(
+        uint256 tokenId
+    ) public view virtual override returns (string memory) {
+        return string.concat(super.tokenURI(tokenId), ".json");
     }
 
     function exists(uint256 tokenId) external view returns (bool) {
