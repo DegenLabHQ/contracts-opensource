@@ -60,8 +60,8 @@ contract NFTManager is
             revert InvalidProof();
         }
 
-        _mintTo(msg.sender, 1);
         hasMinted.set(uint160(msg.sender));
+        _mintTo(msg.sender, 1);
     }
 
     function publicMint(
