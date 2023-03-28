@@ -29,6 +29,9 @@ const func: DeployFunction = async function ({
   //   "setManager",
   //   nftManager.address
   // );
+
+  // set baseUri
+  await execute("DegenNFT", { from: owner, log: true }, "setBaseURI", "");
 };
 
 func.tags = ["DegenNFT"];

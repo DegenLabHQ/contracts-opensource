@@ -15,7 +15,7 @@ interface INFTManagerDefination {
 
     struct BurnRefundConfig {
         uint256 nativeToken;
-        uint256 rebornToken;
+        uint256 degenToken;
     }
 
     /**********************************************
@@ -57,7 +57,7 @@ interface INFTManagerDefination {
         address account,
         uint256 tokenId,
         uint256 refundNativeToken,
-        uint256 refundRebornToken
+        uint256 refundDegenToken
     );
     event ChangedChainlinkVRFProxy(address chainlinkVRFProxy);
     event OpenMysteryBoxFailed(uint256 tokenId);

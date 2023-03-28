@@ -128,7 +128,7 @@ contract NFTManager is
             msg.sender,
             tokenId,
             refundConfig.nativeToken,
-            refundConfig.rebornToken
+            refundConfig.degenToken
         );
     }
 
