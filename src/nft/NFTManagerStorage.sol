@@ -27,7 +27,7 @@ contract NFTManagerStorage is INFTManagerDefination {
     mapping(uint256 => IDegenNFTDefination.Property) metadatas;
 
     // Mapping from mint type to mint start and end time
-    mapping(MintType => MintTime) mintTime;
+    mapping(StageType => StageTime) stageTime;
 
     // different config with different level, index as level
     mapping(uint256 => BurnRefundConfig) internal burnRefundConfigs;
