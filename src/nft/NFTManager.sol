@@ -4,20 +4,22 @@ pragma solidity 0.8.17;
 import {MerkleProofUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/cryptography/MerkleProofUpgradeable.sol";
 // import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import {SafeOwnableUpgradeable} from "@p12/contracts-lib/contracts/access/SafeOwnableUpgradeable.sol";
-import {StringsUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/StringsUpgradeable.sol";
 import {UUPSUpgradeable} from "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 import {BitMapsUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/structs/BitMapsUpgradeable.sol";
 
-import {DegenERC721URIStorageUpgradeable} from "src/nft/DegenERC721URIStorageUpgradeable.sol";
 import {INFTManager} from "src/interfaces/nft/INFTManager.sol";
 import {IDegenNFT, IDegenNFTDefination} from "src/interfaces/nft/IDegenNFT.sol";
 import {NFTManagerStorage} from "src/nft/NFTManagerStorage.sol";
+import {PausableUpgradeable} from "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
+
+import {DegenNFT} from "src/nft/DegenNFT.sol";
 
 contract NFTManager is
     SafeOwnableUpgradeable,
     UUPSUpgradeable,
     INFTManager,
-    NFTManagerStorage
+    NFTManagerStorage,
+    PausableUpgradeable
 {
     uint256 public constant SUPPORT_MAX_MINT_COUNT = 2009;
     using BitMapsUpgradeable for BitMapsUpgradeable.BitMap;
@@ -31,6 +33,7 @@ contract NFTManager is
         }
 
         __Ownable_init(owner_);
+        __Pausable_init();
     }
 
     function _authorizeUpgrade(
@@ -39,7 +42,13 @@ contract NFTManager is
 
     function whitelistMint(
         bytes32[] calldata merkleProof
-    ) public payable override onlyMintTime(MintType.WhitelistMint) {
+    )
+        public
+        payable
+        override
+        whenNotPaused
+        onlyMintTime(MintType.WhitelistMint)
+    {
         if (hasMinted.get(uint160(msg.sender))) {
             revert AlreadyMinted();
         }
@@ -64,7 +73,7 @@ contract NFTManager is
 
     function publicMint(
         uint256 quantity
-    ) public payable override onlyMintTime(MintType.PublicMint) {
+    ) public payable override whenNotPaused onlyMintTime(MintType.PublicMint) {
         if (degenNFT.totalMinted() + quantity > SUPPORT_MAX_MINT_COUNT) {
             revert OutOfMaxMintCount();
         }
@@ -80,7 +89,10 @@ contract NFTManager is
         _mintTo(msg.sender, quantity);
     }
 
-    function merge(uint256 tokenId1, uint256 tokenId2) external override {
+    function merge(
+        uint256 tokenId1,
+        uint256 tokenId2
+    ) external override whenNotPaused {
         _checkOwner(msg.sender, tokenId1);
         _checkOwner(msg.sender, tokenId2);
 
@@ -95,12 +107,11 @@ contract NFTManager is
         uint256 tokenId = degenNFT.nextTokenId();
 
         _mintTo(msg.sender, 1);
-        _setTokenURIOf(tokenId, tokenId);
 
         emit MergeTokens(msg.sender, tokenId1, tokenId2, tokenId);
     }
 
-    function burn(uint256 tokenId) external override {
+    function burn(uint256 tokenId) external override whenNotPaused {
         if (!degenNFT.exists(tokenId)) {
             revert TokenIdNotExsis();
         }
@@ -160,7 +171,6 @@ contract NFTManager is
 
     /**
      * @dev set id=>metadata map
-     * latestMetadata is useed for compatible sence with multiple times to setting
      */
     function openMysteryBox(
         IDegenNFTDefination.Property[] calldata metadataList
@@ -181,7 +191,7 @@ contract NFTManager is
         if (degenNFT_ == address(0)) {
             revert ZeroAddressSet();
         }
-        degenNFT = IDegenNFT(degenNFT_);
+        degenNFT = DegenNFT(degenNFT_);
         emit SetDegenNFT(degenNFT_);
     }
 
@@ -285,13 +295,6 @@ contract NFTManager is
         return
             token1Property.nameId == token2Property.nameId &&
             token1Property.tokenType == token2Property.tokenType;
-    }
-
-    function _setTokenURIOf(uint256 tokenId, uint256 metadataId) internal {
-        degenNFT.setTokenURI(
-            tokenId,
-            string.concat(StringsUpgradeable.toString(metadataId), ".json")
-        );
     }
 
     /**********************************************

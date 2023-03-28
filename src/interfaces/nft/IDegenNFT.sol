@@ -3,7 +3,7 @@ pragma solidity 0.8.17;
 
 import "erc721a-upgradeable/contracts/IERC721AUpgradeable.sol";
 
-interface IDegenNFTDefination is IERC721AUpgradeable {
+interface IDegenNFTDefination {
     struct Property {
         uint16 nameId;
         uint16 rarity;
@@ -31,8 +31,6 @@ interface IDegenNFT is IDegenNFTDefination {
     ) external;
 
     function setLevel(uint256 tokenId, uint256 level) external;
-
-    function setTokenURI(uint256 tokenId, string memory tokenURI) external;
 
     function totalMinted() external view returns (uint256);
 

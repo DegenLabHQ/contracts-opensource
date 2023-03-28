@@ -3,11 +3,13 @@ pragma solidity 0.8.17;
 
 import {BitMapsUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/structs/BitMapsUpgradeable.sol";
 import {INFTManagerDefination} from "src/interfaces/nft/INFTManager.sol";
-import {IDegenNFT, IDegenNFTDefination} from "src/interfaces/nft/IDegenNFT.sol";
+import {IDegenNFTDefination} from "src/interfaces/nft/IDegenNFT.sol";
+
+import {DegenNFT} from "src/nft/DegenNFT.sol";
 
 contract NFTManagerStorage is INFTManagerDefination {
     // degen nft address
-    IDegenNFT public degenNFT;
+    DegenNFT public degenNFT;
 
     // latest index of metadata map == tokenId, start from 1
     uint256 public latestMetadataIdx = 1;
