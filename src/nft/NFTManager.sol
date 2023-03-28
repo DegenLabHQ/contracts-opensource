@@ -1,18 +1,17 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity 0.8.17;
 
-import "@openzeppelin/contracts-upgradeable/utils/cryptography/MerkleProofUpgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/utils/CountersUpgradeable.sol";
+import {MerkleProofUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/cryptography/MerkleProofUpgradeable.sol";
 // import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import {SafeOwnableUpgradeable} from "@p12/contracts-lib/contracts/access/SafeOwnableUpgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/utils/StringsUpgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
+import {StringsUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/StringsUpgradeable.sol";
+import {UUPSUpgradeable} from "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 import {BitMapsUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/structs/BitMapsUpgradeable.sol";
 
-import "./DegenERC721URIStorageUpgradeable.sol";
-import "src/interfaces/nft/INFTManager.sol";
-import "src/interfaces/nft/IDegenNFT.sol";
-import "./NFTManagerStorage.sol";
+import {DegenERC721URIStorageUpgradeable} from "src/nft/DegenERC721URIStorageUpgradeable.sol";
+import {INFTManager} from "src/interfaces/nft/INFTManager.sol";
+import {IDegenNFT, IDegenNFTDefination} from "src/interfaces/nft/IDegenNFT.sol";
+import {NFTManagerStorage} from "src/nft/NFTManagerStorage.sol";
 
 contract NFTManager is
     SafeOwnableUpgradeable,
@@ -21,7 +20,6 @@ contract NFTManager is
     NFTManagerStorage
 {
     uint256 public constant SUPPORT_MAX_MINT_COUNT = 2009;
-    using CountersUpgradeable for CountersUpgradeable.Counter;
     using BitMapsUpgradeable for BitMapsUpgradeable.BitMap;
 
     /**********************************************
@@ -54,9 +52,9 @@ contract NFTManager is
             revert MintFeeNotEnough();
         }
 
-        bool verified = checkWhiteList(merkleProof, msg.sender);
+        bool valid = checkWhiteList(merkleProof, msg.sender);
 
-        if (!verified) {
+        if (!valid) {
             revert InvalidProof();
         }
 
@@ -239,9 +237,9 @@ contract NFTManager is
     function checkWhiteList(
         bytes32[] calldata merkleProof,
         address account
-    ) public view returns (bool verified) {
+    ) public view returns (bool valid) {
         bytes32 leaf = keccak256(bytes.concat(keccak256(abi.encode(account))));
-        verified = MerkleProofUpgradeable.verify(merkleProof, merkleRoot, leaf);
+        valid = MerkleProofUpgradeable.verify(merkleProof, merkleRoot, leaf);
     }
 
     function propertyOf(
