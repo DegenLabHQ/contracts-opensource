@@ -28,8 +28,6 @@ interface INFTManagerDefination {
     error NotTokenOwner();
     error InvalidTokens();
     error ZeroAddressSet();
-    error OnlyChainlinkVRFProxy();
-    error InvalidRequestId();
     error MintFeeNotEnough();
     error InvalidParams();
     error InvalidMintTime();

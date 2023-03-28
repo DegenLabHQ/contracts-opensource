@@ -1,10 +1,9 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity 0.8.17;
 
-import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
-import "src/interfaces/nft/IDegenNFT.sol";
-import "./DegenERC721URIStorageUpgradeable.sol";
+import {UUPSUpgradeable} from "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
+import {IDegenNFT} from "src/interfaces/nft/IDegenNFT.sol";
+import {DegenERC721URIStorageUpgradeable} from "src/nft/DegenERC721URIStorageUpgradeable.sol";
 import {SafeOwnableUpgradeable} from "@p12/contracts-lib/contracts/access/SafeOwnableUpgradeable.sol";
 
 contract DegenNFT is
@@ -88,9 +87,9 @@ contract DegenNFT is
 
     function setTokenURI(
         uint256 tokenId,
-        string memory tokenURI
+        string memory tokenURI_
     ) external onlyManager {
-        _setTokenURI(tokenId, tokenURI);
+        _setTokenURI(tokenId, tokenURI_);
     }
 
     function totalMinted() external view returns (uint256) {
@@ -133,10 +132,14 @@ contract DegenNFT is
         return 1;
     }
 
-    modifier onlyManager() {
+    function _checkManager() internal view {
         if (msg.sender != manager) {
             revert OnlyManager();
         }
+    }
+
+    modifier onlyManager() {
+        _checkManager();
         _;
     }
 }
