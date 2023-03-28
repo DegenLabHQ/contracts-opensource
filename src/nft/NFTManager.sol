@@ -6,7 +6,6 @@ import {MerkleProofUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/
 import {SafeOwnableUpgradeable} from "@p12/contracts-lib/contracts/access/SafeOwnableUpgradeable.sol";
 import {UUPSUpgradeable} from "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 import {BitMapsUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/structs/BitMapsUpgradeable.sol";
-
 import {INFTManager} from "src/interfaces/nft/INFTManager.sol";
 import {IDegenNFTDefination} from "src/interfaces/nft/IDegenNFT.sol";
 import {NFTManagerStorage} from "src/nft/NFTManagerStorage.sol";
