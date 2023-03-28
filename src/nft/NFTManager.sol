@@ -12,12 +12,11 @@ import {BitMapsUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/stru
 import "./DegenERC721URIStorageUpgradeable.sol";
 import "src/interfaces/nft/INFTManager.sol";
 import "src/interfaces/nft/IDegenNFT.sol";
-import "src/interfaces/nft/IChainlinkVRFProxy.sol";
 import "./NFTManagerStorage.sol";
 
 contract NFTManager is
-    UUPSUpgradeable,
     SafeOwnableUpgradeable,
+    UUPSUpgradeable,
     INFTManager,
     NFTManagerStorage
 {
@@ -61,8 +60,8 @@ contract NFTManager is
             revert InvalidProof();
         }
 
-        _mintTo(msg.sender, 1);
         hasMinted.set(uint160(msg.sender));
+        _mintTo(msg.sender, 1);
     }
 
     function publicMint(
@@ -81,70 +80,6 @@ contract NFTManager is
         }
 
         _mintTo(msg.sender, quantity);
-    }
-
-    function airdrop(
-        address[] calldata receivers,
-        uint256[] calldata quantities
-    ) external payable override onlyOwner {
-        if (receivers.length != quantities.length) {
-            revert InvalidParams();
-        }
-
-        uint256 totalCount;
-        for (uint256 i = 0; i < quantities.length; i++) {
-            totalCount += quantities[i];
-            if (quantities[i] == 0) {
-                revert InvalidParams();
-            }
-        }
-
-        if (msg.value < totalCount * mintFee) {
-            revert MintFeeNotEnough();
-        }
-
-        if (degenNFT.totalMinted() + totalCount > SUPPORT_MAX_MINT_COUNT) {
-            revert OutOfMaxMintCount();
-        }
-
-        for (uint256 i = 0; i < receivers.length; i++) {
-            _mintTo(receivers[i], quantities[i]);
-        }
-    }
-
-    function openMysteryBox(
-        uint256[] calldata tokenIds
-    ) external override onlySigner {
-        for (uint256 i = 0; i < tokenIds.length; i++) {
-            uint256 tokenId = tokenIds[i];
-            if (opened[tokenId]) {
-                continue;
-            }
-
-            uint256 requestId = IChainlinkVRFProxy(chainlinkVRFProxy)
-                .requestRandomWords(1, 30000);
-
-            requestIdToTokenId[requestId] = tokenId;
-        }
-    }
-
-    /**
-     * @dev chainlink vrf proxy callback request randomWords
-     * @param requestId requestId generage when request randomWords
-     * @param randomWords return randomWords of requestId
-     */
-    function fulfillRandomWordsCallback(
-        uint256 requestId,
-        uint256[] memory randomWords
-    ) external onlyChainlinkVRFProxy {
-        uint256 tokenId = requestIdToTokenId[requestId];
-        if (tokenId == 0) {
-            revert InvalidRequestId();
-        }
-
-        if (randomWords.length > 0) {
-            _openMysteryBoxOf(tokenId, randomWords[0]);
-        }
     }
 
     function merge(uint256 tokenId1, uint256 tokenId2) external override {
@@ -236,18 +171,6 @@ contract NFTManager is
             metadatas[latestMetadataIdx] = metadataList[i];
             latestMetadataIdx++;
         }
-    }
-
-    // set chainlink vrf for open mystery box
-    function setChainlinkVRFProxy(
-        address chainlinkVRFProxy_
-    ) external onlyOwner {
-        if (address(chainlinkVRFProxy_) == address(0)) {
-            revert ZeroAddressSet();
-        }
-        chainlinkVRFProxy = chainlinkVRFProxy_;
-
-        emit ChangedChainlinkVRFProxy(chainlinkVRFProxy_);
     }
 
     function setMintFee(uint256 mintFee_) external onlyOwner {
@@ -349,8 +272,8 @@ contract NFTManager is
         emit Minted(msg.sender, quantity, startTokenId);
     }
 
-    function _checkOwner(address owner, uint256 tokenId) internal view {
-        if (degenNFT.ownerOf(tokenId) != owner) {
+    function _checkOwner(address owner_, uint256 tokenId) internal view {
+        if (degenNFT.ownerOf(tokenId) != owner_) {
             revert NotTokenOwner();
         }
     }
@@ -379,44 +302,6 @@ contract NFTManager is
             token1Property.tokenType == token2Property.tokenType;
     }
 
-    function _openMysteryBoxOf(uint256 tokenId, uint256 randomWord) internal {
-        uint256 tempRandomWord = randomWord;
-        uint256 randomMetadataId = tempRandomWord % SUPPORT_MAX_MINT_COUNT;
-        bool metadataHasUsed = metadataUsed[randomMetadataId];
-        while (metadataHasUsed && tempRandomWord > 0) {
-            tempRandomWord = tempRandomWord / 1000;
-            randomMetadataId = tempRandomWord % SUPPORT_MAX_MINT_COUNT;
-            metadataHasUsed = metadataUsed[randomMetadataId];
-        }
-
-        if (metadataHasUsed) {
-            // match tokenId and metadata failed
-            _matchTokenIdAndMetadataFailed(tokenId);
-        } else {
-            // match tokenId and metadata success
-            _matchTokenIdAndMetadataSuccess(tokenId, randomMetadataId);
-        }
-    }
-
-    function _matchTokenIdAndMetadataFailed(uint256 tokenId) internal {
-        emit OpenMysteryBoxFailed(tokenId);
-    }
-
-    function _matchTokenIdAndMetadataSuccess(
-        uint256 tokenId,
-        uint256 metadataId
-    ) internal {
-        IDegenNFTDefination.Property memory property = metadatas[metadataId];
-        degenNFT.setProperties(tokenId, property);
-
-        _setTokenURIOf(tokenId, metadataId);
-
-        opened[tokenId] = true;
-        metadataUsed[metadataId] = true;
-
-        emit OpenMysteryBoxSuccess(tokenId, metadataId);
-    }
-
     function _setTokenURIOf(uint256 tokenId, uint256 metadataId) internal {
         degenNFT.setTokenURI(
             tokenId,
@@ -434,20 +319,8 @@ contract NFTManager is
         _;
     }
 
-    modifier onlyChainlinkVRFProxy() {
-        if (msg.sender != chainlinkVRFProxy) {
-            revert OnlyChainlinkVRFProxy();
-        }
-        _;
-    }
-
     modifier onlyMintTime(MintType mintType) {
         _checkMintTime(mintType);
         _;
     }
-
-    /**********************************************
-     * required functions
-     **********************************************/
-    receive() external payable {}
 }

@@ -80,19 +80,6 @@ interface INFTManager is INFTManagerDefination {
      */
     function publicMint(uint256 quantity) external payable;
 
-    /**
-     * @dev signer mint and airdrop NFT to receivers
-     */
-    function airdrop(
-        address[] calldata receivers,
-        uint256[] calldata quantities
-    ) external payable;
-
-    /**
-     * @dev bind tokenId and metadata
-     */
-    function openMysteryBox(uint256[] calldata tokenIds) external;
-
     function merge(uint256 tokenId1, uint256 tokenId2) external;
 
     function burn(uint256 tokenId) external;

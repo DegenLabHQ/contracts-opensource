@@ -5,12 +5,13 @@ import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 import "src/interfaces/nft/IDegenNFT.sol";
 import "./DegenERC721URIStorageUpgradeable.sol";
+import {SafeOwnableUpgradeable} from "@p12/contracts-lib/contracts/access/SafeOwnableUpgradeable.sol";
 
 contract DegenNFT is
+    SafeOwnableUpgradeable,
     UUPSUpgradeable,
     DegenERC721URIStorageUpgradeable,
-    IDegenNFT,
-    OwnableUpgradeable
+    IDegenNFT
 {
     // Mapping from tokenId to Property
     mapping(uint256 => uint16) internal properties;
@@ -23,7 +24,7 @@ contract DegenNFT is
     // Mapping tokenId to level
     mapping(uint256 => uint256) internal levels;
 
-    uint256[48] private _gap;
+    uint256[46] private _gap;
 
     function _authorizeUpgrade(
         address newImplementation
@@ -32,12 +33,11 @@ contract DegenNFT is
     function initialize(
         string calldata name_,
         string calldata symbol_,
-        address owner // upgrade owner
+        address owner_ // upgrade owner
     ) public initializerERC721A initializer {
         __ERC721A_init(name_, symbol_);
         __ERC721URIStorage_init_unchained();
-        __Ownable_init_unchained();
-        _transferOwnership(owner);
+        __Ownable_init_unchained(owner_);
     }
 
     function mint(address to, uint256 quantity) external onlyManager {

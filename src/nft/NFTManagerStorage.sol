@@ -9,9 +9,6 @@ contract NFTManagerStorage is INFTManagerDefination {
     // degen nft address
     IDegenNFT public degenNFT;
 
-    // chainlink vrf proxy address
-    address public chainlinkVRFProxy;
-
     // latest index of metadata map
     uint16 public latestMetadataIdx;
 
@@ -27,15 +24,6 @@ contract NFTManagerStorage is INFTManagerDefination {
     // id => metadata map
     mapping(uint256 => IDegenNFTDefination.Property) metadatas;
 
-    // Mapping from requestId to tokenId
-    mapping(uint256 => uint256) requestIdToTokenId;
-
-    // Mapping metadataId to wether has been bind to NFT
-    mapping(uint256 => bool) metadataUsed;
-
-    // Mapping from tokenId to wether has been bind metadata
-    mapping(uint256 => bool) opened;
-
     // Mapping from mint type to mint start and end time
     mapping(MintType => MintTime) mintTime;
 
@@ -45,7 +33,5 @@ contract NFTManagerStorage is INFTManagerDefination {
     // public mint pay mint fee
     uint256 public mintFee;
 
-    uint256[] private openFailedBoxs;
-
-    uint256[48] private _gap;
+    uint256[41] private _gap;
 }
