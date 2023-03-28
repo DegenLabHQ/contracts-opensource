@@ -110,24 +110,24 @@ contract NFTManagerTest is Test, INFTManagerDefination {
 
     function _setMintTime() internal {
         vm.startPrank(owner);
-        INFTManagerDefination.MintTime
-            memory whitelistMintTime = INFTManagerDefination.MintTime({
+        INFTManagerDefination.StageTime
+            memory whitelistMintTime = INFTManagerDefination.StageTime({
                 startTime: block.timestamp + 10,
                 endTime: block.timestamp + 60 * 60
             });
         nftManager.setMintTime(
-            INFTManagerDefination.MintType.WhitelistMint,
+            INFTManagerDefination.StageType.WhitelistMint,
             whitelistMintTime
         );
 
-        INFTManagerDefination.MintTime
-            memory publicMintTime = INFTManagerDefination.MintTime({
+        INFTManagerDefination.StageTime
+            memory publicMintTime = INFTManagerDefination.StageTime({
                 startTime: block.timestamp + 60,
                 endTime: block.timestamp + 60 * 60
             });
 
         nftManager.setMintTime(
-            INFTManagerDefination.MintType.PublicMint,
+            INFTManagerDefination.StageType.PublicMint,
             publicMintTime
         );
         vm.stopPrank();
