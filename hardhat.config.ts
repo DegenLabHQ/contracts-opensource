@@ -38,14 +38,14 @@ const config: HardhatUserConfig = {
     settings: {
       optimizer: {
         enabled: true,
-        runs: 1,
+        runs: 200,
         // details: {
         //   yulDetails: {
         //     optimizerSteps: "u",
         //   },
         // },
       },
-      viaIR: true,
+      // viaIR: true,
     },
   },
   networks: {
@@ -112,6 +112,14 @@ const config: HardhatUserConfig = {
       deploy: ["deploy/goerli"],
       tags: ["test"],
     },
+    ethereum: {
+      url: process.env.ETH_CHAIN_URL || "",
+      accounts: accounts,
+      gas: "auto",
+      gasPrice: "auto",
+      deploy: ["deploy/ethereum"],
+      tags: ["prod"],
+    },
   },
   namedAccounts: {
     deployer: {
@@ -133,6 +141,7 @@ const config: HardhatUserConfig = {
     degen_deployer: {
       bnbMain: degen_deployer,
       bnbMainBeta: degen_deployer,
+      ethereum: degen_deployer,
     },
   },
 
