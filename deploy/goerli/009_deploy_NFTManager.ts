@@ -1,7 +1,7 @@
 import { DeployFunction } from "hardhat-deploy/types";
 import { parseEther } from "ethers/lib/utils";
 
-enum MintType {
+enum StageType {
   Invalid,
   WhitelistMint,
   PublicMint,
@@ -43,7 +43,7 @@ const func: DeployFunction = async function ({
     "NFTManager",
     { from: owner, log: true },
     "setMintTime",
-    MintType.WhitelistMint,
+    StageType.WhitelistMint,
     [1680069600, 1680350400]
   );
   // set public mint time
@@ -51,7 +51,7 @@ const func: DeployFunction = async function ({
     "NFTManager",
     { from: owner, log: true },
     "setMintTime",
-    MintType.PublicMint,
+    StageType.PublicMint,
     [1680091200, 1680350400]
   );
 
@@ -59,7 +59,7 @@ const func: DeployFunction = async function ({
     "NFTManager",
     { from: owner, log: true },
     "setMintTime",
-    MintType.Merge,
+    StageType.Merge,
     []
   );
 
