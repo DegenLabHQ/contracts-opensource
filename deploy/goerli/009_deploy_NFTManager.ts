@@ -2,8 +2,10 @@ import { DeployFunction } from "hardhat-deploy/types";
 import { parseEther } from "ethers/lib/utils";
 
 enum MintType {
+  Invalid,
   WhitelistMint,
   PublicMint,
+  Merge,
 }
 
 const func: DeployFunction = async function ({
@@ -51,6 +53,14 @@ const func: DeployFunction = async function ({
     "setMintTime",
     MintType.PublicMint,
     [1680091200, 1680350400]
+  );
+
+  await execute(
+    "NFTManager",
+    { from: owner, log: true },
+    "setMintTime",
+    MintType.Merge,
+    []
   );
 
   // set mint fee
