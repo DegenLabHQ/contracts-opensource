@@ -9,8 +9,8 @@ contract NFTManagerStorage is INFTManagerDefination {
     // degen nft address
     IDegenNFT public degenNFT;
 
-    // latest index of metadata map
-    uint16 public latestMetadataIdx;
+    // latest index of metadata map == tokenId, start from 1
+    uint256 public latestMetadataIdx = 1;
 
     // white list merkle tree root
     bytes32 public merkleRoot;

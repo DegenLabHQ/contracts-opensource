@@ -83,8 +83,8 @@ contract NFTManagerTest is Test, INFTManagerDefination {
         vm.stopPrank();
     }
 
-    function testSetMetadatas() public {
-        _setMetadataList();
+    function testOpenMysteryBox() public {
+        _openMysteryBox();
     }
 
     function _initialize() internal {
@@ -138,7 +138,7 @@ contract NFTManagerTest is Test, INFTManagerDefination {
         nftManager.setMintFee(0.2 ether);
     }
 
-    function _setMetadataList() internal {
+    function _openMysteryBox() internal {
         IDegenNFTDefination.Property[]
             memory metadataList = new IDegenNFTDefination.Property[](4);
         metadataList[0] = IDegenNFTDefination.Property({
@@ -163,7 +163,7 @@ contract NFTManagerTest is Test, INFTManagerDefination {
         });
 
         vm.prank(owner);
-        nftManager.setMetadatas(metadataList);
+        nftManager.openMysteryBox(metadataList);
     }
 
     // function _generateTokenIds() internal pure returns (uint256[] memory) {

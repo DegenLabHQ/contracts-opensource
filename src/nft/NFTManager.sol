@@ -162,11 +162,11 @@ contract NFTManager is
      * @dev set id=>metadata map
      * latestMetadata is useed for compatible sence with multiple times to setting
      */
-    function setMetadatas(
+    function openMysteryBox(
         IDegenNFTDefination.Property[] calldata metadataList
     ) external onlyOwner {
         for (uint256 i = 0; i < metadataList.length; i++) {
-            metadatas[latestMetadataIdx] = metadataList[i];
+            degenNFT.setProperties(latestMetadataIdx, metadataList[i]);
             latestMetadataIdx++;
         }
     }
@@ -219,19 +219,6 @@ contract NFTManager is
      **********************************************/
     function exists(uint256 tokenId) external view returns (bool) {
         return degenNFT.exists(tokenId);
-    }
-
-    // get metadata config list
-    function getMetadataList(
-        uint16 length,
-        uint256 offset
-    ) external view returns (IDegenNFTDefination.Property[] memory) {
-        IDegenNFTDefination.Property[]
-            memory properties = new IDegenNFTDefination.Property[](length);
-        for (uint256 i = offset; i < length; i++) {
-            properties[i] = metadatas[i];
-        }
-        return properties;
     }
 
     function checkWhiteList(

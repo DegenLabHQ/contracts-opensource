@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity 0.8.17;
 
+import {IDegenNFTDefination} from "./IDegenNFT.sol";
+
 interface INFTManagerDefination {
     enum MintType {
         WhitelistMint,
@@ -77,6 +79,13 @@ interface INFTManager is INFTManagerDefination {
      * @param quantity quantities want to mint
      */
     function publicMint(uint256 quantity) external payable;
+
+    /**
+     * @dev set metadata to tokenId
+     */
+    function openMysteryBox(
+        IDegenNFTDefination.Property[] calldata metadataList
+    ) external;
 
     function merge(uint256 tokenId1, uint256 tokenId2) external;
 
