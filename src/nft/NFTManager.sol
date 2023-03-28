@@ -47,7 +47,7 @@ contract NFTManager is
         payable
         override
         whenNotPaused
-        onlyMintTime(MintType.WhitelistMint)
+        onlyStageTime(StageType.WhitelistMint)
     {
         if (hasMinted.get(uint160(msg.sender))) {
             revert AlreadyMinted();
@@ -73,7 +73,13 @@ contract NFTManager is
 
     function publicMint(
         uint256 quantity
-    ) public payable override whenNotPaused onlyMintTime(MintType.PublicMint) {
+    )
+        public
+        payable
+        override
+        whenNotPaused
+        onlyStageTime(StageType.PublicMint)
+    {
         if (degenNFT.totalMinted() + quantity > SUPPORT_MAX_MINT_COUNT) {
             revert OutOfMaxMintCount();
         }
@@ -92,7 +98,7 @@ contract NFTManager is
     function merge(
         uint256 tokenId1,
         uint256 tokenId2
-    ) external override whenNotPaused {
+    ) external override onlyStageTime(StageType.Merge) whenNotPaused {
         _checkOwner(msg.sender, tokenId1);
         _checkOwner(msg.sender, tokenId2);
 
@@ -196,14 +202,14 @@ contract NFTManager is
     }
 
     function setMintTime(
-        MintType mintType_,
-        MintTime calldata mintTime_
+        StageType mintType_,
+        StageTime calldata mintTime_
     ) external onlyOwner {
         if (mintTime_.startTime >= mintTime_.endTime) {
             revert InvalidParams();
         }
 
-        mintTime[mintType_] = mintTime_;
+        stageTime[mintType_] = mintTime_;
 
         emit SetMintTime(mintType_, mintTime_);
     }
@@ -263,10 +269,10 @@ contract NFTManager is
         }
     }
 
-    function _checkMintTime(MintType mintType) internal view {
+    function _checkStageTime(StageType stageType) internal view {
         if (
-            block.timestamp < mintTime[mintType].startTime ||
-            block.timestamp > mintTime[mintType].endTime
+            block.timestamp < stageTime[stageType].startTime ||
+            block.timestamp > stageTime[stageType].endTime
         ) {
             revert InvalidMintTime();
         }
@@ -297,8 +303,8 @@ contract NFTManager is
         _;
     }
 
-    modifier onlyMintTime(MintType mintType) {
-        _checkMintTime(mintType);
+    modifier onlyStageTime(StageType stageType) {
+        _checkStageTime(stageType);
         _;
     }
 }

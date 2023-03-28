@@ -4,12 +4,13 @@ pragma solidity 0.8.17;
 import {IDegenNFTDefination} from "./IDegenNFT.sol";
 
 interface INFTManagerDefination {
-    enum MintType {
+    enum StageType {
         Invalid,
         WhitelistMint,
-        PublicMint
+        PublicMint,
+        Merge
     }
-    struct MintTime {
+    struct StageTime {
         uint256 startTime;
         uint256 endTime; // mint end time,if no need set 4294967295(2106-02-07 14:28:15)
     }
@@ -65,7 +66,7 @@ interface INFTManagerDefination {
     event OpenMysteryBoxSuccess(uint256 tokenId, uint256 metadataId);
     event SetDegenNFT(address degenNFT);
     event MintFeeSet(uint256 mintFee);
-    event SetMintTime(MintType mintType, MintTime mintTime);
+    event SetMintTime(StageType stageType, StageTime stageTime);
     event SetBurnRefundConfig(
         uint256 level,
         BurnRefundConfig burnRefundConfigs
