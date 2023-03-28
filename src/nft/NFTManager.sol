@@ -210,7 +210,7 @@ contract NFTManager is
         for (uint256 i = 0; i < configs.length; i++) {
             uint256 level = levels[i];
             BurnRefundConfig memory config = configs[i];
-            burnRefundConfigs[level] = configs[i];
+            burnRefundConfigs[level] = config;
             emit SetBurnRefundConfig(level, config);
         }
     }
