@@ -61,9 +61,6 @@ interface INFTManagerDefination {
         uint256 refundNativeToken,
         uint256 refundDegenToken
     );
-    event ChangedChainlinkVRFProxy(address chainlinkVRFProxy);
-    event OpenMysteryBoxFailed(uint256 tokenId);
-    event OpenMysteryBoxSuccess(uint256 tokenId, uint256 metadataId);
     event SetDegenNFT(address degenNFT);
     event MintFeeSet(uint256 mintFee);
     event SetMintTime(StageType stageType, StageTime stageTime);
@@ -84,13 +81,6 @@ interface INFTManager is INFTManagerDefination {
      * @param quantity quantities want to mint
      */
     function publicMint(uint256 quantity) external payable;
-
-    /**
-     * @dev set metadata to tokenId
-     */
-    function openMysteryBox(
-        IDegenNFTDefination.Property[] calldata metadataList
-    ) external;
 
     function merge(uint256 tokenId1, uint256 tokenId2) external;
 

@@ -10,7 +10,7 @@ export enum Rarity {
 }
 
 export enum TokenType {
-  Standard,
+  Degen,
   Shard,
 }
 
@@ -38,12 +38,12 @@ export const metadataList = [
   {
     name: "CZ",
     rarity: Rarity.Legendary,
-    tokenType: TokenType.Standard,
+    tokenType: TokenType.Degen,
   },
   {
     name: "CZ",
     rarity: Rarity.Legendary,
-    tokenType: TokenType.Standard,
+    tokenType: TokenType.Degen,
   },
 ];
 

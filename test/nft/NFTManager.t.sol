@@ -5,14 +5,12 @@ import "forge-std/Test.sol";
 import "src/nft/DegenNFT.sol";
 import "src/nft/NFTManager.sol";
 import "murky/Merkle.sol";
-import "src/mock/ChainlinkVRFProxyMock.sol";
 import {INFTManager, INFTManagerDefination} from "src/interfaces/nft/INFTManager.sol";
 import {IDegenNFTDefination, IDegenNFT} from "src/interfaces/nft/IDegenNFT.sol";
 
 contract NFTManagerTest is Test, INFTManagerDefination {
     DegenNFT degenNFT;
     NFTManager nftManager;
-    ChainlinkVRFProxyMock chainlinkVRFProxyMock;
     address owner;
     address signer;
 
@@ -28,9 +26,6 @@ contract NFTManagerTest is Test, INFTManagerDefination {
         _updateSigners();
         _setMintTime();
         _setMintFee();
-
-        chainlinkVRFProxyMock = new ChainlinkVRFProxyMock();
-        chainlinkVRFProxyMock.setController(address(nftManager));
 
         vm.prank(owner);
         degenNFT.setBaseURI("https://www.baseuri.com/");
@@ -83,9 +78,9 @@ contract NFTManagerTest is Test, INFTManagerDefination {
         vm.stopPrank();
     }
 
-    function testOpenMysteryBox() public {
-        _openMysteryBox();
-    }
+    // function testOpenMysteryBox() public {
+    //     _openMysteryBox();
+    // }
 
     function _initialize() internal {
         degenNFT.initialize("Degen2009", "Degen2009", owner);
@@ -138,33 +133,33 @@ contract NFTManagerTest is Test, INFTManagerDefination {
         nftManager.setMintFee(0.2 ether);
     }
 
-    function _openMysteryBox() internal {
-        IDegenNFTDefination.Property[]
-            memory metadataList = new IDegenNFTDefination.Property[](4);
-        metadataList[0] = IDegenNFTDefination.Property({
-            nameId: 1001,
-            rarity: 1,
-            tokenType: 0
-        });
-        metadataList[1] = IDegenNFTDefination.Property({
-            nameId: 1001,
-            rarity: 1,
-            tokenType: 0
-        });
-        metadataList[2] = IDegenNFTDefination.Property({
-            nameId: 1001,
-            rarity: 2,
-            tokenType: 0
-        });
-        metadataList[3] = IDegenNFTDefination.Property({
-            nameId: 1001,
-            rarity: 2,
-            tokenType: 0
-        });
+    // function _openMysteryBox() internal {
+    //     IDegenNFTDefination.Property[]
+    //         memory metadataList = new IDegenNFTDefination.Property[](4);
+    //     metadataList[0] = IDegenNFTDefination.Property({
+    //         nameId: 1001,
+    //         rarity: 1,
+    //         tokenType: 0
+    //     });
+    //     metadataList[1] = IDegenNFTDefination.Property({
+    //         nameId: 1001,
+    //         rarity: 1,
+    //         tokenType: 0
+    //     });
+    //     metadataList[2] = IDegenNFTDefination.Property({
+    //         nameId: 1001,
+    //         rarity: 2,
+    //         tokenType: 0
+    //     });
+    //     metadataList[3] = IDegenNFTDefination.Property({
+    //         nameId: 1001,
+    //         rarity: 2,
+    //         tokenType: 0
+    //     });
 
-        vm.prank(owner);
-        nftManager.openMysteryBox(metadataList);
-    }
+    //     vm.prank(owner);
+    //     nftManager.openMysteryBox(metadataList);
+    // }
 
     // function _generateTokenIds() internal pure returns (uint256[] memory) {
     //     uint256[] memory tokenIds = new uint256[](4);

@@ -8,7 +8,7 @@ import {UUPSUpgradeable} from "@openzeppelin/contracts-upgradeable/proxy/utils/U
 import {BitMapsUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/structs/BitMapsUpgradeable.sol";
 
 import {INFTManager} from "src/interfaces/nft/INFTManager.sol";
-import {IDegenNFT, IDegenNFTDefination} from "src/interfaces/nft/IDegenNFT.sol";
+import {IDegenNFTDefination} from "src/interfaces/nft/IDegenNFT.sol";
 import {NFTManagerStorage} from "src/nft/NFTManagerStorage.sol";
 import {PausableUpgradeable} from "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
 
@@ -173,18 +173,6 @@ contract NFTManager is
         merkleRoot = root;
 
         emit MerkleTreeRootSet(root);
-    }
-
-    /**
-     * @dev set id=>metadata map
-     */
-    function openMysteryBox(
-        IDegenNFTDefination.Property[] calldata metadataList
-    ) external onlyOwner {
-        for (uint256 i = 0; i < metadataList.length; i++) {
-            degenNFT.setProperties(latestMetadataIdx, metadataList[i]);
-            latestMetadataIdx++;
-        }
     }
 
     function setMintFee(uint256 mintFee_) external onlyOwner {

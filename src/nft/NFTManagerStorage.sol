@@ -11,9 +11,6 @@ contract NFTManagerStorage is INFTManagerDefination {
     // degen nft address
     DegenNFT public degenNFT;
 
-    // latest index of metadata map == tokenId, start from 1
-    uint256 public latestMetadataIdx = 1;
-
     // white list merkle tree root
     bytes32 public merkleRoot;
 
@@ -22,9 +19,6 @@ contract NFTManagerStorage is INFTManagerDefination {
     // record minted users to avoid whitelist users mint more than once
     // mapping(address => bool) public minted;
     BitMapsUpgradeable.BitMap internal hasMinted;
-
-    // id => metadata map
-    mapping(uint256 => IDegenNFTDefination.Property) metadatas;
 
     // Mapping from mint type to mint start and end time
     mapping(StageType => StageTime) stageTime;
@@ -35,5 +29,5 @@ contract NFTManagerStorage is INFTManagerDefination {
     // public mint pay mint fee
     uint256 public mintFee;
 
-    uint256[41] private _gap;
+    uint256[43] private _gap;
 }
