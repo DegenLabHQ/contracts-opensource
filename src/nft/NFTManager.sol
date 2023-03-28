@@ -15,8 +15,8 @@ import "src/interfaces/nft/IDegenNFT.sol";
 import "./NFTManagerStorage.sol";
 
 contract NFTManager is
-    UUPSUpgradeable,
     SafeOwnableUpgradeable,
+    UUPSUpgradeable,
     INFTManager,
     NFTManagerStorage
 {
