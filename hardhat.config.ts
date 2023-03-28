@@ -83,6 +83,14 @@ const config: HardhatUserConfig = {
       deploy: ["deploy/scrollAlpha"],
       tags: ["test"],
     },
+    goerli: {
+      url: process.env.GOERLI_CHAIN_URL || "",
+      accounts: accounts,
+      gas: "auto",
+      gasPrice: "auto",
+      deploy: ["deploy/goerli"],
+      tags: ["test"],
+    },
   },
   namedAccounts: {
     deployer: {
@@ -91,6 +99,7 @@ const config: HardhatUserConfig = {
       bnbMain: deployer,
       mumbai: deployer,
       scrollAlpha: deployer,
+      goerli: deployer,
     },
     owner: {
       bnbTest: owner,
@@ -98,6 +107,7 @@ const config: HardhatUserConfig = {
       bnbMain: owner,
       mumbai: owner,
       scrollAlpha: owner,
+      goerli: owner,
     },
     degen_deployer: {
       bnbMain: degen_deployer,
@@ -131,6 +141,7 @@ const config: HardhatUserConfig = {
       bsc: process.env.BNB_SCAN_API_KEY!,
       polygonMumbai: process.env.POLYGON_SCAN_API_KEY!,
       scrollAlpha: "scrollAlpha",
+      goerli: process.env.GOERLI_SCAN_API_KEY!,
     },
     customChains: [
       {
