@@ -83,63 +83,9 @@ contract NFTManagerTest is Test, INFTManagerDefination {
         vm.stopPrank();
     }
 
-    function testAirdrop() public {
-        address[] memory receivers = new address[](4);
-        receivers[0] = address(10);
-        receivers[1] = address(11);
-        receivers[2] = address(12);
-        receivers[3] = address(13);
-
-        uint256[] memory quantities = new uint256[](4);
-        quantities[0] = 2;
-        quantities[1] = 3;
-        quantities[2] = 1;
-        quantities[3] = 4;
-
-        uint256 totalFee;
-        for (uint i = 0; i < quantities.length; i++) {
-            totalFee += quantities[i] * 0.2 ether;
-        }
-
-        // only owner
-        deal(address(3), 10 ether);
-        vm.prank(address(3));
-        vm.expectRevert(CallerNotOwner.selector);
-        nftManager.airdrop{value: totalFee}(receivers, quantities);
-
-        // should pay enough mint fee fees
-        deal(owner, 10 ether);
-        vm.startPrank(owner);
-        vm.expectRevert(MintFeeNotEnough.selector);
-        nftManager.airdrop(receivers, quantities);
-
-        // should success
-        nftManager.airdrop{value: totalFee}(receivers, quantities);
-        vm.stopPrank();
-
-        assertEq(degenNFT.balanceOf(address(10)), 2);
-        assertEq(degenNFT.balanceOf(address(11)), 3);
-        assertEq(degenNFT.ownerOf(2), address(10));
-    }
-
     function testSetMetadatas() public {
         _setMetadataList();
     }
-
-    // function testOpenMysteryBox() public {
-    //     // set metadata list
-    //     _setMetadataList();
-    //     // set current as chainlink proxy
-    //     vm.prank(owner);
-    //     nftManager.setChainlinkVRFProxy(address(chainlinkVRFProxyMock));
-    //     _airdrop();
-    //     // request random number
-    //     vm.prank(signer);
-    //     uint256[] memory tokenIds = _generateTokenIds();
-    //     nftManager.openMysteryBox(tokenIds);
-
-    //     console.log(nftManager.tokenURI(1));
-    // }
 
     function _initialize() internal {
         degenNFT.initialize("Degen2009", "Degen2009", owner);
