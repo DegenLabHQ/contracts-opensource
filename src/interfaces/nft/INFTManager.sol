@@ -5,6 +5,7 @@ import {IDegenNFTDefination} from "./IDegenNFT.sol";
 
 interface INFTManagerDefination {
     enum MintType {
+        Invalid,
         WhitelistMint,
         PublicMint
     }
