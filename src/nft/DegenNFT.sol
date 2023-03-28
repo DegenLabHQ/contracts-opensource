@@ -64,13 +64,10 @@ contract DegenNFT is
 
     function setProperties(
         uint256 tokenId,
-        Property memory _property
+        Property memory property_
     ) external onlyManager {
         // encode property
-        uint16 property;
-        property = (property << 12) | _property.nameId;
-        property = (property << 3) | _property.rarity;
-        property = (property << 1) | _property.tokenType;
+        uint16 property = encodeProperty(property_);
 
         // storage property
         uint256 bucket = tokenId >> 4;
@@ -78,7 +75,11 @@ contract DegenNFT is
         mask |= uint256(property) << ((tokenId % 16) * 16);
         properties[bucket] = mask;
 
-        emit SetProperties(_property);
+        emit SetProperties(property_);
+    }
+
+    function setBucket(uint256 bucket, uint256 mask) external onlyManager {
+        properties[bucket] = mask;
     }
 
     function setLevel(uint256 tokenId, uint256 level) external onlyManager {
@@ -89,6 +90,22 @@ contract DegenNFT is
         return _totalMinted();
     }
 
+    function encodeProperty(
+        Property memory property_
+    ) public pure returns (uint16 property) {
+        property = (property << 12) | property_.nameId;
+        property = (property << 3) | property_.rarity;
+        property = (property << 1) | property_.tokenType;
+    }
+
+    function decodeProperty(
+        uint16 property
+    ) public pure returns (uint16 nameId, uint16 rarity, uint16 tokenType) {
+        nameId = (property >> 4) & 0x0fff;
+        rarity = (property >> 1) & 0x07;
+        tokenType = property & 0x01;
+    }
+
     function getProperty(
         uint256 tokenId
     ) external view returns (Property memory) {
@@ -96,12 +113,11 @@ contract DegenNFT is
         uint256 mask = properties[bucket];
         uint16 property = uint16((mask >> ((tokenId % 16) * 16)) & 0xffff);
 
-        return
-            Property({
-                nameId: (property >> 4) & 0x0fff,
-                rarity: (property >> 1) & 0x07,
-                tokenType: property & 0x01
-            });
+        (uint16 nameId, uint16 rarity, uint16 tokenType) = decodeProperty(
+            property
+        );
+
+        return Property({nameId: nameId, rarity: rarity, tokenType: tokenType});
     }
 
     /**

@@ -68,6 +68,7 @@ interface INFTManagerDefination {
         uint256 level,
         BurnRefundConfig burnRefundConfigs
     );
+    event SetBucket(uint256 bucket, uint256 bucketValue);
 }
 
 interface INFTManager is INFTManagerDefination {
