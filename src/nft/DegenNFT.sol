@@ -33,11 +33,11 @@ contract DegenNFT is
     function initialize(
         string calldata name_,
         string calldata symbol_,
-        address owner // upgrade owner
+        address owner_ // upgrade owner
     ) public initializerERC721A initializer {
         __ERC721A_init(name_, symbol_);
         __ERC721URIStorage_init_unchained();
-        __Ownable_init_unchained(owner);
+        __Ownable_init_unchained(owner_);
     }
 
     function mint(address to, uint256 quantity) external onlyManager {

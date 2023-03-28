@@ -272,8 +272,8 @@ contract NFTManager is
         emit Minted(msg.sender, quantity, startTokenId);
     }
 
-    function _checkOwner(address owner, uint256 tokenId) internal view {
-        if (degenNFT.ownerOf(tokenId) != owner) {
+    function _checkOwner(address owner_, uint256 tokenId) internal view {
+        if (degenNFT.ownerOf(tokenId) != owner_) {
             revert NotTokenOwner();
         }
     }
