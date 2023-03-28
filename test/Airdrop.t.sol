@@ -1,13 +1,13 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity 0.8.17;
 
-import "test/RebornPortal.t.sol";
+import "test/portal/RebornPortalBase.t.sol";
 
 import {PortalLib} from "src/PortalLib.sol";
 
 import "forge-std/console.sol";
 
-contract AirdropTest is RebornPortalTest {
+contract AirdropTest is RebornPortalBaseTest {
     function setDropConf() public {
         // set drop conf
         vm.prank(owner);
@@ -18,13 +18,44 @@ contract AirdropTest is RebornPortalTest {
                 3 hours,
                 uint40(block.timestamp),
                 uint40(block.timestamp),
-                300,
-                1000
+                20,
+                10,
+                800,
+                400
             )
         );
     }
 
+    function testManyDrop() public {
+        testUpKeepProgressSmoothly();
+        testUpKeepProgressSmoothly();
+        testUpKeepProgressSmoothly();
+        testUpKeepProgressSmoothly();
+        testUpKeepProgressSmoothly();
+    }
+
+    function _mockIncarnate() internal {
+        address user = address(uint160(uint256(keccak256(abi.encode(9999)))));
+
+        deal(user, 10000 ether);
+
+        vm.startPrank(user);
+
+        payable(address(portal)).call{value: 1000 ether}(
+            abi.encodeWithSignature(
+                "incarnate((uint256,uint256),address,uint256)",
+                0.1 ether,
+                0.5 ether,
+                address(1),
+                0.1 ether
+            )
+        );
+
+        vm.stopPrank();
+    }
+
     function testUpKeepProgressSmoothly() public {
+        _mockIncarnate();
         mockEngravesAndInfuses(120);
 
         setDropConf();
@@ -50,13 +81,21 @@ contract AirdropTest is RebornPortalTest {
         uint256[] memory words;
         // fulfill random number of the reborn request;
         words = new uint256[](10);
-        vm.prank(_vrfCoordinator);
-        portal.rawFulfillRandomWords(1, words);
+        vm.startPrank(_vrfCoordinator);
+        portal.rawFulfillRandomWords(
+            VRFCoordinatorV2Mock(_vrfCoordinator)._idx() - 1,
+            words
+        );
+        vm.stopPrank();
 
         // fulfill random number of the native request;
         words = new uint256[](10);
-        vm.prank(_vrfCoordinator);
-        portal.rawFulfillRandomWords(2, words);
+        vm.startPrank(_vrfCoordinator);
+        portal.rawFulfillRandomWords(
+            VRFCoordinatorV2Mock(_vrfCoordinator)._idx(),
+            words
+        );
+        vm.stopPrank();
 
         // perform the random number with reborn drop
         (up, perfromData) = portal.checkUpkeep(new bytes(0));
@@ -80,9 +119,6 @@ contract AirdropTest is RebornPortalTest {
         setDropConf();
         vm.assume(users.length > 100);
 
-        // mint reward to reward vault
-        mintRBT(rbt, owner, address(portal.vault()), 1000000 ether);
-
         // mock infuse
         for (uint256 i = 0; i < users.length; i++) {
             address user = users[i];
@@ -99,9 +135,12 @@ contract AirdropTest is RebornPortalTest {
         }
 
         // give native token to portal
-        vm.deal(address(portal), 10 ** 18 * 1 ether);
+        deal(address(portal), 1 << 128);
 
         testUpKeepProgressSmoothly();
+
+        // deal some reborn token to reward vault
+        deal(address(rbt), address(portal.vault()), UINT256_MAX);
 
         // infuse again to trigger claim
         for (uint256 i = 0; i < users.length; i++) {

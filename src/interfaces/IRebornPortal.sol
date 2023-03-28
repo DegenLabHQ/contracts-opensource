@@ -32,6 +32,10 @@ interface IRebornDefination {
         mapping(uint256 => uint256) _oldStakeAmounts;
         /// tokenId => bool
         BitMapsUpgradeable.BitMap _isTopHundredScore;
+        // the value of minimum score
+        uint256 _minScore;
+        // jackpot of this season
+        uint256 _jackpot;
     }
 
     enum AirdropVrfType {
@@ -86,27 +90,41 @@ interface IRebornDefination {
     );
 
     event Drop(uint256[] tokenIds);
+    event NewStopBetaBlockNumberConfig(uint256 stopBetaBlockNumber);
+
+    /// @dev event about the vault address is set
+    event VaultSet(address rewardVault);
 
     event NewSeason(uint256);
+
+    event NewExtraReward(uint256 extraReward);
+
+    event BetaStageSet(bool);
+
+    event NewIncarnationLimit(uint256 limit);
 
     /// @dev revert when msg.value is insufficient
     error InsufficientAmount();
     /// @dev revert when to caller is not signer
     error NotSigner();
 
+    /// @dev revert when some address var are set to zero
+    error ZeroAddressSet();
+
     /// @dev revert when the random seed is duplicated
     error SameSeed();
-    /// @dev revert when swith amount from pool exceed staked balance
-    error SwitchAmountExceedBalance();
-
-    /// @dev revert when set ZeroAddress
-    error ZeroAddressSet();
 
     /// @dev revert if burnPool address not set when infuse
     error NotSetBurnPoolAddress();
 
     /// @dev revert when the drop is not on
     error DropOff();
+
+    /// @dev revert when incarnation count exceed limit
+    error IncarnationExceedLimit();
+
+    /// @dev revert user continue play game when beta stoped
+    error BetaStoped();
 }
 
 interface IRebornPortal is IRebornDefination {

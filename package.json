@@ -9,7 +9,7 @@
   "scripts": {
     "compile": "hardhat compile",
     "test": "hardhat test",
-    "deploy": "hardhat deploy",
+    "deploy": "hardhat deploy --no-compile",
     "verify": "hardhat run ./verify.ts"
   },
   "author": "Devan Non <devanon@chainstride.capital>",
@@ -46,6 +46,7 @@
     "@openzeppelin/upgrades-core": "^1.24.1",
     "@p12/contracts-lib": "^0.0.8",
     "hardhat-deploy": "^0.11.25",
-    "merkletreejs": "^0.3.9"
+    "merkletreejs": "^0.3.9",
+    "hardhat-contract-sizer": "^2.8.0"
   }
 }

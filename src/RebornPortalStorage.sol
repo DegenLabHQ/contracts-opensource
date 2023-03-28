@@ -20,11 +20,11 @@ contract RebornPortalStorage is IRebornDefination {
 
     uint256 internal idx;
 
-    mapping(uint256 => LifeDetail) public details;
+    mapping(uint256 => LifeDetail) internal details;
 
     mapping(uint256 => SeasonData) internal _seasonData;
 
-    mapping(address => address) public referrals;
+    mapping(address => address) internal referrals;
     PortalLib.ReferrerRewardFees public rewardFees;
 
     RewardVault public vault;
@@ -43,6 +43,20 @@ contract RebornPortalStorage is IRebornDefination {
 
     FastArray.Data internal _pendingDrops;
 
+    // extra reward to parent referrer
+    uint256 internal _extraReward;
+
+    // uesless var for backward compatibility
+    bool internal _g;
+
+    // user address => count
+    mapping(address => uint256) internal _incarnateCounts;
+
+    // max incarnation count
+    uint256 internal _incarnateCountLimit;
+
+    uint256 internal _stopBetaBlockNumber;
+
     /// @dev gap for potential variable
-    uint256[34] private _gap;
+    uint256[29] private _gap;
 }

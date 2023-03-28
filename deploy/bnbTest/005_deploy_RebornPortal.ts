@@ -1,14 +1,14 @@
 import { DeployFunction } from "hardhat-deploy/types";
+import { parseEther } from "ethers/lib/utils";
 
 const func: DeployFunction = async function ({
   deployments,
   getNamedAccounts,
 }) {
-  const { deploy, get } = deployments;
+  const { deploy, get, execute } = deployments;
   const { deployer, owner } = await getNamedAccounts();
 
   const rbt = await get("RBT");
-  const render = await get("RenderEngine");
 
   await deploy("RebornPortal", {
     from: deployer,
@@ -18,12 +18,19 @@ const func: DeployFunction = async function ({
       execute: {
         init: {
           methodName: "initialize",
-          args: [rbt.address, owner, "Degen Tombstone", "RIP"],
+          args: [
+            rbt.address,
+            owner,
+            "Degen Tombstone",
+            "RIP",
+            // VRFCoordinatorV2 on bnb chain test https://testnet.bscscan.com/address/0x6A2AAd07396B36Fe02a22b33cf443582f682c82f
+            "0x6A2AAd07396B36Fe02a22b33cf443582f682c82f",
+          ],
         },
       },
     },
     libraries: {
-      RenderEngine: render.address,
+      RenderConstant: (await get("RenderConstant")).address,
       Renderer: (await get("Renderer")).address,
       FastArray: (await get("FastArray")).address,
       RankingRedBlackTree: (await get("RankingRedBlackTree")).address,
@@ -59,6 +66,20 @@ const func: DeployFunction = async function ({
   //   200,
   //   0
   // );
+
+  await execute(
+    "RebornPortal",
+    { from: owner, log: true },
+    "setExtraReward",
+    parseEther("8")
+  );
+
+  await execute(
+    "RebornPortal",
+    { from: owner, log: true },
+    "setIncarnationLimit",
+    2
+  );
 };
 func.tags = ["Portal"];
 

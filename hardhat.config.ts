@@ -6,6 +6,8 @@ import "@nomiclabs/hardhat-etherscan";
 import "@typechain/hardhat";
 import "hardhat-deploy";
 import "hardhat-preprocessor";
+import "hardhat-contract-sizer";
+
 import { HardhatUserConfig, task } from "hardhat/config";
 
 import example from "./tasks/example";
@@ -36,17 +38,37 @@ const config: HardhatUserConfig = {
     settings: {
       optimizer: {
         enabled: true,
-        runs: 200,
+        runs: 1,
+        // details: {
+        //   yulDetails: {
+        //     optimizerSteps: "u",
+        //   },
+        // },
       },
+      viaIR: true,
     },
   },
   networks: {
+    hardhat: {
+      gas: "auto",
+      gasPrice: "auto",
+      deploy: ["deploy/hardhat"],
+      tags: ["hardhat"],
+    },
     bnbMain: {
       url: process.env.BNB_CHAIN_URL || "",
       accounts: accounts,
       gas: "auto",
       gasPrice: "auto",
       deploy: ["deploy/bnbMain"],
+      tags: ["production"],
+    },
+    bnbMainBeta: {
+      url: process.env.BNB_CHAIN_URL || "",
+      accounts: accounts,
+      gas: "auto",
+      gasPrice: "auto",
+      deploy: ["deploy/bnbMainBeta"],
       tags: ["production"],
     },
     bnbTestStaging: {
@@ -93,23 +115,24 @@ const config: HardhatUserConfig = {
   },
   namedAccounts: {
     deployer: {
+      hardhat: 0,
       bnbTest: deployer,
       bnbTestStaging: deployer,
-      bnbMain: deployer,
       mumbai: deployer,
       scrollAlpha: deployer,
       goerli: deployer,
     },
     owner: {
+      hardhat: 0,
       bnbTest: owner,
       bnbTestStaging: owner,
-      bnbMain: owner,
       mumbai: owner,
       scrollAlpha: owner,
       goerli: owner,
     },
     degen_deployer: {
       bnbMain: degen_deployer,
+      bnbMainBeta: degen_deployer,
     },
   },
 
@@ -152,6 +175,12 @@ const config: HardhatUserConfig = {
         },
       },
     ],
+  },
+  contractSizer: {
+    alphaSort: false,
+    disambiguatePaths: false,
+    runOnCompile: true,
+    strict: true,
   },
   external: {
     contracts: [

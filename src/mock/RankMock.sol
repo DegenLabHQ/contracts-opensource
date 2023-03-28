@@ -6,6 +6,11 @@ import {BitMapsUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/stru
 
 contract RankMock is RankUpgradeable {
     using BitMapsUpgradeable for BitMapsUpgradeable.BitMap;
+    using SingleRanking for SingleRanking.Data;
+
+    function enterScoreRank(uint256 tokenId, uint256 value) public {
+        _enterScoreRank(tokenId, value);
+    }
 
     function enterTvlRank(uint256 tokenId, uint256 value) public {
         _enterTvlRank(tokenId, value);
@@ -15,6 +20,10 @@ contract RankMock is RankUpgradeable {
         uint256 n
     ) public view returns (uint256[] memory values) {
         return _getTopNTokenId(n);
+    }
+
+    function getNthScoreTokenId(uint256 n) public view returns (uint256) {
+        return _seasonData[_season]._scoreRank.get(n, 1)[0];
     }
 
     function setTokenIdToTvlRank(uint256 tokenId) public {

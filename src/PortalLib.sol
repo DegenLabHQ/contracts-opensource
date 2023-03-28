@@ -48,7 +48,7 @@ library PortalLib {
 
         /// @dev reward for holding the NFT when the NFT is selected
         uint256 pendingOwnerRebornReward;
-        uint256 pendingOwernNativeReward;
+        uint256 pendingOwnerNativeReward;
     }
 
     struct AirdropConf {
@@ -57,8 +57,10 @@ library PortalLib {
         uint40 _nativeDropInterval; //        |
         uint40 _rebornDropLastUpdate; //      |
         uint40 _nativeDropLastUpdate; //      |
-        uint16 _nativeDropRatio; //           |
-        uint72 _rebornDropEthAmount; //    ---
+        uint16 _nativeTopDropRatio; //        |
+        uint16 _nativeRaffleDropRatio; //   |
+        uint16 _rebornTopEthAmount; // |
+        uint40 _rebornRaffleEthAmount; //    ---
     }
 
     struct VrfConf {
@@ -82,29 +84,31 @@ library PortalLib {
         uint256 amount1,
         address indexed ref2,
         uint256 amount2,
-        PortalLib.RewardType rewardType
+        RewardType rewardType
     );
-
-    /// @dev invliad chainlink vrf request id
-    error InvalidRequestId(uint256);
 
     function _claimPoolRebornDrop(
         uint256 tokenId,
         RewardVault vault,
-        mapping(uint256 => Pool) storage pools,
-        mapping(address => mapping(uint256 => Portfolio)) storage portfolios
+        IRebornDefination.SeasonData storage _seasonData
     ) external {
-        Pool storage pool = pools[tokenId];
-        Portfolio storage portfolio = portfolios[msg.sender][tokenId];
+        Pool storage pool = _seasonData.pools[tokenId];
+        Portfolio storage portfolio = _seasonData.portfolios[msg.sender][
+            tokenId
+        ];
 
+        uint256 pendingTributeReborn;
+        // if no portfolio, no pending tribute reward
         if (portfolio.accumulativeAmount == 0) {
-            return;
+            pendingTributeReborn = 0;
+        } else {
+            pendingTributeReborn =
+                ((portfolio.accumulativeAmount * pool.accRebornPerShare) /
+                    PERSHARE_BASE) -
+                portfolio.rebornRewardDebt;
         }
 
-        uint256 pendingReborn = (portfolio.accumulativeAmount *
-            pool.accRebornPerShare) /
-            PERSHARE_BASE -
-            portfolio.rebornRewardDebt +
+        uint256 pendingReborn = pendingTributeReborn +
             portfolio.pendingOwnerRebornReward;
 
         // set current amount as debt
@@ -116,30 +120,34 @@ library PortalLib {
         portfolio.pendingOwnerRebornReward = 0;
 
         /// @dev send drop
-        if (pendingReborn != 0) {
+        if (pendingReborn > 0) {
             vault.reward(msg.sender, pendingReborn);
+            emit ClaimRebornDrop(tokenId, pendingReborn);
         }
-
-        emit ClaimRebornDrop(tokenId, pendingReborn);
     }
 
     function _claimPoolNativeDrop(
         uint256 tokenId,
-        mapping(uint256 => Pool) storage pools,
-        mapping(address => mapping(uint256 => Portfolio)) storage portfolios
+        IRebornDefination.SeasonData storage _seasonData
     ) external {
-        Pool storage pool = pools[tokenId];
-        Portfolio storage portfolio = portfolios[msg.sender][tokenId];
+        Pool storage pool = _seasonData.pools[tokenId];
+        Portfolio storage portfolio = _seasonData.portfolios[msg.sender][
+            tokenId
+        ];
 
+        uint256 pendingTributeNative;
+        // if no portfolio, no pending tribute reward
         if (portfolio.accumulativeAmount == 0) {
-            return;
+            pendingTributeNative = 0;
+        } else {
+            pendingTributeNative =
+                (portfolio.accumulativeAmount * pool.accNativePerShare) /
+                PERSHARE_BASE -
+                portfolio.nativeRewardDebt;
         }
 
-        uint256 pendingNative = (portfolio.accumulativeAmount *
-            pool.accNativePerShare) /
-            PERSHARE_BASE -
-            portfolio.nativeRewardDebt +
-            portfolio.pendingOwernNativeReward;
+        uint256 pendingNative = pendingTributeNative +
+            portfolio.pendingOwnerNativeReward;
 
         // set current amount as debt
         portfolio.nativeRewardDebt =
@@ -147,14 +155,29 @@ library PortalLib {
             PERSHARE_BASE;
 
         // clean up reward as owner
-        portfolio.pendingOwernNativeReward = 0;
+        portfolio.pendingOwnerNativeReward = 0;
 
         /// @dev send drop
-        if (pendingNative != 0) {
+        if (pendingNative > 0) {
             payable(msg.sender).transfer(pendingNative);
 
             emit ClaimNativeDrop(tokenId, pendingNative);
         }
+    }
+
+    function _flattenRewardDebt(
+        Pool storage pool,
+        Portfolio storage portfolio
+    ) external {
+        // flatten native reward
+        portfolio.nativeRewardDebt =
+            (portfolio.accumulativeAmount * pool.accNativePerShare) /
+            PERSHARE_BASE;
+
+        // flatten reborn reward
+        portfolio.rebornRewardDebt =
+            (portfolio.accumulativeAmount * pool.accRebornPerShare) /
+            PERSHARE_BASE;
     }
 
     /**
@@ -162,27 +185,37 @@ library PortalLib {
      */
     function _calculatePoolDrop(
         uint256 tokenId,
-        mapping(uint256 => Pool) storage pools,
-        mapping(address => mapping(uint256 => Portfolio)) storage portfolios
+        IRebornDefination.SeasonData storage _seasonData
     ) public view returns (uint256 pendingNative, uint256 pendingReborn) {
-        Pool storage pool = pools[tokenId];
-        Portfolio storage portfolio = portfolios[msg.sender][tokenId];
+        Pool storage pool = _seasonData.pools[tokenId];
+        Portfolio storage portfolio = _seasonData.portfolios[msg.sender][
+            tokenId
+        ];
 
-        // if no portfolio, no pending reward
+        uint256 pendingTributeNative;
+        uint256 pendingTributeReborn;
+        // if no portfolio, no pending tribute reward
         if (portfolio.accumulativeAmount == 0) {
-            return (pendingNative, pendingReborn);
+            pendingTributeNative = 0;
+            pendingTributeReborn = 0;
+        } else {
+            pendingTributeNative =
+                (portfolio.accumulativeAmount * pool.accNativePerShare) /
+                PERSHARE_BASE -
+                portfolio.nativeRewardDebt;
+
+            pendingTributeReborn =
+                ((portfolio.accumulativeAmount * pool.accRebornPerShare) /
+                    PERSHARE_BASE) -
+                portfolio.rebornRewardDebt;
         }
 
         pendingNative =
-            (portfolio.accumulativeAmount * pool.accNativePerShare) /
-            PERSHARE_BASE -
-            portfolio.nativeRewardDebt +
-            portfolio.pendingOwernNativeReward;
+            pendingTributeNative +
+            portfolio.pendingOwnerNativeReward;
 
         pendingReborn =
-            (portfolio.accumulativeAmount * pool.accRebornPerShare) /
-            PERSHARE_BASE -
-            portfolio.rebornRewardDebt +
+            pendingTributeReborn +
             portfolio.pendingOwnerRebornReward;
     }
 
@@ -191,27 +224,26 @@ library PortalLib {
      * @param tokenIds tokenId array of the pools
      */
     function _pendingDrop(
-        mapping(uint256 => Pool) storage pools,
-        mapping(address => mapping(uint256 => Portfolio)) storage portfolios,
+        IRebornDefination.SeasonData storage _seasonData,
         uint256[] memory tokenIds
     ) external view returns (uint256 pNative, uint256 pReborn) {
         for (uint256 i = 0; i < tokenIds.length; i++) {
             (uint256 n, uint256 r) = _calculatePoolDrop(
                 tokenIds[i],
-                pools,
-                portfolios
+                _seasonData
             );
             pNative += n;
             pReborn += r;
         }
     }
 
-    function _directDropNativeTokenIds(
+    function _directDropNativeToTopTokenIds(
         uint256[] memory tokenIds,
         AirdropConf storage _dropConf,
-        mapping(uint256 => Pool) storage pools,
-        mapping(address => mapping(uint256 => Portfolio)) storage portfolios
+        IRebornDefination.SeasonData storage _seasonData
     ) external {
+        uint256 dropAmount = (_dropConf._nativeTopDropRatio *
+            _seasonData._jackpot) / PERCENTAGE_BASE;
         for (uint256 i = 0; i < tokenIds.length; i++) {
             uint256 tokenId = tokenIds[i];
             // if tokenId is zero , return
@@ -219,7 +251,7 @@ library PortalLib {
                 return;
             }
 
-            Pool storage pool = pools[tokenId];
+            Pool storage pool = _seasonData.pools[tokenId];
 
             // if no one tribute, return
             // as it's loof from high tvl to low tvl
@@ -227,30 +259,67 @@ library PortalLib {
                 return;
             }
 
-            uint256 dropAmount = (_dropConf._nativeDropRatio *
-                address(this).balance) / PortalLib.PERCENTAGE_BASE;
-
             // 80% to pool
             pool.accNativePerShare +=
-                (((dropAmount * 4) / 5) * PortalLib.PERSHARE_BASE) /
-                PERCENTAGE_BASE /
-                pool.totalAmount;
+                (4 * dropAmount * PERSHARE_BASE) /
+                (5 * pool.totalAmount);
 
             // 20% to owner
             address owner = IERC721(address(this)).ownerOf(tokenId);
-            Portfolio storage portfolio = portfolios[owner][tokenId];
-            portfolio.pendingOwernNativeReward += (dropAmount * 1) / 5;
+            Portfolio storage portfolio = _seasonData.portfolios[owner][
+                tokenId
+            ];
+            portfolio.pendingOwnerNativeReward += (dropAmount * 1) / 5;
 
             emit DropNative(tokenId);
         }
     }
 
-    function _directDropRebornTokenIds(
+    function _directDropNativeToRaffleTokenIds(
         uint256[] memory tokenIds,
         AirdropConf storage _dropConf,
-        mapping(uint256 => Pool) storage pools,
-        mapping(address => mapping(uint256 => Portfolio)) storage portfolios
+        IRebornDefination.SeasonData storage _seasonData
     ) external {
+        uint256 dropAmount = (_dropConf._nativeRaffleDropRatio *
+            _seasonData._jackpot) / PERCENTAGE_BASE;
+
+        for (uint256 i = 0; i < tokenIds.length; i++) {
+            uint256 tokenId = tokenIds[i];
+            // if tokenId is zero , return
+            if (tokenId == 0) {
+                return;
+            }
+
+            Pool storage pool = _seasonData.pools[tokenId];
+
+            // if no one tribute, return
+            // as it's loof from high tvl to low tvl
+            if (pool.totalAmount == 0) {
+                return;
+            }
+
+            // 80% to pool
+            pool.accNativePerShare +=
+                (4 * dropAmount * PERSHARE_BASE) /
+                (5 * pool.totalAmount);
+
+            // 20% to owner
+            address owner = IERC721(address(this)).ownerOf(tokenId);
+            Portfolio storage portfolio = _seasonData.portfolios[owner][
+                tokenId
+            ];
+            portfolio.pendingOwnerNativeReward += (dropAmount * 1) / 5;
+
+            emit DropNative(tokenId);
+        }
+    }
+
+    function _directDropRebornToTopTokenIds(
+        uint256[] memory tokenIds,
+        AirdropConf storage _dropConf,
+        IRebornDefination.SeasonData storage _seasonData
+    ) external {
+        uint256 dropAmount = uint256(_dropConf._rebornTopEthAmount) * 1 ether;
         for (uint256 i = 0; i < tokenIds.length; i++) {
             uint256 tokenId = tokenIds[i];
 
@@ -258,7 +327,7 @@ library PortalLib {
             if (tokenId == 0) {
                 return;
             }
-            Pool storage pool = pools[tokenId];
+            Pool storage pool = _seasonData.pools[tokenId];
 
             // if no one tribute, continue
             // as it's loof from high tvl to low tvl
@@ -266,19 +335,57 @@ library PortalLib {
                 return;
             }
 
-            uint256 dropAmount = _dropConf._rebornDropEthAmount * 1 ether;
-
             // 80% to pool
             pool.accRebornPerShare +=
-                (((dropAmount * 4) / 5) * PortalLib.PERSHARE_BASE) /
-                pool.totalAmount;
+                (dropAmount * 4 * PortalLib.PERSHARE_BASE) /
+                (5 * pool.totalAmount);
 
             // 20% to owner
             address owner = IERC721(address(this)).ownerOf(tokenId);
-            Portfolio storage portfolio = portfolios[owner][tokenId];
+            Portfolio storage portfolio = _seasonData.portfolios[owner][
+                tokenId
+            ];
             portfolio.pendingOwnerRebornReward += (dropAmount * 1) / 5;
 
-            emit DropNative(tokenId);
+            emit DropReborn(tokenId);
+        }
+    }
+
+    function _directDropRebornToRaffleTokenIds(
+        uint256[] memory tokenIds,
+        AirdropConf storage _dropConf,
+        IRebornDefination.SeasonData storage _seasonData
+    ) external {
+        uint256 dropAmount = uint256(_dropConf._rebornRaffleEthAmount) *
+            1 ether;
+        for (uint256 i = 0; i < tokenIds.length; i++) {
+            uint256 tokenId = tokenIds[i];
+
+            // if tokenId is zero, continue
+            if (tokenId == 0) {
+                return;
+            }
+            Pool storage pool = _seasonData.pools[tokenId];
+
+            // if no one tribute, continue
+            // as it's loof from high tvl to low tvl
+            if (pool.totalAmount == 0) {
+                return;
+            }
+
+            // 80% to pool
+            pool.accRebornPerShare +=
+                (dropAmount * 4 * PortalLib.PERSHARE_BASE) /
+                (5 * pool.totalAmount);
+
+            // 20% to owner
+            address owner = IERC721(address(this)).ownerOf(tokenId);
+            Portfolio storage portfolio = _seasonData.portfolios[owner][
+                tokenId
+            ];
+            portfolio.pendingOwnerRebornReward += (dropAmount * 1) / 5;
+
+            emit DropReborn(tokenId);
         }
     }
 
@@ -318,7 +425,8 @@ library PortalLib {
         ReferrerRewardFees storage rewardFees,
         address account,
         uint256 amount,
-        RewardType rewardType
+        RewardType rewardType,
+        uint256 extraReward
     )
         public
         view
@@ -335,28 +443,26 @@ library PortalLib {
         if (rewardType == RewardType.NativeToken) {
             ref1Reward = ref1 == address(0)
                 ? 0
-                : (amount * rewardFees.incarnateRef1Fee) /
-                    PortalLib.PERCENTAGE_BASE;
+                : (amount * rewardFees.incarnateRef1Fee) / PERCENTAGE_BASE;
             ref2Reward = ref2 == address(0)
                 ? 0
-                : (amount * rewardFees.incarnateRef2Fee) /
-                    PortalLib.PERCENTAGE_BASE;
+                : (amount * rewardFees.incarnateRef2Fee) / PERCENTAGE_BASE;
         }
 
         if (rewardType == RewardType.RebornToken) {
             ref1Reward = ref1 == address(0)
                 ? 0
-                : (amount * rewardFees.vaultRef1Fee) /
-                    PortalLib.PERCENTAGE_BASE;
+                : extraReward +
+                    (amount * rewardFees.vaultRef1Fee) /
+                    PERCENTAGE_BASE;
             ref2Reward = ref2 == address(0)
                 ? 0
-                : (amount * rewardFees.vaultRef2Fee) /
-                    PortalLib.PERCENTAGE_BASE;
+                : (amount * rewardFees.vaultRef2Fee) / PERCENTAGE_BASE;
         }
     }
 
     /**
-     * @notice mul 100 when set. eg: 8% -> 800 18%-> 1800
+     * @notice mul 10000 when set. eg: 8% -> 800 18%-> 1800
      * @dev set percentage of referrer reward
      * @param rewardType 0: incarnate reward 1: engrave reward
      */
@@ -364,12 +470,12 @@ library PortalLib {
         ReferrerRewardFees storage rewardFees,
         uint16 refL1Fee,
         uint16 refL2Fee,
-        PortalLib.RewardType rewardType
+        RewardType rewardType
     ) external {
-        if (rewardType == PortalLib.RewardType.NativeToken) {
+        if (rewardType == RewardType.NativeToken) {
             rewardFees.incarnateRef1Fee = refL1Fee;
             rewardFees.incarnateRef2Fee = refL2Fee;
-        } else if (rewardType == PortalLib.RewardType.RebornToken) {
+        } else if (rewardType == RewardType.RebornToken) {
             rewardFees.vaultRef1Fee = refL1Fee;
             rewardFees.vaultRef2Fee = refL2Fee;
         }
@@ -383,7 +489,7 @@ library PortalLib {
         ReferrerRewardFees storage rewardFees,
         address account,
         uint256 amount
-    ) public {
+    ) public returns (uint256 total) {
         (
             address ref1,
             uint256 ref1Reward,
@@ -394,7 +500,8 @@ library PortalLib {
                 rewardFees,
                 account,
                 amount,
-                PortalLib.RewardType.NativeToken
+                RewardType.NativeToken,
+                0
             );
 
         if (ref1Reward > 0) {
@@ -405,13 +512,15 @@ library PortalLib {
             payable(ref2).transfer(ref2Reward);
         }
 
+        total = ref1Reward + ref2Reward;
+
         emit ReferReward(
             account,
             ref1,
             ref1Reward,
             ref2,
             ref2Reward,
-            PortalLib.RewardType.NativeToken
+            RewardType.NativeToken
         );
     }
 
@@ -423,7 +532,8 @@ library PortalLib {
         ReferrerRewardFees storage rewardFees,
         RewardVault vault,
         address account,
-        uint256 amount
+        uint256 amount,
+        uint256 extraReward
     ) public {
         (
             address ref1,
@@ -435,7 +545,8 @@ library PortalLib {
                 rewardFees,
                 account,
                 amount,
-                PortalLib.RewardType.RebornToken
+                RewardType.RebornToken,
+                extraReward
             );
 
         if (ref1Reward > 0) {
@@ -452,7 +563,7 @@ library PortalLib {
             ref1Reward,
             ref2,
             ref2Reward,
-            PortalLib.RewardType.RebornToken
+            RewardType.RebornToken
         );
     }
 }
