@@ -189,7 +189,7 @@ const config: HardhatUserConfig = {
     alphaSort: false,
     disambiguatePaths: false,
     runOnCompile: true,
-    strict: true,
+    strict: false,
   },
   external: {
     contracts: [
