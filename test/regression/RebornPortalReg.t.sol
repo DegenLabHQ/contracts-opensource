@@ -57,7 +57,7 @@ contract RebornPortalReg is Test {
             }
         }
         assertEq(hasTokenId, true);
-        assertEq(ranks.length, 101);
+        assertEq(ranks.length, 100);
     }
 
     function testSimulateGetTvlRankCaseTwo() public {
