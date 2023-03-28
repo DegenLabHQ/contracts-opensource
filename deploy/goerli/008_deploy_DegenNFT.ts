@@ -15,7 +15,7 @@ const func: DeployFunction = async function ({
       execute: {
         init: {
           methodName: "initialize",
-          args: ["Degen2009", "Degen2009", owner],
+          args: ["Degen2009", "D2009", owner],
         },
       },
     },
