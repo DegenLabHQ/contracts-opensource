@@ -209,15 +209,16 @@ contract NFTManager is
     }
 
     function setBurnRefundConfig(
+        uint256[] calldata levels,
         BurnRefundConfig[] calldata configs
-    ) external onlyOwner {
-        delete burnRefundConfigs;
-
+    ) external override onlyOwner {
         // burnRefundConfigs = configs;
         for (uint256 i = 0; i < configs.length; i++) {
-            burnRefundConfigs[i] = configs[i];
+            uint256 level = levels[i];
+            BurnRefundConfig memory config = configs[i];
+            burnRefundConfigs[level] = configs[i];
+            emit SetBurnRefundConfig(level, config);
         }
-        emit SetBurnRefundConfig(burnRefundConfigs);
     }
 
     function withdraw(address to, uint256 amount) external onlyOwner {
@@ -227,9 +228,6 @@ contract NFTManager is
     /**********************************************
      * read functions
      **********************************************/
-    function exists(uint256 tokenId) external view returns (bool) {
-        return degenNFT.exists(tokenId);
-    }
 
     function checkWhiteList(
         bytes32[] calldata merkleProof,
@@ -239,18 +237,10 @@ contract NFTManager is
         valid = MerkleProofUpgradeable.verify(merkleProof, merkleRoot, leaf);
     }
 
-    function propertyOf(
-        uint256 tokenId
-    ) public view returns (IDegenNFTDefination.Property memory) {
-        return degenNFT.getProperty(tokenId);
-    }
-
-    function getBurnRefundConfigs()
-        public
-        view
-        returns (BurnRefundConfig[] memory)
-    {
-        return burnRefundConfigs;
+    function getBurnRefundConfigs(
+        uint256 level
+    ) public view returns (BurnRefundConfig memory) {
+        return burnRefundConfigs[level];
     }
 
     function minted(address account) external view returns (bool) {

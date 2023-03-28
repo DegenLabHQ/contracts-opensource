@@ -66,7 +66,10 @@ interface INFTManagerDefination {
     event SetDegenNFT(address degenNFT);
     event MintFeeSet(uint256 mintFee);
     event SetMintTime(MintType mintType, MintTime mintTime);
-    event SetBurnRefundConfig(BurnRefundConfig[] burnRefundConfigs);
+    event SetBurnRefundConfig(
+        uint256 level,
+        BurnRefundConfig burnRefundConfigs
+    );
 }
 
 interface INFTManager is INFTManagerDefination {
@@ -94,7 +97,10 @@ interface INFTManager is INFTManagerDefination {
 
     function setMerkleRoot(bytes32 root) external;
 
-    function exists(uint256 tokenId) external view returns (bool);
+    function setBurnRefundConfig(
+        uint256[] calldata levels,
+        BurnRefundConfig[] calldata configs
+    ) external;
 
     function withdraw(address to, uint256 amount) external;
 }

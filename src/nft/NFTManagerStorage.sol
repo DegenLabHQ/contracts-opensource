@@ -30,7 +30,7 @@ contract NFTManagerStorage is INFTManagerDefination {
     mapping(MintType => MintTime) mintTime;
 
     // different config with different level, index as level
-    BurnRefundConfig[] internal burnRefundConfigs;
+    mapping(uint256 => BurnRefundConfig) internal burnRefundConfigs;
 
     // public mint pay mint fee
     uint256 public mintFee;
