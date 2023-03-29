@@ -61,6 +61,39 @@ contract NFTManagerTest is Test, INFTManagerDefination {
         console.log(degenNFT.tokenURI(1));
     }
 
+    function testWhitelistMintMany() public {
+        uint256 amount = 5000;
+        bytes32[] memory data = new bytes32[](amount);
+
+        for (uint256 i = 0; i < amount; i++) {
+            address user = address(uint160(uint256(keccak256(abi.encode(i)))));
+            data[i] = keccak256(bytes.concat(keccak256(abi.encode(user))));
+        }
+        vm.warp(block.timestamp + 60);
+        Merkle m = new Merkle();
+        // set merkle tree root
+        bytes32 root = m.getRoot(data);
+        vm.prank(owner);
+        nftManager.setMerkleRoot(root);
+
+        for (uint256 i = 0; i < amount; i++) {
+            address user = address(uint160(uint256(keccak256(abi.encode(i)))));
+            bytes32[] memory proof = m.getProof(data, i);
+
+            if (degenNFT.totalMinted() >= nftManager.SUPPORT_MAX_MINT_COUNT()) {
+                vm.expectRevert(
+                    INFTManagerDefination.OutOfMaxMintCount.selector
+                );
+                hoax(user);
+                nftManager.whitelistMint{value: 0.2 ether}(proof);
+                break;
+            }
+
+            hoax(user);
+            nftManager.whitelistMint{value: 0.2 ether}(proof);
+        }
+    }
+
     function testPublicMint() public {
         deal(address(11), 1 ether);
 
@@ -141,6 +174,32 @@ contract NFTManagerTest is Test, INFTManagerDefination {
 
         assertEq(t3Property.nameId, 1003);
         assertEq(t4Property.nameId, 1004);
+    }
+
+    function testPublicMintEdge() public {
+        address user = address(11);
+        deal(user, 10000 ether);
+        uint256 amount = 2009;
+
+        vm.warp(block.timestamp + 70);
+        vm.prank(user);
+        nftManager.publicMint{value: amount * 0.2 ether}(amount);
+
+        vm.expectRevert(INFTManagerDefination.OutOfMaxMintCount.selector);
+        nftManager.publicMint{value: 0.2 ether}(1);
+    }
+
+    function testPublicMintMany(uint256 amountSeed) public {
+        address user = address(11);
+        deal(user, 10000 ether);
+        uint256 amount = bound(amountSeed, 1, 2009);
+
+        vm.warp(block.timestamp + 70);
+        vm.startPrank(user);
+        nftManager.publicMint{value: amount * 0.2 ether}(amount);
+        vm.stopPrank();
+
+        assertEq(degenNFT.balanceOf(user), amount);
     }
 
     function _initialize() internal {
