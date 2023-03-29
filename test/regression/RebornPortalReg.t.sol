@@ -5,6 +5,8 @@ import "src/deprecated/DeprecatedRBT.sol";
 import "src/RBT.sol";
 import "src/RebornPortal.sol";
 
+import "src/mock/PortalMock.sol";
+
 import "forge-std/Test.sol";
 import "forge-std/Vm.sol";
 
@@ -14,7 +16,7 @@ import "forge-std/Vm.sol";
 contract RebornPortalReg is Test {
     uint256 bnbTest;
     uint256 bnbMain;
-    RebornPortal portal;
+    PortalMock portal;
 
     function setUp() public {
         string memory bnbTestRpcUrl = vm.envString("BNB_CHAIN_TEST_URL");
@@ -22,26 +24,60 @@ contract RebornPortalReg is Test {
         bnbTest = vm.createFork(bnbTestRpcUrl);
         bnbMain = vm.createFork(bnbMainRpcUrl);
         vm.selectFork(bnbTest);
-        portal = RebornPortal(0xF6D95a75464B0C2C717407867eEF377ab1fe7046);
+        portal = PortalMock(0xF6D95a75464B0C2C717407867eEF377ab1fe7046);
     }
 
     function mockUpgradeToDevVersion() public {
-        RebornPortal newImpl = new RebornPortal();
+        RebornPortal newImpl = new PortalMock();
         // mock upgrade to new one
         vm.prank(portal.owner());
         portal.upgradeTo(address(newImpl));
     }
 
     function testPerformUpkeep() public {
-        portal = RebornPortal(0xA751c9Ad92472D1E4eb6B6F9803311E22C5FbA9F);
+        portal = PortalMock(0xA751c9Ad92472D1E4eb6B6F9803311E22C5FbA9F);
         vm.selectFork(bnbMain);
         vm.rollFork(26540827);
         (bool up, bytes memory b) = portal.checkUpkeep(abi.encode(0));
         portal.performUpkeep(b);
     }
 
+    function testSimulateGetTvlRankCaseOne() public {
+        portal = PortalMock(0xA751c9Ad92472D1E4eb6B6F9803311E22C5FbA9F);
+        vm.selectFork(bnbMain);
+        vm.rollFork(26594100);
+        mockUpgradeToDevVersion();
+
+        uint256[] memory ranks = portal.getTvlRank();
+
+        bool hasTokenId;
+        for (uint256 i = 0; i < ranks.length; i++) {
+            if (ranks[i] == 56000000000000013610) {
+                hasTokenId = true;
+            }
+        }
+        assertEq(hasTokenId, true);
+        assertEq(ranks.length, 100);
+    }
+
+    function testSimulateGetTvlRankCaseTwo() public {
+        portal = PortalMock(0xA751c9Ad92472D1E4eb6B6F9803311E22C5FbA9F);
+        vm.selectFork(bnbMain);
+        vm.rollFork(26594101);
+        mockUpgradeToDevVersion();
+
+        uint256[] memory ranks = portal.getTvlRank();
+
+        for (uint256 i = 0; i < ranks.length; i++) {
+            if (ranks[i] == 56000000000000013610) {
+                revert("Exit Rank Fail");
+            }
+        }
+        assertEq(ranks.length, 100);
+    }
+
     function testSimulateAntiCheatCaseOne() public {
-        portal = RebornPortal(0xA751c9Ad92472D1E4eb6B6F9803311E22C5FbA9F);
+        portal = PortalMock(0xA751c9Ad92472D1E4eb6B6F9803311E22C5FbA9F);
         vm.selectFork(bnbMain);
         vm.rollFork(26542903);
         mockUpgradeToDevVersion();
@@ -54,7 +90,7 @@ contract RebornPortalReg is Test {
     }
 
     function testSimulateAntiCheatCaseTwo() public {
-        portal = RebornPortal(0xA751c9Ad92472D1E4eb6B6F9803311E22C5FbA9F);
+        portal = PortalMock(0xA751c9Ad92472D1E4eb6B6F9803311E22C5FbA9F);
         vm.selectFork(bnbMain);
         vm.rollFork(26575852);
         mockUpgradeToDevVersion();
@@ -80,7 +116,7 @@ contract RebornPortalReg is Test {
 
     function testSimulatePendingDrop() public {
         vm.selectFork(bnbMain);
-        portal = RebornPortal(0xA751c9Ad92472D1E4eb6B6F9803311E22C5FbA9F);
+        portal = PortalMock(0xA751c9Ad92472D1E4eb6B6F9803311E22C5FbA9F);
         vm.rollFork(26550446);
         mockUpgradeToDevVersion();
         uint256[] memory arr = new uint256[](1);

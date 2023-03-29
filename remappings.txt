@@ -9,3 +9,4 @@ foundry-upgrades/=lib/foundry-upgrades/src/
 @p12=node_modules/@p12
 contracts/=contracts/
 src/=src/
+erc721a-upgradeable=node_modules/erc721a-upgradeable/

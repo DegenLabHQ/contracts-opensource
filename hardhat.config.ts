@@ -3,7 +3,6 @@ import * as dotenv from "dotenv";
 import fs from "fs";
 import "@nomiclabs/hardhat-ethers";
 import "@nomiclabs/hardhat-etherscan";
-import "@nomiclabs/hardhat-waffle";
 import "@typechain/hardhat";
 import "hardhat-deploy";
 import "hardhat-preprocessor";
@@ -39,7 +38,7 @@ const config: HardhatUserConfig = {
     settings: {
       optimizer: {
         enabled: true,
-        runs: 10000000,
+        runs: 200,
         // details: {
         //   yulDetails: {
         //     optimizerSteps: "u",
@@ -105,6 +104,22 @@ const config: HardhatUserConfig = {
       deploy: ["deploy/scrollAlpha"],
       tags: ["test"],
     },
+    goerli: {
+      url: process.env.GOERLI_CHAIN_URL || "",
+      accounts: accounts,
+      gas: "auto",
+      gasPrice: "auto",
+      deploy: ["deploy/goerli"],
+      tags: ["test"],
+    },
+    ethereum: {
+      url: process.env.ETH_CHAIN_URL || "",
+      accounts: accounts,
+      gas: "auto",
+      gasPrice: "auto",
+      deploy: ["deploy/ethereum"],
+      tags: ["prod"],
+    },
   },
   namedAccounts: {
     deployer: {
@@ -113,6 +128,7 @@ const config: HardhatUserConfig = {
       bnbTestStaging: deployer,
       mumbai: deployer,
       scrollAlpha: deployer,
+      goerli: deployer,
     },
     owner: {
       hardhat: 0,
@@ -120,10 +136,12 @@ const config: HardhatUserConfig = {
       bnbTestStaging: owner,
       mumbai: owner,
       scrollAlpha: owner,
+      goerli: owner,
     },
     degen_deployer: {
       bnbMain: degen_deployer,
       bnbMainBeta: degen_deployer,
+      ethereum: degen_deployer,
     },
   },
 
@@ -154,6 +172,8 @@ const config: HardhatUserConfig = {
       bsc: process.env.BNB_SCAN_API_KEY!,
       polygonMumbai: process.env.POLYGON_SCAN_API_KEY!,
       scrollAlpha: "scrollAlpha",
+      goerli: process.env.GOERLI_SCAN_API_KEY!,
+      mainnet: process.env.GOERLI_SCAN_API_KEY!,
     },
     customChains: [
       {
