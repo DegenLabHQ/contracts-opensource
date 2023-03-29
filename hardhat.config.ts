@@ -71,14 +71,7 @@ const config: HardhatUserConfig = {
       deploy: ["deploy/bnbMainBeta"],
       tags: ["production"],
     },
-    bnbTestStaging: {
-      url: process.env.BNB_CHAIN_TEST_URL || "",
-      accounts: accounts,
-      gas: "auto",
-      gasPrice: "auto",
-      deploy: ["deploy/bnbTestStaging"],
-      tags: ["staging"],
-    },
+
     bnbTest: {
       url: process.env.BNB_CHAIN_TEST_URL || "",
       accounts: accounts,
@@ -125,7 +118,6 @@ const config: HardhatUserConfig = {
     deployer: {
       hardhat: 0,
       bnbTest: deployer,
-      bnbTestStaging: deployer,
       mumbai: deployer,
       scrollAlpha: deployer,
       goerli: deployer,
@@ -133,7 +125,6 @@ const config: HardhatUserConfig = {
     owner: {
       hardhat: 0,
       bnbTest: owner,
-      bnbTestStaging: owner,
       mumbai: owner,
       scrollAlpha: owner,
       goerli: owner,
@@ -163,6 +154,51 @@ const config: HardhatUserConfig = {
         return line;
       },
     }),
+  },
+  deterministicDeployment: {
+    // create2 factory source: https://github.com/pcaversaccio/create2deployer
+    bnbMain: {
+      factory: "0x13b0D85CcB8bf860b6b79AF3029fCA081AE9beF2",
+      deployer: "",
+      funding: "",
+      signedTx: "",
+    },
+    bnbMainBeta: {
+      factory: "0x13b0D85CcB8bf860b6b79AF3029fCA081AE9beF2",
+      deployer: "",
+      funding: "",
+      signedTx: "",
+    },
+    ethereum: {
+      factory: "0x13b0D85CcB8bf860b6b79AF3029fCA081AE9beF2",
+      deployer: "",
+      funding: "",
+      signedTx: "",
+    },
+    mumbai: {
+      factory: "0x13b0D85CcB8bf860b6b79AF3029fCA081AE9beF2",
+      deployer: "",
+      funding: "",
+      signedTx: "",
+    },
+    scrollAlpha: {
+      factory: "0x13b0D85CcB8bf860b6b79AF3029fCA081AE9beF2",
+      deployer: "",
+      funding: "",
+      signedTx: "",
+    },
+    bnbTest: {
+      factory: "0x13b0D85CcB8bf860b6b79AF3029fCA081AE9beF2",
+      deployer: "",
+      funding: "",
+      signedTx: "",
+    },
+    goerli: {
+      factory: "0x13b0D85CcB8bf860b6b79AF3029fCA081AE9beF2",
+      deployer: "",
+      funding: "",
+      signedTx: "",
+    },
   },
   etherscan: {
     // Your API key for Etherscan

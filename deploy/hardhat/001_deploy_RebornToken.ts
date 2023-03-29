@@ -1,4 +1,4 @@
-import { parseEther } from "ethers/lib/utils";
+import { formatBytes32String, parseEther } from "ethers/lib/utils";
 import { DeployFunction } from "hardhat-deploy/types";
 
 const func: DeployFunction = async function ({
@@ -25,6 +25,8 @@ const func: DeployFunction = async function ({
         },
       },
     },
+    deterministicDeployment: formatBytes32String("DegenReborn"),
+
     log: true,
   });
 };

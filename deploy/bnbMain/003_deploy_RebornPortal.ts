@@ -1,5 +1,5 @@
 import { DeployFunction } from "hardhat-deploy/types";
-import { parseEther } from "ethers/lib/utils";
+import { formatBytes32String } from "ethers/lib/utils";
 
 const func: DeployFunction = async function ({
   deployments,
@@ -30,6 +30,7 @@ const func: DeployFunction = async function ({
     },
     libraries: { RenderEngine: render.address },
     log: true,
+    deterministicDeployment: formatBytes32String("DegenReborn"),
   });
 
   // TODO: manually add signer
