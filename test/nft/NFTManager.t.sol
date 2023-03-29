@@ -111,6 +111,71 @@ contract NFTManagerTest is Test, INFTManagerDefination {
         vm.stopPrank();
     }
 
+    function testSetBuckets() public {
+        uint256[] memory buckets = new uint256[](3);
+        buckets[0] = 0;
+        buckets[1] = 1;
+        buckets[2] = 2;
+
+        uint256[] memory masks = new uint256[](3);
+        masks[0] = uint256(1111111);
+        masks[1] = uint256(2222222);
+        masks[2] = uint256(3333333);
+
+        vm.prank(owner);
+        nftManager.setBuckets(buckets, masks);
+    }
+
+    function testOpenMysteryBox() public {
+        uint256[] memory tokenIds = new uint256[](4);
+        tokenIds[0] = 1;
+        tokenIds[1] = 2;
+        tokenIds[2] = 3;
+        tokenIds[3] = 4;
+
+        IDegenNFTDefination.Property[]
+            memory metadataList = new IDegenNFTDefination.Property[](4);
+        metadataList[0] = IDegenNFTDefination.Property({
+            nameId: 1001,
+            rarity: 1,
+            tokenType: 0
+        });
+        metadataList[1] = IDegenNFTDefination.Property({
+            nameId: 1002,
+            rarity: 2,
+            tokenType: 0
+        });
+        metadataList[2] = IDegenNFTDefination.Property({
+            nameId: 1003,
+            rarity: 3,
+            tokenType: 0
+        });
+        metadataList[3] = IDegenNFTDefination.Property({
+            nameId: 1004,
+            rarity: 4,
+            tokenType: 0
+        });
+
+        vm.prank(owner);
+        nftManager.openMysteryBox(tokenIds, metadataList);
+
+        IDegenNFTDefination.Property memory t2Property = degenNFT.getProperty(
+            2
+        );
+        IDegenNFTDefination.Property memory t3Property = degenNFT.getProperty(
+            3
+        );
+        IDegenNFTDefination.Property memory t4Property = degenNFT.getProperty(
+            4
+        );
+        assertEq(t2Property.nameId, 1002);
+        assertEq(t2Property.rarity, 2);
+        assertEq(t2Property.tokenType, 0);
+
+        assertEq(t3Property.nameId, 1003);
+        assertEq(t4Property.nameId, 1004);
+    }
+
     function testPublicMintEdge() public {
         address user = address(11);
         deal(user, 10000 ether);
@@ -136,10 +201,6 @@ contract NFTManagerTest is Test, INFTManagerDefination {
 
         assertEq(degenNFT.balanceOf(user), amount);
     }
-
-    // function testOpenMysteryBox() public {
-    //     _openMysteryBox();
-    // }
 
     function _initialize() internal {
         degenNFT.initialize("Degen2009", "Degen2009", owner);
@@ -191,41 +252,4 @@ contract NFTManagerTest is Test, INFTManagerDefination {
         vm.prank(owner);
         nftManager.setMintFee(0.2 ether);
     }
-
-    // function _openMysteryBox() internal {
-    //     IDegenNFTDefination.Property[]
-    //         memory metadataList = new IDegenNFTDefination.Property[](4);
-    //     metadataList[0] = IDegenNFTDefination.Property({
-    //         nameId: 1001,
-    //         rarity: 1,
-    //         tokenType: 0
-    //     });
-    //     metadataList[1] = IDegenNFTDefination.Property({
-    //         nameId: 1001,
-    //         rarity: 1,
-    //         tokenType: 0
-    //     });
-    //     metadataList[2] = IDegenNFTDefination.Property({
-    //         nameId: 1001,
-    //         rarity: 2,
-    //         tokenType: 0
-    //     });
-    //     metadataList[3] = IDegenNFTDefination.Property({
-    //         nameId: 1001,
-    //         rarity: 2,
-    //         tokenType: 0
-    //     });
-
-    //     vm.prank(owner);
-    //     nftManager.openMysteryBox(metadataList);
-    // }
-
-    // function _generateTokenIds() internal pure returns (uint256[] memory) {
-    //     uint256[] memory tokenIds = new uint256[](4);
-    //     tokenIds[0] = 1;
-    //     tokenIds[1] = 2;
-    //     tokenIds[2] = 3;
-    //     tokenIds[3] = 4;
-    //     return tokenIds;
-    // }
 }

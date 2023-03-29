@@ -101,7 +101,7 @@ contract NFTManager is
         _checkOwner(msg.sender, tokenId1);
         _checkOwner(msg.sender, tokenId2);
 
-        bool propertiEq = _checkPropertiesEq(tokenId1, tokenId2);
+        bool propertiEq = checkPropertiesEq(tokenId1, tokenId2);
         if (!propertiEq) {
             revert InvalidTokens();
         }
@@ -114,6 +114,36 @@ contract NFTManager is
         _mintTo(msg.sender, 1);
 
         emit MergeTokens(msg.sender, tokenId1, tokenId2, tokenId);
+    }
+
+    /**
+     * @dev set id=>metadata map
+     */
+    function openMysteryBox(
+        uint256[] calldata tokenIds,
+        IDegenNFTDefination.Property[] calldata metadataList
+    ) external onlyOwner {
+        if (tokenIds.length != metadataList.length) {
+            revert InvalidParams();
+        }
+        for (uint256 i = 0; i < metadataList.length; i++) {
+            degenNFT.setProperties(tokenIds[i], metadataList[i]);
+        }
+    }
+
+    function setBuckets(
+        uint256[] calldata buckets,
+        uint256[] calldata masks
+    ) external onlyOwner {
+        if (buckets.length != masks.length) {
+            revert InvalidParams();
+        }
+
+        for (uint i = 0; i < buckets.length; i++) {
+            degenNFT.setBucket(buckets[i], masks[i]);
+
+            emit SetBucket(buckets[i], masks[i]);
+        }
     }
 
     function burn(uint256 tokenId) external override whenNotPaused {
@@ -266,10 +296,10 @@ contract NFTManager is
     }
 
     // only name && tokenType equal means token1 and token2 can merge
-    function _checkPropertiesEq(
+    function checkPropertiesEq(
         uint256 tokenId1,
         uint256 tokenId2
-    ) internal view returns (bool) {
+    ) public view returns (bool) {
         IDegenNFTDefination.Property memory token1Property = degenNFT
             .getProperty(tokenId1);
         IDegenNFTDefination.Property memory token2Property = degenNFT
