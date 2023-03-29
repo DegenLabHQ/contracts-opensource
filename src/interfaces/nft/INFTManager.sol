@@ -31,7 +31,6 @@ interface INFTManagerDefination {
     error InvalidProof();
     error NotTokenOwner();
     error InvalidTokens();
-    error ZeroAddressSet();
     error MintFeeNotEnough();
     error InvalidParams();
     error InvalidMintTime();

@@ -2,15 +2,15 @@
 pragma solidity 0.8.17;
 
 import "erc721a-upgradeable/contracts/IERC721AUpgradeable.sol";
+import {IERC4906} from "src/interfaces/nft/IERC4906.sol";
 
-interface IDegenNFTDefination {
+interface IDegenNFTDefination is IERC4906 {
     struct Property {
         uint16 nameId;
         uint16 rarity;
         uint16 tokenType;
     }
 
-    error ZeroAddressSet();
     error OnlyManager();
 
     event SetManager(address manager);

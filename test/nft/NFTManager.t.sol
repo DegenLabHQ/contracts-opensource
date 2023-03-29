@@ -8,7 +8,7 @@ import "murky/Merkle.sol";
 import {INFTManager, INFTManagerDefination} from "src/interfaces/nft/INFTManager.sol";
 import {IDegenNFTDefination, IDegenNFT} from "src/interfaces/nft/IDegenNFT.sol";
 
-contract NFTManagerTest is Test, INFTManagerDefination {
+contract NFTManagerTest is Test, INFTManagerDefination, IDegenNFTDefination {
     DegenNFT degenNFT;
     NFTManager nftManager;
     address owner;
@@ -200,6 +200,13 @@ contract NFTManagerTest is Test, INFTManagerDefination {
         vm.stopPrank();
 
         assertEq(degenNFT.balanceOf(user), amount);
+    }
+
+    function testBatchMetadataUpdate() public {
+        vm.expectEmit(true, true, true, true);
+        emit BatchMetadataUpdate(0, type(uint256).max);
+        vm.prank(degenNFT.owner());
+        degenNFT.emitMetadataUpdate();
     }
 
     function _initialize() internal {

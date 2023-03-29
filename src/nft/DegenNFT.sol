@@ -7,6 +7,8 @@ import {SafeOwnableUpgradeable} from "@p12/contracts-lib/contracts/access/SafeOw
 
 import {ERC721AUpgradeable} from "erc721a-upgradeable/contracts/ERC721AUpgradeable.sol";
 
+import {CommonError} from "src/lib/CommonError.sol";
+
 contract DegenNFT is
     SafeOwnableUpgradeable,
     UUPSUpgradeable,
@@ -49,7 +51,7 @@ contract DegenNFT is
 
     function setManager(address manager_) external onlyOwner {
         if (manager_ == address(0)) {
-            revert ZeroAddressSet();
+            revert CommonError.ZeroAddressSet();
         }
         manager = manager_;
 
@@ -60,6 +62,13 @@ contract DegenNFT is
         baseURI = baseURI_;
 
         emit SetBaseURI(baseURI_);
+    }
+
+    /**
+     * @dev emit ERC4906 event to trigger all metadata update
+     */
+    function emitMetadataUpdate() external onlyOwner {
+        emit BatchMetadataUpdate(0, type(uint256).max);
     }
 
     function setProperties(
@@ -76,6 +85,7 @@ contract DegenNFT is
         properties[bucket] = mask;
 
         emit SetProperties(property_);
+        emit MetadataUpdate(tokenId);
     }
 
     function setBucket(uint256 bucket, uint256 mask) external onlyManager {
