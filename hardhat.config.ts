@@ -173,6 +173,7 @@ const config: HardhatUserConfig = {
       polygonMumbai: process.env.POLYGON_SCAN_API_KEY!,
       scrollAlpha: "scrollAlpha",
       goerli: process.env.GOERLI_SCAN_API_KEY!,
+      mainnet: process.env.GOERLI_SCAN_API_KEY!,
     },
     customChains: [
       {
