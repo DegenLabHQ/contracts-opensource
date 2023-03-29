@@ -151,11 +151,6 @@ contract NFTManager is
             revert TokenIdNotExsis();
         }
 
-        uint256 level = degenNFT.getLevel(tokenId);
-        if (level == 0) {
-            revert LevelZeroCannotBurn();
-        }
-
         _checkOwner(msg.sender, tokenId);
 
         degenNFT.burn(tokenId);
@@ -212,7 +207,7 @@ contract NFTManager is
 
     function setDegenNFT(address degenNFT_) external onlyOwner {
         if (degenNFT_ == address(0)) {
-            revert ZeroAddressSet();
+            revert ZeroDegenNFTSet();
         }
         degenNFT = DegenNFT(degenNFT_);
         emit SetDegenNFT(degenNFT_);

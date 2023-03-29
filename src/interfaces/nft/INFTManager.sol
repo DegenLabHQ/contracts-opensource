@@ -1,8 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity 0.8.17;
 
-import {IDegenNFTDefination} from "./IDegenNFT.sol";
-
 interface INFTManagerDefination {
     enum StageType {
         Invalid,
@@ -31,12 +29,11 @@ interface INFTManagerDefination {
     error InvalidProof();
     error NotTokenOwner();
     error InvalidTokens();
-    error ZeroAddressSet();
+    error ZeroDegenNFTSet();
     error MintFeeNotEnough();
     error InvalidParams();
     error InvalidMintTime();
     error TokenIdNotExsis();
-    error LevelZeroCannotBurn();
 
     /**********************************************
      * events
