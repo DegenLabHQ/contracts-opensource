@@ -12,6 +12,7 @@ import {NFTManagerStorage} from "src/nft/NFTManagerStorage.sol";
 import {PausableUpgradeable} from "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
 
 import {DegenNFT} from "src/nft/DegenNFT.sol";
+import {CommonError} from "src/lib/CommonError.sol";
 
 contract NFTManager is
     SafeOwnableUpgradeable,
@@ -212,7 +213,7 @@ contract NFTManager is
 
     function setDegenNFT(address degenNFT_) external onlyOwner {
         if (degenNFT_ == address(0)) {
-            revert ZeroAddressSet();
+            revert CommonError.ZeroAddressSet();
         }
         degenNFT = DegenNFT(degenNFT_);
         emit SetDegenNFT(degenNFT_);
