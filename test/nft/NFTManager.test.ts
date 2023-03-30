@@ -5,7 +5,6 @@ import { keccak256, defaultAbiCoder, hexlify } from "ethers/lib/utils";
 import { MerkleTree } from "merkletreejs";
 import { generageTestAccount } from "./helper";
 import metadataList from "./mockMetadatalist.json";
-import { BigNumber } from "ethers";
 
 function rarityToNumber(rarity: string): number {
   switch (rarity) {
@@ -92,7 +91,6 @@ describe("NFTManager Test", async function () {
 
       const group = metadataGroups[i];
       const compactData = await this.degenNFTMock.generateCompactData(group);
-      console.log("compactData", BigNumber.from(compactData).toString());
       compactDatas.push(compactData);
     }
 
