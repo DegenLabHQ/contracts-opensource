@@ -80,16 +80,19 @@ contract DegenNFT is
 
         // storage property
         uint256 bucket = (tokenId - 1) >> 4;
-        uint256 mask = properties[bucket];
-        mask |= uint256(property) << (((tokenId - 1) % 16) * 16);
-        properties[bucket] = mask;
+        uint256 compactData = properties[bucket];
+        compactData |= uint256(property) << (((tokenId - 1) % 16) * 16);
+        properties[bucket] = compactData;
 
         emit SetProperties(property_);
         emit MetadataUpdate(tokenId);
     }
 
-    function setBucket(uint256 bucket, uint256 mask) external onlyManager {
-        properties[bucket] = mask;
+    function setBucket(
+        uint256 bucket,
+        uint256 compactData
+    ) external onlyManager {
+        properties[bucket] = compactData;
     }
 
     function setLevel(uint256 tokenId, uint256 level) external onlyManager {
@@ -120,9 +123,9 @@ contract DegenNFT is
         uint256 tokenId
     ) external view returns (Property memory) {
         uint256 bucket = (tokenId - 1) >> 4;
-        uint256 mask = properties[bucket];
+        uint256 compactData = properties[bucket];
         uint16 property = uint16(
-            (mask >> (((tokenId - 1) % 16) * 16)) & 0xffff
+            (compactData >> (((tokenId - 1) % 16) * 16)) & 0xffff
         );
 
         (uint16 nameId, uint16 rarity, uint16 tokenType) = decodeProperty(

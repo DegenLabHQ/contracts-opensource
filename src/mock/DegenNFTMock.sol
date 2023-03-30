@@ -9,10 +9,10 @@ contract DegenNFTMock {
         uint16 tokenType;
     }
 
-    function generateMask(
+    function generateCompactData(
         Metadata[] memory metadataList
     ) external pure returns (uint256) {
-        uint256 mask;
+        uint256 compactData;
         for (uint i = 0; i < metadataList.length; i++) {
             Metadata memory metadata = metadataList[i];
             uint16 property = encodeProperty(
@@ -21,9 +21,11 @@ contract DegenNFTMock {
                 metadata.tokenType
             );
 
-            mask |= uint256(property) << (((metadata.tokenId - 1) % 16) * 16);
+            compactData |=
+                uint256(property) <<
+                (((metadata.tokenId - 1) % 16) * 16);
         }
-        return mask;
+        return compactData;
     }
 
     function encodeProperty(

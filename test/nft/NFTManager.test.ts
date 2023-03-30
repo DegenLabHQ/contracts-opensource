@@ -9,7 +9,7 @@ import {
 } from "ethers/lib/utils";
 import { MerkleTree } from "merkletreejs";
 import { generageTestAccount } from "./helper";
-import metadataList from "./metadataList.json";
+import metadataList from "./mcokMetadatalist.json";
 
 enum Rarity {
   Legendary,
@@ -103,16 +103,16 @@ describe("NFTManager Test", async function () {
     }
 
     const buckets = [];
-    const masks = [];
+    const compactDatas = [];
     for (let i = 0; i < metadataGroups.length; i++) {
       buckets.push(i);
 
       const group = metadataGroups[i];
-      const mask = await this.degenNFTMock.generateMask(group);
-      masks.push(mask);
+      const compactData = await this.degenNFTMock.generateCompactData(group);
+      compactDatas.push(compactData);
     }
 
-    await this.nftManager.connect(this.owner).setBuckets(buckets, masks);
+    await this.nftManager.connect(this.owner).setBuckets(buckets, compactDatas);
     for (let i = 0; i < metadataList.length; i++) {
       const metadata = metadataList[i];
       const [nameId, rarity, tokenType] = await this.degenNFT.getProperty(
