@@ -225,7 +225,7 @@ const config: HardhatUserConfig = {
   contractSizer: {
     alphaSort: false,
     disambiguatePaths: false,
-    runOnCompile: false,
+    runOnCompile: true,
     strict: false,
   },
   external: {
