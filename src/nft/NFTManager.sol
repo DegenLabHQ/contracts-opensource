@@ -107,6 +107,14 @@ contract NFTManager is
             revert InvalidTokens();
         }
 
+        // only shards can merge
+        IDegenNFTDefination.Property memory property = degenNFT.getProperty(
+            tokenId1
+        );
+        if (property.tokenType != uint16(1)) {
+            revert OnlyShardsCanMerge();
+        }
+
         degenNFT.burn(tokenId1);
         degenNFT.burn(tokenId2);
 
@@ -119,16 +127,16 @@ contract NFTManager is
 
     function openMysteryBox(
         uint256[] calldata buckets,
-        uint256[] calldata masks
+        uint256[] calldata compactDatas
     ) external onlyOwner {
-        if (buckets.length != masks.length) {
+        if (buckets.length != compactDatas.length) {
             revert InvalidParams();
         }
 
         for (uint i = 0; i < buckets.length; i++) {
-            degenNFT.setBucket(buckets[i], masks[i]);
+            degenNFT.setBucket(buckets[i], compactDatas[i]);
 
-            emit SetBucket(buckets[i], masks[i]);
+            emit SetBucket(buckets[i], compactDatas[i]);
         }
     }
 
@@ -275,7 +283,7 @@ contract NFTManager is
             block.timestamp < stageTime[stageType].startTime ||
             block.timestamp > stageTime[stageType].endTime
         ) {
-            revert InvalidMintTime();
+            revert InvalidTime();
         }
     }
 

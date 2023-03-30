@@ -50,7 +50,7 @@ contract NFTManagerTest is Test, IDegenNFTDefination, INFTManagerDefination {
         bytes32[] memory proof = m.getProof(data, 2);
         vm.deal(address(12), 10 ether);
         vm.startPrank(address(12));
-        vm.expectRevert(InvalidMintTime.selector);
+        vm.expectRevert(InvalidTime.selector);
         nftManager.whitelistMint{value: 0.2 ether}(proof);
 
         vm.warp(block.timestamp + 60);
@@ -98,7 +98,7 @@ contract NFTManagerTest is Test, IDegenNFTDefination, INFTManagerDefination {
         deal(user, 1 ether);
 
         vm.startPrank(user);
-        vm.expectRevert(InvalidMintTime.selector);
+        vm.expectRevert(InvalidTime.selector);
         nftManager.publicMint{value: 0.4 ether}(2);
 
         vm.warp(block.timestamp + 70);
@@ -117,13 +117,37 @@ contract NFTManagerTest is Test, IDegenNFTDefination, INFTManagerDefination {
         buckets[1] = 1;
         buckets[2] = 2;
 
-        uint256[] memory masks = new uint256[](3);
-        masks[0] = uint256(1111111);
-        masks[1] = uint256(2222222);
-        masks[2] = uint256(3333333);
+        uint256[] memory compactDatas = new uint256[](3);
+        compactDatas[0] = uint256(
+            3961326118426911776510311928281686083547790411131986425972590960356928587046
+        );
+        compactDatas[1] = uint256(
+            143129925536660066247614030716736710777157154272643132545888851129075630369
+        );
+        compactDatas[2] = uint256(
+            143164434261824360432193319550881793490266779426267524777728821798889718006
+        );
 
         vm.prank(owner);
-        nftManager.openMysteryBox(buckets, masks);
+        nftManager.openMysteryBox(buckets, compactDatas);
+    }
+
+    function testMerge() public {
+        testPublicMintMany(150);
+        testOpenMysteryBox();
+
+        vm.startPrank(user);
+        vm.expectRevert(OnlyShardsCanMerge.selector);
+        nftManager.merge(3, 15);
+
+        vm.expectRevert(InvalidTokens.selector);
+        nftManager.merge(1, 3);
+
+        vm.expectEmit(true, true, true, true);
+        emit MergeTokens(user, 2, 5, 151);
+        nftManager.merge(2, 5);
+
+        vm.stopPrank();
     }
 
     function testPublicMintEdge() public {
@@ -200,6 +224,7 @@ contract NFTManagerTest is Test, IDegenNFTDefination, INFTManagerDefination {
         });
 
         nftManager.setMintTime(StageType.PublicMint, publicMintTime);
+        nftManager.setMintTime(StageType.Merge, publicMintTime);
         vm.stopPrank();
     }
 

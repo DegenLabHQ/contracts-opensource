@@ -1,15 +1,11 @@
 import { ethers } from "hardhat";
 import { expect, assert } from "chai";
 
-import {
-  keccak256,
-  defaultAbiCoder,
-  hexlify,
-  hexValue,
-} from "ethers/lib/utils";
+import { keccak256, defaultAbiCoder, hexlify } from "ethers/lib/utils";
 import { MerkleTree } from "merkletreejs";
 import { generageTestAccount } from "./helper";
 import metadataList from "./mockMetadatalist.json";
+import { BigNumber } from "ethers";
 
 function rarityToNumber(rarity: string): number {
   switch (rarity) {
@@ -78,8 +74,8 @@ describe("NFTManager Test", async function () {
 
   it("Should set bucket success && verify property", async function () {
     const metadatas = metadataList.map((item) => [
-      item.nft_id,
-      hexlify(item.hero_id),
+      item.token_id,
+      hexlify(Number(item.hero_id)),
       hexlify(rarityToNumber(item.rarity)),
       hexlify(tokenTypeToNumber(item.type)),
     ]);
@@ -96,6 +92,7 @@ describe("NFTManager Test", async function () {
 
       const group = metadataGroups[i];
       const compactData = await this.degenNFTMock.generateCompactData(group);
+      console.log("compactData", BigNumber.from(compactData).toString());
       compactDatas.push(compactData);
     }
 
@@ -105,7 +102,7 @@ describe("NFTManager Test", async function () {
     for (let i = 0; i < metadataList.length; i++) {
       const metadata = metadataList[i];
       const [nameId, rarity, tokenType] = await this.degenNFT.getProperty(
-        metadata.nft_id
+        metadata.token_id
       );
 
       const [mTokenId, mNameId, mRarity, mTokenType] = metadatas[i];

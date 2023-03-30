@@ -31,9 +31,10 @@ interface INFTManagerDefination {
     error InvalidTokens();
     error MintFeeNotEnough();
     error InvalidParams();
-    error InvalidMintTime();
+    error InvalidTime();
     error TokenIdNotExsis();
     error LevelZeroCannotBurn();
+    error OnlyShardsCanMerge();
 
     /**********************************************
      * events
