@@ -189,7 +189,7 @@ const config: HardhatUserConfig = {
   contractSizer: {
     alphaSort: false,
     disambiguatePaths: false,
-    runOnCompile: true,
+    runOnCompile: false,
     strict: false,
   },
   external: {
@@ -199,6 +199,9 @@ const config: HardhatUserConfig = {
           "node_modules/@openzeppelin/upgrades-core/artifacts/@openzeppelin/contracts/proxy/ERC1967/ERC1967Proxy.sol/",
       },
     ],
+  },
+  mocha: {
+    timeout: 40000,
   },
 };
 

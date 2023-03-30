@@ -70,9 +70,9 @@ contract DegenNFT is
         uint16 property = encodeProperty(property_);
 
         // storage property
-        uint256 bucket = tokenId >> 4;
+        uint256 bucket = (tokenId - 1) >> 4;
         uint256 mask = properties[bucket];
-        mask |= uint256(property) << ((tokenId % 16) * 16);
+        mask |= uint256(property) << (((tokenId - 1) % 16) * 16);
         properties[bucket] = mask;
 
         emit SetProperties(property_);
@@ -109,9 +109,11 @@ contract DegenNFT is
     function getProperty(
         uint256 tokenId
     ) external view returns (Property memory) {
-        uint256 bucket = tokenId >> 4;
+        uint256 bucket = (tokenId - 1) >> 4;
         uint256 mask = properties[bucket];
-        uint16 property = uint16((mask >> ((tokenId % 16) * 16)) & 0xffff);
+        uint16 property = uint16(
+            (mask >> (((tokenId - 1) % 16) * 16)) & 0xffff
+        );
 
         (uint16 nameId, uint16 rarity, uint16 tokenType) = decodeProperty(
             property
