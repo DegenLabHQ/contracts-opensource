@@ -185,6 +185,13 @@ contract NFTManagerTest is Test, IDegenNFTDefination, INFTManagerDefination {
         nftManager.burn(1);
     }
 
+    function testBatchMetadataUpdate() public {
+        vm.expectEmit(true, true, true, true);
+        emit BatchMetadataUpdate(0, type(uint256).max);
+        vm.prank(degenNFT.owner());
+        degenNFT.emitMetadataUpdate();
+    }
+
     function _initialize() internal {
         degenNFT.initialize("Degen2009", "Degen2009", owner);
         nftManager.initialize(owner);

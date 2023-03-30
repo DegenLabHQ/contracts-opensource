@@ -1,3 +1,4 @@
+import { formatBytes32String } from "ethers/lib/utils";
 import { DeployFunction } from "hardhat-deploy/types";
 
 const func: DeployFunction = async function ({
@@ -20,6 +21,7 @@ const func: DeployFunction = async function ({
       },
     },
     log: true,
+    deterministicDeployment: formatBytes32String("DegenReborn_Test"),
   });
 
   const degenNFT = await get("DegenNFT");

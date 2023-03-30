@@ -1,3 +1,4 @@
+import { formatBytes32String } from "ethers/lib/utils";
 import { DeployFunction } from "hardhat-deploy/types";
 
 const func: DeployFunction = async function ({
@@ -7,8 +8,16 @@ const func: DeployFunction = async function ({
   const { deploy, get } = deployments;
   const { deployer } = await getNamedAccounts();
 
-  await deploy("FastArray", { from: deployer, log: true });
-  await deploy("RankingRedBlackTree", { from: deployer, log: true });
+  await deploy("FastArray", {
+    from: deployer,
+    log: true,
+    deterministicDeployment: formatBytes32String("DegenReborn_Test"),
+  });
+  await deploy("RankingRedBlackTree", {
+    from: deployer,
+    log: true,
+    deterministicDeployment: formatBytes32String("DegenReborn_Test"),
+  });
   await deploy("SingleRanking", {
     from: deployer,
     log: true,
@@ -16,6 +25,7 @@ const func: DeployFunction = async function ({
       FastArray: (await get("FastArray")).address,
       RankingRedBlackTree: (await get("RankingRedBlackTree")).address,
     },
+    deterministicDeployment: formatBytes32String("DegenReborn_Test"),
   });
   await deploy("DegenRank", {
     from: deployer,
@@ -25,6 +35,7 @@ const func: DeployFunction = async function ({
       RankingRedBlackTree: (await get("RankingRedBlackTree")).address,
     },
     log: true,
+    deterministicDeployment: formatBytes32String("DegenReborn_Test"),
   });
 };
 
