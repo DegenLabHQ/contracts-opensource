@@ -11,19 +11,6 @@ import { MerkleTree } from "merkletreejs";
 import { generageTestAccount } from "./helper";
 import metadataList from "./mcokMetadatalist.json";
 
-enum Rarity {
-  Legendary,
-  Uncommon,
-  Common,
-  Epic,
-  Rare,
-}
-
-enum TokenType {
-  Degens,
-  Shards,
-}
-
 function rarityToNumber(rarity: string): number {
   switch (rarity) {
     case "Legendary":

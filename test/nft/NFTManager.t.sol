@@ -126,7 +126,7 @@ contract NFTManagerTest is Test, IDegenNFTDefination, INFTManagerDefination {
         nftManager.setBuckets(buckets, masks);
     }
 
-    function testOpenMysteryBox() public {
+    function testSetBucket() public {
         uint256[] memory tokenIds = new uint256[](4);
         tokenIds[0] = 1;
         tokenIds[1] = 2;
@@ -140,7 +140,7 @@ contract NFTManagerTest is Test, IDegenNFTDefination, INFTManagerDefination {
         metadataList[3] = Property({nameId: 1004, rarity: 4, tokenType: 0});
 
         vm.prank(owner);
-        nftManager.openMysteryBox(tokenIds, metadataList);
+        nftManager.setBucket(tokenIds, metadataList);
 
         Property memory t2Property = degenNFT.getProperty(2);
         Property memory t3Property = degenNFT.getProperty(3);

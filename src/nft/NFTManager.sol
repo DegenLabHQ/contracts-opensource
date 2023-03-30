@@ -120,7 +120,7 @@ contract NFTManager is
     /**
      * @dev set id=>metadata map
      */
-    function openMysteryBox(
+    function setBucket(
         uint256[] calldata tokenIds,
         IDegenNFTDefination.Property[] calldata metadataList
     ) external onlyOwner {
