@@ -15,6 +15,8 @@ contract DegenNFT is
     ERC721AUpgradeable,
     IDegenNFT
 {
+    uint256 public constant PERCENTAGE_BASE = 10000;
+
     // Mapping from tokenId to Property
     mapping(uint256 => uint256) internal properties;
 
@@ -26,7 +28,10 @@ contract DegenNFT is
     // Mapping tokenId to level
     mapping(uint256 => uint256) internal levels;
 
-    uint256[46] private _gap;
+    address _royaltyReceiver; //  ---|
+    uint96 _royaltyPercentage; //  ---|
+
+    uint256[45] private _gap;
 
     function _authorizeUpgrade(
         address newImplementation
@@ -96,6 +101,21 @@ contract DegenNFT is
         levels[tokenId] = level;
     }
 
+    /**
+     * @dev set royaly info manually
+     * @param receiver receiver address
+     * @param percent  percent with 10000 percentBase
+     */
+    function setRoyaltyInfo(
+        address receiver,
+        uint96 percent
+    ) external onlyOwner {
+        _royaltyReceiver = receiver;
+        _royaltyPercentage = percent;
+
+        emit RoyaltyInfoSet(receiver, percent);
+    }
+
     function totalMinted() external view returns (uint256) {
         return _totalMinted();
     }
@@ -137,6 +157,49 @@ contract DegenNFT is
         uint256 tokenId
     ) public view virtual override returns (string memory) {
         return string.concat(super.tokenURI(tokenId), ".json");
+    }
+
+    /**
+     * @dev royalty info
+     * @param tokenId NFT tokenId but it's not related with tokenId
+     * @param salePrice sale price
+     * @return receiver
+     * @return royaltyAmount
+     */
+    function royaltyInfo(
+        uint256 tokenId,
+        uint256 salePrice
+    ) external view override returns (address receiver, uint256 royaltyAmount) {
+        receiver = _royaltyReceiver;
+        royaltyAmount =
+            (salePrice * uint256(_royaltyPercentage)) /
+            PERCENTAGE_BASE;
+    }
+
+    // =============================================================
+    //                            IERC165
+    // =============================================================
+
+    /**
+     * @dev Returns true if this contract implements the interface defined by
+     * `interfaceId`. See the corresponding
+     * [EIP section](https://eips.ethereum.org/EIPS/eip-165#how-interfaces-are-identified)
+     * to learn more about how these ids are created.
+     *
+     * This function call must use less than 30000 gas.
+     */
+    function supportsInterface(
+        bytes4 interfaceId
+    ) public view virtual override returns (bool) {
+        // The interface IDs are constants representing the first 4 bytes
+        // of the XOR of all function selectors in the interface.
+        // See: [ERC165](https://eips.ethereum.org/EIPS/eip-165)
+        // (e.g. `bytes4(i.functionA.selector ^ i.functionB.selector ^ ...)`)
+        return
+            interfaceId == 0x01ffc9a7 || // ERC165 interface ID for ERC165.
+            interfaceId == 0x80ac58cd || // ERC165 interface ID for ERC721.
+            interfaceId == 0x5b5e139f || // ERC165 interface ID for ERC721Metadata.
+            interfaceId == 0x2a55205a; // ERC165 interface ID ERC2981  Royalty
     }
 
     function exists(uint256 tokenId) external view returns (bool) {
