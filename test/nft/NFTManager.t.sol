@@ -209,6 +209,33 @@ contract NFTManagerTest is Test, INFTManagerDefination, IDegenNFTDefination {
         degenNFT.emitMetadataUpdate();
     }
 
+    function testRoyltyInfo(
+        address receiver,
+        uint256 percentSeed,
+        uint256 tokenId,
+        uint256 priceSeed
+    ) public {
+        uint256 price = bound(priceSeed, 0, type(uint128).max);
+        uint256 percent = bound(percentSeed, 0, degenNFT.PERCENTAGE_BASE());
+
+        address r;
+        uint256 a;
+        (r, a) = degenNFT.royaltyInfo(tokenId, price);
+        assertEq(r, address(0));
+        assertEq(a, 0);
+
+        vm.expectEmit(true, true, true, true);
+        emit RoyaltyInfoSet(receiver, percent);
+
+        vm.prank(degenNFT.owner());
+        degenNFT.setRoyaltyInfo(receiver, uint96(percent));
+
+        (r, a) = degenNFT.royaltyInfo(tokenId, price);
+
+        assertEq(r, receiver);
+        assertEq(a, (percent * price) / degenNFT.PERCENTAGE_BASE());
+    }
+
     function _initialize() internal {
         degenNFT.initialize("Degen2009", "Degen2009", owner);
         nftManager.initialize(owner);
