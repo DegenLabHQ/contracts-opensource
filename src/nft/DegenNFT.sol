@@ -71,23 +71,6 @@ contract DegenNFT is
         emit BatchMetadataUpdate(0, type(uint256).max);
     }
 
-    function setProperties(
-        uint256 tokenId,
-        Property memory property_
-    ) external onlyManager {
-        // encode property
-        uint16 property = encodeProperty(property_);
-
-        // storage property
-        uint256 bucket = (tokenId - 1) >> 4;
-        uint256 compactData = properties[bucket];
-        compactData |= uint256(property) << (((tokenId - 1) % 16) * 16);
-        properties[bucket] = compactData;
-
-        emit SetProperties(property_);
-        emit MetadataUpdate(tokenId);
-    }
-
     function setBucket(
         uint256 bucket,
         uint256 compactData

@@ -126,33 +126,6 @@ contract NFTManagerTest is Test, IDegenNFTDefination, INFTManagerDefination {
         nftManager.setBuckets(buckets, masks);
     }
 
-    function testSetBucket() public {
-        uint256[] memory tokenIds = new uint256[](4);
-        tokenIds[0] = 1;
-        tokenIds[1] = 2;
-        tokenIds[2] = 3;
-        tokenIds[3] = 4;
-
-        Property[] memory metadataList = new Property[](4);
-        metadataList[0] = Property({nameId: 1001, rarity: 1, tokenType: 0});
-        metadataList[1] = Property({nameId: 1002, rarity: 2, tokenType: 0});
-        metadataList[2] = Property({nameId: 1003, rarity: 3, tokenType: 0});
-        metadataList[3] = Property({nameId: 1004, rarity: 4, tokenType: 0});
-
-        vm.prank(owner);
-        nftManager.setBucket(tokenIds, metadataList);
-
-        Property memory t2Property = degenNFT.getProperty(2);
-        Property memory t3Property = degenNFT.getProperty(3);
-        Property memory t4Property = degenNFT.getProperty(4);
-        assertEq(t2Property.nameId, 1002);
-        assertEq(t2Property.rarity, 2);
-        assertEq(t2Property.tokenType, 0);
-
-        assertEq(t3Property.nameId, 1003);
-        assertEq(t4Property.nameId, 1004);
-    }
-
     function testPublicMintEdge() public {
         deal(user, 10000 ether);
         uint256 amount = 2009;

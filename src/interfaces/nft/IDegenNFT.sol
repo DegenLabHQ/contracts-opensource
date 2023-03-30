@@ -14,7 +14,6 @@ interface IDegenNFTDefination is IERC4906 {
     error OnlyManager();
 
     event SetManager(address manager);
-    event SetProperties(Property properties);
     event SetBaseURI(string baseURI);
 }
 
@@ -24,11 +23,6 @@ interface IDegenNFT is IDegenNFTDefination {
     function burn(uint256 tokenId) external;
 
     function setBaseURI(string calldata baseURI_) external;
-
-    function setProperties(
-        uint256 tokenId,
-        Property memory _properties
-    ) external;
 
     function setLevel(uint256 tokenId, uint256 level) external;
 

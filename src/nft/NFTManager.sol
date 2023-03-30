@@ -117,21 +117,6 @@ contract NFTManager is
         emit MergeTokens(msg.sender, tokenId1, tokenId2, tokenId);
     }
 
-    /**
-     * @dev set id=>metadata map
-     */
-    function setBucket(
-        uint256[] calldata tokenIds,
-        IDegenNFTDefination.Property[] calldata metadataList
-    ) external onlyOwner {
-        if (tokenIds.length != metadataList.length) {
-            revert InvalidParams();
-        }
-        for (uint256 i = 0; i < metadataList.length; i++) {
-            degenNFT.setProperties(tokenIds[i], metadataList[i]);
-        }
-    }
-
     function setBuckets(
         uint256[] calldata buckets,
         uint256[] calldata masks
