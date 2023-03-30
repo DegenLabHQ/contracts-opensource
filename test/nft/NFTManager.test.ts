@@ -9,7 +9,7 @@ import {
 } from "ethers/lib/utils";
 import { MerkleTree } from "merkletreejs";
 import { generageTestAccount } from "./helper";
-import metadataList from "./mcokMetadatalist.json";
+import metadataList from "./mockMetadatalist.json";
 
 function rarityToNumber(rarity: string): number {
   switch (rarity) {
@@ -99,7 +99,9 @@ describe("NFTManager Test", async function () {
       compactDatas.push(compactData);
     }
 
-    await this.nftManager.connect(this.owner).setBuckets(buckets, compactDatas);
+    await this.nftManager
+      .connect(this.owner)
+      .openMysteryBox(buckets, compactDatas);
     for (let i = 0; i < metadataList.length; i++) {
       const metadata = metadataList[i];
       const [nameId, rarity, tokenType] = await this.degenNFT.getProperty(

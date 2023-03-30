@@ -111,7 +111,7 @@ contract NFTManagerTest is Test, IDegenNFTDefination, INFTManagerDefination {
         vm.stopPrank();
     }
 
-    function testSetBuckets() public {
+    function testOpenMysteryBox() public {
         uint256[] memory buckets = new uint256[](3);
         buckets[0] = 0;
         buckets[1] = 1;
@@ -123,7 +123,7 @@ contract NFTManagerTest is Test, IDegenNFTDefination, INFTManagerDefination {
         masks[2] = uint256(3333333);
 
         vm.prank(owner);
-        nftManager.setBuckets(buckets, masks);
+        nftManager.openMysteryBox(buckets, masks);
     }
 
     function testPublicMintEdge() public {

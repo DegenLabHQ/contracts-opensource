@@ -117,7 +117,7 @@ contract NFTManager is
         emit MergeTokens(msg.sender, tokenId1, tokenId2, tokenId);
     }
 
-    function setBuckets(
+    function openMysteryBox(
         uint256[] calldata buckets,
         uint256[] calldata masks
     ) external onlyOwner {
