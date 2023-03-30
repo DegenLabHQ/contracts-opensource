@@ -1,5 +1,5 @@
 import { DeployFunction } from "hardhat-deploy/types";
-import { parseEther } from "ethers/lib/utils";
+import { formatBytes32String, parseEther } from "ethers/lib/utils";
 
 const func: DeployFunction = async function ({
   deployments,
@@ -39,6 +39,7 @@ const func: DeployFunction = async function ({
       PortalLib: (await get("PortalLib")).address,
     },
     log: true,
+    deterministicDeployment: formatBytes32String("DegenReborn_Test"),
   });
 
   // await execute(

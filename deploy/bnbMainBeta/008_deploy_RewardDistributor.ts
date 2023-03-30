@@ -1,3 +1,4 @@
+import { formatBytes32String } from "ethers/lib/utils";
 import { DeployFunction } from "hardhat-deploy/types";
 
 const func: DeployFunction = async function ({
@@ -11,6 +12,7 @@ const func: DeployFunction = async function ({
     from: degen_deployer,
     args: [degen_deployer],
     log: true,
+    deterministicDeployment: formatBytes32String("DegenReborn_Beta"),
   });
 };
 

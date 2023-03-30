@@ -1,5 +1,5 @@
 import { DeployFunction } from "hardhat-deploy/types";
-import { parseEther } from "ethers/lib/utils";
+import { formatBytes32String, parseEther } from "ethers/lib/utils";
 
 enum StageType {
   Invalid,
@@ -28,6 +28,7 @@ const func: DeployFunction = async function ({
       },
     },
     log: true,
+    deterministicDeployment: formatBytes32String("DegenReborn"),
   });
 
   const degenNFT = await get("DegenNFT");
