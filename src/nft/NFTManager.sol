@@ -151,14 +151,17 @@ contract NFTManager is
             revert TokenIdNotExsis();
         }
 
+        uint256 level = degenNFT.getLevel(tokenId);
+        if (level == 0) {
+            revert LevelZeroCannotBurn();
+        }
+
         _checkOwner(msg.sender, tokenId);
 
         degenNFT.burn(tokenId);
 
         // refund fees
-        BurnRefundConfig memory refundConfig = burnRefundConfigs[
-            degenNFT.getLevel(tokenId)
-        ];
+        BurnRefundConfig memory refundConfig = burnRefundConfigs[level];
 
         // refund NativeToken
         if (refundConfig.nativeToken > 0) {

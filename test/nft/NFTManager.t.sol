@@ -180,14 +180,9 @@ contract NFTManagerTest is Test, IDegenNFTDefination, INFTManagerDefination {
     function testBurn() public {
         testPublicMint();
 
-        BurnRefundConfig memory refundConfigOfL1 = nftManager
-            .getBurnRefundConfigs(0);
-
         vm.prank(user);
-        vm.expectEmit(true, true, true, true);
-        emit BurnToken(user, 1, refundConfigOfL1.nativeToken, 0);
+        vm.expectRevert(LevelZeroCannotBurn.selector);
         nftManager.burn(1);
-        assertEq(user.balance, 0.75 ether);
     }
 
     function _initialize() internal {
@@ -239,7 +234,7 @@ contract NFTManagerTest is Test, IDegenNFTDefination, INFTManagerDefination {
         for (uint i = 0; i < 4; i++) {
             levels[i] = i;
             burnConfigs[i] = BurnRefundConfig({
-                nativeToken: 0.15 ether,
+                nativeToken: i * 0.15 ether,
                 degenToken: 0
             });
         }

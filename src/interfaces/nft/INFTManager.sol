@@ -34,6 +34,7 @@ interface INFTManagerDefination {
     error InvalidParams();
     error InvalidMintTime();
     error TokenIdNotExsis();
+    error LevelZeroCannotBurn();
 
     /**********************************************
      * events
