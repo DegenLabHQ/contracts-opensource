@@ -35,7 +35,13 @@ jobs:
         env:
           BNB_SCAN_API_KEY: ${{ secrets.BNB_SCAN_API_KEY }}
           BNB_CHAIN_TEST_URL: ${{ secrets.BNB_CHAIN_TEST_URL }}
-    
+
+      - name: verify on goerli
+        run: pnpm run verify --network goerli
+        env:
+          ETHER_SCAN_API_KEY: ${{ secrets.ETHER_SCAN_API_KEY }}
+          GOERLI_RPC_URL: ${{ secrets.GOERLI_RPC_URL }}
+
       - name: verify on polygon mumbai
         run: pnpm run verify --network mumbai
         env:
