@@ -107,6 +107,14 @@ contract NFTManager is
             revert InvalidTokens();
         }
 
+        // only shards can merge
+        IDegenNFTDefination.Property memory property = degenNFT.getProperty(
+            tokenId1
+        );
+        if (property.tokenType != uint16(1)) {
+            revert OnlyShardsCanMerge();
+        }
+
         degenNFT.burn(tokenId1);
         degenNFT.burn(tokenId2);
 
@@ -117,33 +125,18 @@ contract NFTManager is
         emit MergeTokens(msg.sender, tokenId1, tokenId2, tokenId);
     }
 
-    /**
-     * @dev set id=>metadata map
-     */
     function openMysteryBox(
-        uint256[] calldata tokenIds,
-        IDegenNFTDefination.Property[] calldata metadataList
-    ) external onlyOwner {
-        if (tokenIds.length != metadataList.length) {
-            revert InvalidParams();
-        }
-        for (uint256 i = 0; i < metadataList.length; i++) {
-            degenNFT.setProperties(tokenIds[i], metadataList[i]);
-        }
-    }
-
-    function setBuckets(
         uint256[] calldata buckets,
-        uint256[] calldata masks
+        uint256[] calldata compactDatas
     ) external onlyOwner {
-        if (buckets.length != masks.length) {
+        if (buckets.length != compactDatas.length) {
             revert InvalidParams();
         }
 
         for (uint i = 0; i < buckets.length; i++) {
-            degenNFT.setBucket(buckets[i], masks[i]);
+            degenNFT.setBucket(buckets[i], compactDatas[i]);
 
-            emit SetBucket(buckets[i], masks[i]);
+            emit SetBucket(buckets[i], compactDatas[i]);
         }
     }
 
@@ -153,8 +146,13 @@ contract NFTManager is
         }
 
         uint256 level = degenNFT.getLevel(tokenId);
+        // level == 0 && not openMystoryBox
         if (level == 0) {
-            revert LevelZeroCannotBurn();
+            IDegenNFTDefination.Property memory token1Property = degenNFT
+                .getProperty(1);
+            if (token1Property.nameId == uint16(0)) {
+                revert LevelZeroCannotBurn();
+            }
         }
 
         _checkOwner(msg.sender, tokenId);
@@ -162,9 +160,7 @@ contract NFTManager is
         degenNFT.burn(tokenId);
 
         // refund fees
-        BurnRefundConfig memory refundConfig = burnRefundConfigs[
-            degenNFT.getLevel(tokenId)
-        ];
+        BurnRefundConfig memory refundConfig = burnRefundConfigs[level];
 
         // refund NativeToken
         if (refundConfig.nativeToken > 0) {
@@ -292,7 +288,7 @@ contract NFTManager is
             block.timestamp < stageTime[stageType].startTime ||
             block.timestamp > stageTime[stageType].endTime
         ) {
-            revert InvalidMintTime();
+            revert InvalidTime();
         }
     }
 

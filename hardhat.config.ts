@@ -7,6 +7,7 @@ import "@typechain/hardhat";
 import "hardhat-deploy";
 import "hardhat-preprocessor";
 import "hardhat-contract-sizer";
+import "hardhat-gas-reporter";
 
 import { HardhatUserConfig, task } from "hardhat/config";
 
@@ -235,6 +236,13 @@ const config: HardhatUserConfig = {
           "node_modules/@openzeppelin/upgrades-core/artifacts/@openzeppelin/contracts/proxy/ERC1967/ERC1967Proxy.sol/",
       },
     ],
+  },
+  mocha: {
+    timeout: 120 * 1000,
+  },
+  gasReporter: {
+    currency: "USD",
+    gasPrice: 21,
   },
 };
 

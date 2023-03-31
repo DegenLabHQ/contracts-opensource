@@ -8,11 +8,12 @@ import "murky/Merkle.sol";
 import {INFTManager, INFTManagerDefination} from "src/interfaces/nft/INFTManager.sol";
 import {IDegenNFTDefination, IDegenNFT} from "src/interfaces/nft/IDegenNFT.sol";
 
-contract NFTManagerTest is Test, INFTManagerDefination, IDegenNFTDefination {
+contract NFTManagerTest is Test, IDegenNFTDefination, INFTManagerDefination {
     DegenNFT degenNFT;
     NFTManager nftManager;
     address owner;
     address signer;
+    address user = address(11);
 
     error CallerNotOwner();
 
@@ -26,6 +27,7 @@ contract NFTManagerTest is Test, INFTManagerDefination, IDegenNFTDefination {
         _updateSigners();
         _setMintTime();
         _setMintFee();
+        _setBurnRefundConfig();
 
         vm.prank(owner);
         degenNFT.setBaseURI("https://www.baseuri.com/");
@@ -48,7 +50,7 @@ contract NFTManagerTest is Test, INFTManagerDefination, IDegenNFTDefination {
         bytes32[] memory proof = m.getProof(data, 2);
         vm.deal(address(12), 10 ether);
         vm.startPrank(address(12));
-        vm.expectRevert(INFTManagerDefination.InvalidMintTime.selector);
+        vm.expectRevert(InvalidTime.selector);
         nftManager.whitelistMint{value: 0.2 ether}(proof);
 
         vm.warp(block.timestamp + 60);
@@ -81,9 +83,7 @@ contract NFTManagerTest is Test, INFTManagerDefination, IDegenNFTDefination {
             bytes32[] memory proof = m.getProof(data, i);
 
             if (degenNFT.totalMinted() >= nftManager.SUPPORT_MAX_MINT_COUNT()) {
-                vm.expectRevert(
-                    INFTManagerDefination.OutOfMaxMintCount.selector
-                );
+                vm.expectRevert(OutOfMaxMintCount.selector);
                 hoax(user);
                 nftManager.whitelistMint{value: 0.2 ether}(proof);
                 break;
@@ -95,89 +95,62 @@ contract NFTManagerTest is Test, INFTManagerDefination, IDegenNFTDefination {
     }
 
     function testPublicMint() public {
-        deal(address(11), 1 ether);
+        deal(user, 1 ether);
 
-        vm.startPrank(address(11));
-        vm.expectRevert(INFTManagerDefination.InvalidMintTime.selector);
+        vm.startPrank(user);
+        vm.expectRevert(InvalidTime.selector);
         nftManager.publicMint{value: 0.4 ether}(2);
 
         vm.warp(block.timestamp + 70);
-        vm.expectRevert(INFTManagerDefination.MintFeeNotEnough.selector);
+        vm.expectRevert(MintFeeNotEnough.selector);
         nftManager.publicMint{value: 0.2 ether}(2);
 
         vm.expectEmit(true, true, true, true);
-        emit Minted(address(11), 2, 1);
+        emit Minted(user, 2, 1);
         nftManager.publicMint{value: 0.4 ether}(2);
         vm.stopPrank();
     }
 
-    function testSetBuckets() public {
+    function testOpenMysteryBox() public {
         uint256[] memory buckets = new uint256[](3);
         buckets[0] = 0;
         buckets[1] = 1;
         buckets[2] = 2;
 
-        uint256[] memory masks = new uint256[](3);
-        masks[0] = uint256(1111111);
-        masks[1] = uint256(2222222);
-        masks[2] = uint256(3333333);
+        uint256[] memory compactDatas = new uint256[](3);
+        compactDatas[0] = uint256(
+            3961326118426911776510311928281686083547790411131986425972590960356928587046
+        );
+        compactDatas[1] = uint256(
+            143129925536660066247614030716736710777157154272643132545888851129075630369
+        );
+        compactDatas[2] = uint256(
+            143164434261824360432193319550881793490266779426267524777728821798889718006
+        );
 
         vm.prank(owner);
-        nftManager.setBuckets(buckets, masks);
+        nftManager.openMysteryBox(buckets, compactDatas);
     }
 
-    function testOpenMysteryBox() public {
-        uint256[] memory tokenIds = new uint256[](4);
-        tokenIds[0] = 1;
-        tokenIds[1] = 2;
-        tokenIds[2] = 3;
-        tokenIds[3] = 4;
+    function testMerge() public {
+        testPublicMintMany(150);
+        testOpenMysteryBox();
 
-        IDegenNFTDefination.Property[]
-            memory metadataList = new IDegenNFTDefination.Property[](4);
-        metadataList[0] = IDegenNFTDefination.Property({
-            nameId: 1001,
-            rarity: 1,
-            tokenType: 0
-        });
-        metadataList[1] = IDegenNFTDefination.Property({
-            nameId: 1002,
-            rarity: 2,
-            tokenType: 0
-        });
-        metadataList[2] = IDegenNFTDefination.Property({
-            nameId: 1003,
-            rarity: 3,
-            tokenType: 0
-        });
-        metadataList[3] = IDegenNFTDefination.Property({
-            nameId: 1004,
-            rarity: 4,
-            tokenType: 0
-        });
+        vm.startPrank(user);
+        vm.expectRevert(OnlyShardsCanMerge.selector);
+        nftManager.merge(3, 15);
 
-        vm.prank(owner);
-        nftManager.openMysteryBox(tokenIds, metadataList);
+        vm.expectRevert(InvalidTokens.selector);
+        nftManager.merge(1, 3);
 
-        IDegenNFTDefination.Property memory t2Property = degenNFT.getProperty(
-            2
-        );
-        IDegenNFTDefination.Property memory t3Property = degenNFT.getProperty(
-            3
-        );
-        IDegenNFTDefination.Property memory t4Property = degenNFT.getProperty(
-            4
-        );
-        assertEq(t2Property.nameId, 1002);
-        assertEq(t2Property.rarity, 2);
-        assertEq(t2Property.tokenType, 0);
+        vm.expectEmit(true, true, true, true);
+        emit MergeTokens(user, 2, 5, 151);
+        nftManager.merge(2, 5);
 
-        assertEq(t3Property.nameId, 1003);
-        assertEq(t4Property.nameId, 1004);
+        vm.stopPrank();
     }
 
     function testPublicMintEdge() public {
-        address user = address(11);
         deal(user, 10000 ether);
         uint256 amount = 2009;
 
@@ -185,12 +158,11 @@ contract NFTManagerTest is Test, INFTManagerDefination, IDegenNFTDefination {
         vm.prank(user);
         nftManager.publicMint{value: amount * 0.2 ether}(amount);
 
-        vm.expectRevert(INFTManagerDefination.OutOfMaxMintCount.selector);
+        vm.expectRevert(OutOfMaxMintCount.selector);
         nftManager.publicMint{value: 0.2 ether}(1);
     }
 
     function testPublicMintMany(uint256 amountSeed) public {
-        address user = address(11);
         deal(user, 10000 ether);
         uint256 amount = bound(amountSeed, 1, 2009);
 
@@ -200,6 +172,14 @@ contract NFTManagerTest is Test, INFTManagerDefination, IDegenNFTDefination {
         vm.stopPrank();
 
         assertEq(degenNFT.balanceOf(user), amount);
+    }
+
+    function testBurn() public {
+        testPublicMint();
+
+        vm.prank(user);
+        vm.expectRevert(LevelZeroCannotBurn.selector);
+        nftManager.burn(1);
     }
 
     function testBatchMetadataUpdate() public {
@@ -259,31 +239,38 @@ contract NFTManagerTest is Test, INFTManagerDefination, IDegenNFTDefination {
 
     function _setMintTime() internal {
         vm.startPrank(owner);
-        INFTManagerDefination.StageTime
-            memory whitelistMintTime = INFTManagerDefination.StageTime({
-                startTime: block.timestamp + 10,
-                endTime: block.timestamp + 60 * 60
-            });
-        nftManager.setMintTime(
-            INFTManagerDefination.StageType.WhitelistMint,
-            whitelistMintTime
-        );
+        StageTime memory whitelistMintTime = StageTime({
+            startTime: block.timestamp + 10,
+            endTime: block.timestamp + 60 * 60
+        });
+        nftManager.setMintTime(StageType.WhitelistMint, whitelistMintTime);
 
-        INFTManagerDefination.StageTime
-            memory publicMintTime = INFTManagerDefination.StageTime({
-                startTime: block.timestamp + 60,
-                endTime: block.timestamp + 60 * 60
-            });
+        StageTime memory publicMintTime = StageTime({
+            startTime: block.timestamp + 60,
+            endTime: block.timestamp + 60 * 60
+        });
 
-        nftManager.setMintTime(
-            INFTManagerDefination.StageType.PublicMint,
-            publicMintTime
-        );
+        nftManager.setMintTime(StageType.PublicMint, publicMintTime);
+        nftManager.setMintTime(StageType.Merge, publicMintTime);
         vm.stopPrank();
     }
 
     function _setMintFee() internal {
         vm.prank(owner);
         nftManager.setMintFee(0.2 ether);
+    }
+
+    function _setBurnRefundConfig() internal {
+        BurnRefundConfig[] memory burnConfigs = new BurnRefundConfig[](4);
+        uint256[] memory levels = new uint256[](4);
+        for (uint i = 0; i < 4; i++) {
+            levels[i] = i;
+            burnConfigs[i] = BurnRefundConfig({
+                nativeToken: i * 0.15 ether,
+                degenToken: 0
+            });
+        }
+        vm.prank(owner);
+        nftManager.setBurnRefundConfig(levels, burnConfigs);
     }
 }
