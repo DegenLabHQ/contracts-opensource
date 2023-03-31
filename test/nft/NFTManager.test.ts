@@ -3,11 +3,7 @@ import { expect, assert } from "chai";
 
 import { keccak256, defaultAbiCoder, hexlify } from "ethers/lib/utils";
 import { MerkleTree } from "merkletreejs";
-import {
-  generageTestAccount,
-  rarityToNumber,
-  tokenTypeToNumber,
-} from "./helper";
+import { generageTestAccount, rarityToNumber } from "./helper";
 import metadataList from "./mockMetadatalist.json";
 
 describe("NFTManager Test", async function () {
@@ -59,7 +55,7 @@ describe("NFTManager Test", async function () {
       item.token_id,
       hexlify(Number(item.hero_id)),
       hexlify(rarityToNumber(item.rarity!)),
-      hexlify(tokenTypeToNumber(item.type!)),
+      hexlify(Number(item.is_shard)),
     ]);
 
     const metadataGroups = [];
@@ -86,10 +82,10 @@ describe("NFTManager Test", async function () {
         metadata.token_id
       );
 
-      const [mTokenId, mNameId, mRarity, mTokenType] = metadatas[i];
+      const [mTokenId, mNameId, mRarity, isShard] = metadatas[i];
       assert.equal(nameId, mNameId);
       assert.equal(rarity, mRarity.valueOf());
-      assert.equal(tokenType, mTokenType.valueOf());
+      assert.equal(tokenType, isShard.valueOf());
     }
   });
 });

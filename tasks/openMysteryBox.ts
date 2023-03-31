@@ -19,5 +19,6 @@ export default async function openMysteryBox(
   const tx = await nftManager
     .connect(signer)
     .openMysteryBox(buckets, compactDatas);
+  console.log("txhash", tx.hash);
   await tx.wait();
 }

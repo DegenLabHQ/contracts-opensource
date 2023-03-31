@@ -30,10 +30,6 @@ export function rarityToNumber(rarity: string): number {
   }
 }
 
-export function tokenTypeToNumber(tokenType: string): number {
-  return tokenType === "Degens" ? 0 : 1;
-}
-
 export function generageTestAccount(n: number) {
   const accountList: string[] = [];
   for (let i = 0; i < n; i++) {
