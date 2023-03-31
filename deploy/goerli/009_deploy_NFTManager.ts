@@ -45,7 +45,7 @@ const func: DeployFunction = async function ({
     { from: owner, log: true },
     "setMintTime",
     StageType.WhitelistMint,
-    [1680069600, 1680350400]
+    [1680069600, 1682870400]
   );
   // set public mint time
   await execute(
@@ -53,7 +53,7 @@ const func: DeployFunction = async function ({
     { from: owner, log: true },
     "setMintTime",
     StageType.PublicMint,
-    [1680091200, 1680350400]
+    [1680091200, 1682870400]
   );
 
   await execute(
@@ -70,7 +70,7 @@ const func: DeployFunction = async function ({
     "NFTManager",
     { from: owner, log: true },
     "setMintFee",
-    parseEther("0.2").toString()
+    parseEther("0.000002").toString()
   );
 
   // TODO: set merkle tree
