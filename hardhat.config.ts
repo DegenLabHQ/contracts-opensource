@@ -12,6 +12,7 @@ import "hardhat-gas-reporter";
 import { HardhatUserConfig, task } from "hardhat/config";
 
 import example from "./tasks/example";
+import openMysteryBox from "./tasks/openMysteryBox";
 
 function getRemappings() {
   return fs
@@ -32,6 +33,7 @@ const degen_deployer =
 const accounts = process.env.ACCOUNTS ? process.env.ACCOUNTS.split(",") : [];
 
 task("example", "Example task").setAction(example);
+task("openMysteryBox", "OpenMysteryBox task").setAction(openMysteryBox);
 
 const config: HardhatUserConfig = {
   solidity: {

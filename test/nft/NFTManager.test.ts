@@ -3,29 +3,12 @@ import { expect, assert } from "chai";
 
 import { keccak256, defaultAbiCoder, hexlify } from "ethers/lib/utils";
 import { MerkleTree } from "merkletreejs";
-import { generageTestAccount } from "./helper";
+import {
+  generageTestAccount,
+  rarityToNumber,
+  tokenTypeToNumber,
+} from "./helper";
 import metadataList from "./mockMetadatalist.json";
-
-function rarityToNumber(rarity: string): number {
-  switch (rarity) {
-    case "Legendary":
-      return 0;
-    case "Uncommon":
-      return 1;
-    case "Common":
-      return 2;
-    case "Epic":
-      return 3;
-    case "Rare":
-      return 4;
-    default:
-      return 7;
-  }
-}
-
-function tokenTypeToNumber(tokenType: string): number {
-  return tokenType === "Degens" ? 0 : 1;
-}
 
 describe("NFTManager Test", async function () {
   before(async function () {
@@ -75,8 +58,8 @@ describe("NFTManager Test", async function () {
     const metadatas = metadataList.map((item) => [
       item.token_id,
       hexlify(Number(item.hero_id)),
-      hexlify(rarityToNumber(item.rarity)),
-      hexlify(tokenTypeToNumber(item.type)),
+      hexlify(rarityToNumber(item.rarity!)),
+      hexlify(tokenTypeToNumber(item.type!)),
     ]);
 
     const metadataGroups = [];

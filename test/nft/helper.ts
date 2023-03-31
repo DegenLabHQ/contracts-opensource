@@ -13,39 +13,26 @@ export enum TokenType {
   Degen,
   Shard,
 }
+export function rarityToNumber(rarity: string): number {
+  switch (rarity) {
+    case "Legendary":
+      return 0;
+    case "Uncommon":
+      return 1;
+    case "Common":
+      return 2;
+    case "Epic":
+      return 3;
+    case "Rare":
+      return 4;
+    default:
+      return 7;
+  }
+}
 
-export const metadataList = [
-  {
-    name: "CZ",
-    rarity: Rarity.Legendary,
-    tokenType: TokenType.Shard,
-  },
-  {
-    name: "CZ",
-    rarity: Rarity.Legendary,
-    tokenType: TokenType.Shard,
-  },
-  {
-    name: "SBF",
-    rarity: Rarity.Epic,
-    tokenType: TokenType.Shard,
-  },
-  {
-    name: "SBF",
-    rarity: Rarity.Epic,
-    tokenType: TokenType.Shard,
-  },
-  {
-    name: "CZ",
-    rarity: Rarity.Legendary,
-    tokenType: TokenType.Degen,
-  },
-  {
-    name: "CZ",
-    rarity: Rarity.Legendary,
-    tokenType: TokenType.Degen,
-  },
-];
+export function tokenTypeToNumber(tokenType: string): number {
+  return tokenType === "Degens" ? 0 : 1;
+}
 
 export function generageTestAccount(n: number) {
   const accountList: string[] = [];
