@@ -69,11 +69,32 @@ contract DegenNFT is
         emit SetBaseURI(baseURI_);
     }
 
+    function setProperties(
+        uint256 tokenId,
+        Property memory property_
+    ) external onlyManager {
+        // encode property
+        uint16 property = encodeProperty(property_);
+
+        // storage property
+        uint256 bucket = (tokenId - 1) >> 4;
+        uint256 mask = properties[bucket];
+        mask |= uint256(property) << (((tokenId - 1) % 16) * 16);
+        properties[bucket] = mask;
+
+        emit SetProperties(property_);
+        emit MetadataUpdate(tokenId);
+    }
+
     /**
      * @dev emit ERC4906 event to trigger all metadata update
      */
-    function emitMetadataUpdate() external onlyOwner {
+    function emitMetadataUpdate() external {
         emit BatchMetadataUpdate(0, type(uint256).max);
+    }
+
+    function emitMetadataUpdate(uint256 tokenId) external {
+        emit MetadataUpdate(tokenId);
     }
 
     function setBucket(

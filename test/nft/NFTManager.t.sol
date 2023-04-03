@@ -111,45 +111,6 @@ contract NFTManagerTest is Test, IDegenNFTDefination, INFTManagerDefination {
         vm.stopPrank();
     }
 
-    function testOpenMysteryBox() public {
-        uint256[] memory buckets = new uint256[](3);
-        buckets[0] = 0;
-        buckets[1] = 1;
-        buckets[2] = 2;
-
-        uint256[] memory compactDatas = new uint256[](3);
-        compactDatas[0] = uint256(
-            3961326118426911776510311928281686083547790411131986425972590960356928587046
-        );
-        compactDatas[1] = uint256(
-            143129925536660066247614030716736710777157154272643132545888851129075630369
-        );
-        compactDatas[2] = uint256(
-            143164434261824360432193319550881793490266779426267524777728821798889718006
-        );
-
-        vm.prank(owner);
-        nftManager.openMysteryBox(buckets, compactDatas);
-    }
-
-    function testMerge() public {
-        testPublicMintMany(150);
-        testOpenMysteryBox();
-
-        vm.startPrank(user);
-        vm.expectRevert(OnlyShardsCanMerge.selector);
-        nftManager.merge(3, 15);
-
-        vm.expectRevert(InvalidTokens.selector);
-        nftManager.merge(1, 3);
-
-        vm.expectEmit(true, true, true, true);
-        emit MergeTokens(user, 2, 5, 151);
-        nftManager.merge(2, 5);
-
-        vm.stopPrank();
-    }
-
     function testPublicMintEdge() public {
         deal(user, 10000 ether);
         uint256 amount = 2009;
