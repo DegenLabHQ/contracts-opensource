@@ -6,7 +6,8 @@ interface INFTManagerDefination {
         Invalid,
         WhitelistMint,
         PublicMint,
-        Merge
+        Merge,
+        Burn
     }
     struct StageTime {
         uint256 startTime;

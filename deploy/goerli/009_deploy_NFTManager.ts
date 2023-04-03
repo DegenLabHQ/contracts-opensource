@@ -6,6 +6,7 @@ enum StageType {
   WhitelistMint,
   PublicMint,
   Merge,
+  Burn,
 }
 
 const func: DeployFunction = async function ({
@@ -61,6 +62,14 @@ const func: DeployFunction = async function ({
     { from: owner, log: true },
     "setMintTime",
     StageType.Merge,
+    []
+  );
+
+  await execute(
+    "NFTManager",
+    { from: owner, log: true },
+    "setMintTime",
+    StageType.Burn,
     []
   );
 
