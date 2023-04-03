@@ -138,7 +138,9 @@ contract NFTManager is
         }
     }
 
-    function burn(uint256 tokenId) external override whenNotPaused {
+    function burn(
+        uint256 tokenId
+    ) external override onlyStageTime(StageType.Burn) whenNotPaused {
         if (!degenNFT.exists(tokenId)) {
             revert TokenIdNotExsis();
         }

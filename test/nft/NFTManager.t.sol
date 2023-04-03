@@ -213,6 +213,7 @@ contract NFTManagerTest is Test, IDegenNFTDefination, INFTManagerDefination {
 
         nftManager.setMintTime(StageType.PublicMint, publicMintTime);
         nftManager.setMintTime(StageType.Merge, publicMintTime);
+        nftManager.setMintTime(StageType.Burn, publicMintTime);
         vm.stopPrank();
     }
 
