@@ -123,20 +123,18 @@ contract NFTManager is
         _mintTo(msg.sender, 1);
 
         emit MergeTokens(msg.sender, tokenId1, tokenId2, tokenId);
+        degenNFT.emitMetadataUpdate(tokenId);
     }
 
     function openMysteryBox(
-        uint256[] calldata buckets,
-        uint256[] calldata compactDatas
-    ) external onlyOwner {
-        if (buckets.length != compactDatas.length) {
+        uint256[] calldata tokenIds,
+        IDegenNFTDefination.Property[] calldata metadataList
+    ) external onlySigner {
+        if (tokenIds.length != metadataList.length) {
             revert InvalidParams();
         }
-
-        for (uint i = 0; i < buckets.length; i++) {
-            degenNFT.setBucket(buckets[i], compactDatas[i]);
-
-            emit SetBucket(buckets[i], compactDatas[i]);
+        for (uint256 i = 0; i < metadataList.length; i++) {
+            degenNFT.setProperties(tokenIds[i], metadataList[i]);
         }
     }
 

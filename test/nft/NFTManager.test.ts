@@ -10,6 +10,7 @@ describe("NFTManager Test", async function () {
   before(async function () {
     const signers = await ethers.getSigners();
     this.owner = signers[0];
+    this.signer = signers[1];
 
     const NFTManager = await ethers.getContractFactory("NFTManager");
     this.nftManager = await NFTManager.deploy();
@@ -50,42 +51,31 @@ describe("NFTManager Test", async function () {
     }
   });
 
-  it("Should set bucket success && verify property", async function () {
+  it("Should openMysteryBox success", async function () {
     const metadatas = metadataList.map((item) => [
-      item.token_id,
-      hexlify(Number(item.hero_id)),
-      hexlify(rarityToNumber(item.rarity!)),
+      hexlify(item.hero_id),
+      hexlify(rarityToNumber(item.rarity)),
       hexlify(Number(item.is_shard)),
     ]);
-
-    const metadataGroups = [];
-    for (let i = 0; i < metadatas.length; i += 16) {
-      metadataGroups.push(metadatas.slice(i, i + 16));
-    }
-
-    const buckets = [];
-    const compactDatas = [];
-    for (let i = 0; i < metadataGroups.length; i++) {
-      buckets.push(i);
-
-      const group = metadataGroups[i];
-      const compactData = await this.degenNFTMock.generateCompactData(group);
-      compactDatas.push(compactData);
-    }
+    const tokenIds = metadataList.map((item) => item.token_id);
 
     await this.nftManager
       .connect(this.owner)
-      .openMysteryBox(buckets, compactDatas);
+      .updateSigners([this.signer.address], []);
+
+    await this.nftManager
+      .connect(this.signer)
+      .openMysteryBox(tokenIds, metadatas);
+
     for (let i = 0; i < metadataList.length; i++) {
-      const metadata = metadataList[i];
+      const element = metadataList[i];
       const [nameId, rarity, tokenType] = await this.degenNFT.getProperty(
-        metadata.token_id
+        element.token_id
       );
 
-      const [mTokenId, mNameId, mRarity, isShard] = metadatas[i];
-      assert.equal(nameId, mNameId);
-      assert.equal(rarity, mRarity.valueOf());
-      assert.equal(tokenType, isShard.valueOf());
+      assert.equal(nameId.valueOf(), element.hero_id);
+      assert.equal(rarity.valueOf(), rarityToNumber(element.rarity));
+      assert.equal(tokenType.valueOf(), Number(element.is_shard));
     }
   });
 });
