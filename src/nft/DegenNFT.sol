@@ -82,7 +82,7 @@ contract DegenNFT is
         mask |= uint256(property) << (((tokenId - 1) % 16) * 16);
         properties[bucket] = mask;
 
-        emit SetProperties(property_);
+        emit SetProperties(tokenId, property_);
         emit MetadataUpdate(tokenId);
     }
 
