@@ -37,7 +37,7 @@ const func: DeployFunction = async function ({
     "DegenNFT",
     { from: owner, log: true },
     "setBaseURI",
-    "https://cdn.degenreborn.xyz/degen2009/nft/"
+    "https://cdn.degenreborn.xyz/degenz/nft/"
   );
 };
 
