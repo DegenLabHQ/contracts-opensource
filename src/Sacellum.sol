@@ -7,6 +7,7 @@ import {SafeOwnableUpgradeable} from "@p12/contracts-lib/contracts/access/SafeOw
 import {RBT} from "src/RBT.sol";
 import {CommonError} from "src/lib/CommonError.sol";
 import {ISacellum} from "src/interfaces/ISacellum.sol";
+import {SafeERC20Upgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC20/utils/SafeERC20Upgradeable.sol";
 
 contract Sacellum is
     ISacellum,
@@ -19,6 +20,8 @@ contract Sacellum is
     uint256 public rate;
 
     uint256[47] private _gap;
+
+    using SafeERC20Upgradeable for RBT;
 
     /**
      * @dev initialize function
@@ -67,7 +70,7 @@ contract Sacellum is
         }
         CZToken.burnFrom(msg.sender, amount);
         uint256 degenAmount = amount * rate;
-        DEGENToken.transfer(msg.sender, degenAmount);
+        DEGENToken.safeTransfer(msg.sender, degenAmount);
 
         emit Invoke(amount, degenAmount);
     }
