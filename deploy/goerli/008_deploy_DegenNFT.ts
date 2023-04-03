@@ -33,7 +33,12 @@ const func: DeployFunction = async function ({
   // );
 
   // set baseUri
-  await execute("DegenNFT", { from: owner, log: true }, "setBaseURI", "");
+  await execute(
+    "DegenNFT",
+    { from: owner, log: true },
+    "setBaseURI",
+    "https://cdn.degenreborn.xyz/degen2009/nft/"
+  );
 };
 
 func.tags = ["DegenNFT"];
