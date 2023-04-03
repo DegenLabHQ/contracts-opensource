@@ -209,8 +209,8 @@ const config: HardhatUserConfig = {
       bsc: process.env.BNB_SCAN_API_KEY!,
       polygonMumbai: process.env.POLYGON_SCAN_API_KEY!,
       scrollAlpha: "scrollAlpha",
-      goerli: process.env.GOERLI_SCAN_API_KEY!,
-      mainnet: process.env.GOERLI_SCAN_API_KEY!,
+      goerli: process.env.ETHER_SCAN_API_KEY!,
+      mainnet: process.env.ETHER_SCAN_API_KEY!,
     },
     customChains: [
       {
