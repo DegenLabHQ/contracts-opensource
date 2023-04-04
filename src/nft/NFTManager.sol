@@ -134,6 +134,12 @@ contract NFTManager is
             revert InvalidParams();
         }
         for (uint256 i = 0; i < metadataList.length; i++) {
+            IDegenNFTDefination.Property memory property = degenNFT.getProperty(
+                tokenIds[i]
+            );
+            if (property.nameId != 0) {
+                continue;
+            }
             degenNFT.setProperties(tokenIds[i], metadataList[i]);
         }
     }
