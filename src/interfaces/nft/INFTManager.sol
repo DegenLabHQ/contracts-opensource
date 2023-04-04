@@ -36,6 +36,7 @@ interface INFTManagerDefination {
     error TokenIdNotExsis();
     error LevelZeroCannotBurn();
     error OnlyShardsCanMerge();
+    error CanNotOpenMysteryBoxTwice();
 
     /**********************************************
      * events

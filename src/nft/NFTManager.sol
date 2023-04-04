@@ -138,7 +138,7 @@ contract NFTManager is
                 tokenIds[i]
             );
             if (property.nameId != 0) {
-                continue;
+                revert CanNotOpenMysteryBoxTwice();
             }
             degenNFT.setProperties(tokenIds[i], metadataList[i]);
         }
