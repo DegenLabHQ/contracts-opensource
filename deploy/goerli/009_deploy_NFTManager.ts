@@ -40,6 +40,14 @@ const func: DeployFunction = async function ({
     degenNFT.address
   );
 
+  const nftManager = await get("NFTManager");
+  await execute(
+    "DegenNFT",
+    { from: owner, log: true },
+    "setManager",
+    nftManager.address
+  );
+
   // set whitelist mint time
   await execute(
     "NFTManager",
@@ -83,7 +91,7 @@ const func: DeployFunction = async function ({
   );
 
   // TODO: set merkle tree
-  await execute("NFTManager", { from: owner, log: true }, "setMerkleRoot", "");
+  // await execute("NFTManager", { from: owner, log: true }, "setMerkleRoot", "");
 };
 
 func.tags = ["NFTManager"];
