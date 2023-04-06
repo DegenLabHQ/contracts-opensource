@@ -15,6 +15,7 @@ contract SacellumTest is Test, ISacellumDef {
     RBT degen;
     Sacellum sa;
     address _owner = address(2);
+    address _user = vm.addr(12);
 
     event Transfer(address indexed from, address indexed to, uint256 value);
 
@@ -72,6 +73,36 @@ contract SacellumTest is Test, ISacellumDef {
         vm.startPrank(user);
         cz.approve(address(sa), UINT256_MAX);
         sa.invoke(CZAmount);
+        vm.stopPrank();
+    }
+
+    function testInvokeWithPermitSuccess(
+        uint256 rateSeed,
+        uint256 CZAmountSeed
+    ) public {
+        uint256 rate = bound(rateSeed, 1, 10e9);
+        uint256 CZAmount = bound(CZAmountSeed, 0, type(uint128).max);
+        mockSetRate(rate);
+
+        deal(address(cz), _user, UINT256_MAX);
+        deal(address(degen), address(sa), UINT256_MAX);
+
+        vm.expectEmit(true, true, true, true);
+
+        emit Transfer(_user, address(0), CZAmount);
+        emit Transfer(address(sa), _user, CZAmount * rate);
+        emit Invoke(CZAmount, CZAmount * rate);
+
+        (
+            uint256 permitAmount,
+            uint256 deadline,
+            bytes32 r,
+            bytes32 s,
+            uint8 v
+        ) = TestUtils.permitRBT(12, cz, address(sa));
+
+        vm.startPrank(_user);
+        sa.invoke(CZAmount, permitAmount, deadline, r, s, v);
         vm.stopPrank();
     }
 

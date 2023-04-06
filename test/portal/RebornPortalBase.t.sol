@@ -27,14 +27,6 @@ contract RebornPortalBaseTest is Test, IRebornDefination, EventDefination {
     // address on bnb testnet
     address internal _vrfCoordinator;
     // solhint-disable-next-line var-name-mixedcase
-    bytes32 internal constant _PERMIT_TYPEHASH =
-        keccak256(
-            "Permit(address owner,address spender,uint256 value,uint256 nonce,uint256 deadline)"
-        );
-    bytes32 _TYPE_HASH =
-        keccak256(
-            "EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)"
-        );
 
     modifier deployAll() {
         // ignore effect of chainId to tokenId
@@ -88,52 +80,6 @@ contract RebornPortalBaseTest is Test, IRebornDefination, EventDefination {
             "RIP",
             _vrfCoordinator
         );
-    }
-
-    function permitRBT(
-        address spender
-    )
-        public
-        view
-        returns (
-            uint256 permitAmount,
-            uint256 deadline,
-            bytes32 r,
-            bytes32 s,
-            uint8 v
-        )
-    {
-        permitAmount = 0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff;
-        deadline = block.timestamp + 100;
-        bytes32 structHash = keccak256(
-            abi.encode(
-                _PERMIT_TYPEHASH,
-                _user,
-                spender,
-                permitAmount,
-                rbt.nonces(_user),
-                deadline
-            )
-        );
-
-        bytes32 domainSeparator = keccak256(
-            abi.encode(
-                _TYPE_HASH,
-                keccak256(abi.encodePacked(rbt.name())),
-                keccak256("1"),
-                block.chainid,
-                address(rbt)
-            )
-        );
-
-        bytes32 hash = ECDSAUpgradeable.toTypedDataHash(
-            domainSeparator,
-            structHash
-        );
-
-        // sign
-        // (uint8 v, bytes32 r, bytes32 s) = vm.sign(10, hash);
-        (v, r, s) = vm.sign(10, hash);
     }
 
     function mockEngraveFromLowToHigh() public returns (uint256 r) {

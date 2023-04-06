@@ -95,7 +95,9 @@ contract RebornPortalCommonTest is RebornPortalBaseTest {
             bytes32 r,
             bytes32 s,
             uint8 v
-        ) = permitRBT(address(portal));
+        ) = TestUtils.permitRBT(10, rbt, address(portal));
+        // 10 is _user's private key
+
         vm.prank(_user);
         portal.infuse(1, amount, permitAmount, deadline, r, s, v);
     }
