@@ -55,7 +55,7 @@ contract RewardERC20Distributor is IRewardDistributor, SafeOwnable {
         }
 
         claimed.set(uint160(_msgSender()));
-        rewardToken.transfer(msg.sender, amount);
+        rewardToken.safeTransfer(msg.sender, amount);
         emit Claim(msg.sender, amount);
     }
 
@@ -99,7 +99,7 @@ contract RewardERC20Distributor is IRewardDistributor, SafeOwnable {
      */
     function withdraw(address to) external onlyOwner {
         uint256 balance = rewardToken.balanceOf(address(this));
-        rewardToken.transfer(to, balance);
+        rewardToken.safeTransfer(to, balance);
         emit WithDrawn(to, balance);
     }
 }
