@@ -19,7 +19,7 @@ const func: DeployFunction = async function ({
           args: [
             "DegenReborn Token",
             "DEGEN",
-            parseEther(Number(10 ** 9).toString()),
+            parseEther(Number(10 ** 14).toString()),
             owner,
           ],
         },
