@@ -74,4 +74,15 @@ contract Sacellum is
 
         emit Invoke(amount, degenAmount);
     }
+
+    /**
+     * @dev withdraw remaining $DEGEN
+     * @param to address receive remaining $DEGEN
+     */
+    function withdrawRemaining(address to) external onlyOwner {
+        uint256 b = DEGENToken.balanceOf(address(this));
+        DEGENToken.transfer(to, b);
+
+        emit Withdraw(to, b);
+    }
 }
