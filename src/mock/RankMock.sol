@@ -22,6 +22,10 @@ contract RankMock is RankUpgradeable {
         return _getTopNTokenId(n);
     }
 
+    function getNthScoreTokenId(uint256 n) public view returns (uint256) {
+        return _seasonData[_season]._scoreRank.get(n, 1)[0];
+    }
+
     function setTokenIdToTvlRank(uint256 tokenId) public {
         _seasonData[_season]._isTopHundredScore.set(tokenId);
     }
