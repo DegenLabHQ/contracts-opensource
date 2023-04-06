@@ -101,8 +101,8 @@ contract AirdropTest is RebornPortalBaseTest {
         (up, perfromData) = portal.checkUpkeep(new bytes(0));
         assertEq(up, true);
         vm.expectEmit(false, false, false, false);
-        emit PortalLib.DropNative(1);
-        emit PortalLib.DropReborn(1);
+        emit PortalLib.DropNative(1, 0);
+        emit PortalLib.DropReborn(1, 0);
         portal.performUpkeep(perfromData);
 
         // perform the random number with native drop

@@ -71,8 +71,8 @@ library PortalLib {
         uint16 requestConfirmations;
     }
 
-    event DropNative(uint256 indexed tokenId);
-    event DropReborn(uint256 indexed tokenId);
+    event DropNative(uint256 indexed tokenId, uint256 amount);
+    event DropReborn(uint256 indexed tokenId, uint256 amount);
     event ClaimRebornDrop(uint256 indexed tokenId, uint256 rebornAmount);
     event ClaimNativeDrop(uint256 indexed tokenId, uint256 nativeAmount);
     event NewDropConf(AirdropConf conf);
@@ -271,7 +271,7 @@ library PortalLib {
             ];
             portfolio.pendingOwnerNativeReward += (dropAmount * 1) / 5;
 
-            emit DropNative(tokenId);
+            emit DropNative(tokenId, dropAmount);
         }
     }
 
@@ -310,7 +310,7 @@ library PortalLib {
             ];
             portfolio.pendingOwnerNativeReward += (dropAmount * 1) / 5;
 
-            emit DropNative(tokenId);
+            emit DropNative(tokenId, dropAmount);
         }
     }
 
@@ -347,7 +347,7 @@ library PortalLib {
             ];
             portfolio.pendingOwnerRebornReward += (dropAmount * 1) / 5;
 
-            emit DropReborn(tokenId);
+            emit DropReborn(tokenId, dropAmount);
         }
     }
 
@@ -385,7 +385,7 @@ library PortalLib {
             ];
             portfolio.pendingOwnerRebornReward += (dropAmount * 1) / 5;
 
-            emit DropReborn(tokenId);
+            emit DropReborn(tokenId, dropAmount);
         }
     }
 
