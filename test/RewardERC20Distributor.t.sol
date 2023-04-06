@@ -4,6 +4,8 @@ pragma solidity 0.8.17;
 import "forge-std/Test.sol";
 import "forge-std/Vm.sol";
 
+import "murky/Merkle.sol";
+
 import "src/RewardERC20Distributor.sol";
 import "src/RBT.sol";
 import {IRewardDistributorDef} from "src/interfaces/IRewardDistributor.sol";
@@ -48,5 +50,32 @@ contract RewardERC20DistributorTest is Test, IRewardDistributorDef {
         rd.setMerkleRoot(root);
     }
 
-    function testClaim() public {}
+    function testClaimERC20Token(uint256 length) public {
+        vm.assume(length > 1 && length < 10);
+        Merkle m = new Merkle();
+        bytes32[] memory data = new bytes32[](length);
+        address[] memory addresses = new address[](length);
+        for (uint256 i = 0; i < length; i++) {
+            address addr = address(uint160(uint256(keccak256(abi.encode(i)))));
+            addresses[i] = addr;
+            data[i] = keccak256(bytes.concat(keccak256(abi.encode(addr, i))));
+        }
+
+        // set merkle tree root
+        bytes32 root = m.getRoot(data);
+        vm.startPrank(_owner);
+        rd.setMerkleRoot(root);
+        rd.setClaimPeriodEnds(block.timestamp + 100);
+        vm.stopPrank();
+
+        deal(address(rbt), address(rd), UINT256_MAX);
+
+        // mock claim
+        for (uint256 i = 0; i < length; i++) {
+            address addr = addresses[i];
+            bytes32[] memory proof = m.getProof(data, i);
+            vm.prank(addr);
+            rd.claimTokens(i, proof);
+        }
+    }
 }
