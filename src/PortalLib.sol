@@ -169,15 +169,17 @@ library PortalLib {
         Pool storage pool,
         Portfolio storage portfolio
     ) external {
-        // flatten native reward
-        portfolio.nativeRewardDebt =
-            (portfolio.accumulativeAmount * pool.accNativePerShare) /
-            PERSHARE_BASE;
+        unchecked {
+            // flatten native reward
+            portfolio.nativeRewardDebt =
+                (portfolio.accumulativeAmount * pool.accNativePerShare) /
+                PERSHARE_BASE;
 
-        // flatten reborn reward
-        portfolio.rebornRewardDebt =
-            (portfolio.accumulativeAmount * pool.accRebornPerShare) /
-            PERSHARE_BASE;
+            // flatten reborn reward
+            portfolio.rebornRewardDebt =
+                (portfolio.accumulativeAmount * pool.accRebornPerShare) /
+                PERSHARE_BASE;
+        }
     }
 
     /**
@@ -512,7 +514,9 @@ library PortalLib {
             payable(ref2).transfer(ref2Reward);
         }
 
-        total = ref1Reward + ref2Reward;
+        unchecked {
+            total = ref1Reward + ref2Reward;
+        }
 
         emit ReferReward(
             account,

@@ -506,20 +506,27 @@ contract RebornPortal is
      * @dev implementation of incarnate
      */
     function _incarnate(Innate calldata innate, uint256 _soupPrice) internal {
-        uint256 totalFee = _soupPrice +
-            innate.talentPrice +
-            innate.propertyPrice;
+        uint256 totalFee;
+        unchecked {
+            totalFee = _soupPrice + innate.talentPrice + innate.propertyPrice;
+        }
+
         if (msg.value < totalFee) {
             revert InsufficientAmount();
         }
-        // transfer redundant native token back
-        payable(msg.sender).transfer(msg.value - totalFee);
+
+        unchecked {
+            // transfer redundant native token back
+            payable(msg.sender).transfer(msg.value - totalFee);
+        }
 
         // reward referrers
         uint256 referAmount = _sendRewardToRefs(msg.sender, totalFee);
 
-        // rest native token to to jackpot
-        _seasonData[_season]._jackpot += totalFee - referAmount;
+        unchecked {
+            // rest native token to to jackpot
+            _seasonData[_season]._jackpot += totalFee - referAmount;
+        }
 
         emit Incarnate(
             msg.sender,
@@ -737,10 +744,12 @@ contract RebornPortal is
         PortalLib.Portfolio storage portfolio = _seasonData[_season].portfolios[
             msg.sender
         ][tokenId];
-        portfolio.accumulativeAmount += amount;
-
         PortalLib.Pool storage pool = _seasonData[_season].pools[tokenId];
-        pool.totalAmount += amount;
+
+        unchecked {
+            portfolio.accumulativeAmount += amount;
+            pool.totalAmount += amount;
+        }
 
         PortalLib._flattenRewardDebt(pool, portfolio);
 
