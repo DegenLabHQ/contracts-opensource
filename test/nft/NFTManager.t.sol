@@ -14,6 +14,7 @@ contract NFTManagerTest is Test, IDegenNFTDefination, INFTManagerDefination {
     address owner;
     address signer;
     address user = address(11);
+    uint256 mainnetFork;
 
     error CallerNotOwner();
 

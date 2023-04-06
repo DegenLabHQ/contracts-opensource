@@ -75,12 +75,14 @@ contract DegenNFT is
     ) external onlyManager {
         // encode property
         uint16 property = encodeProperty(property_);
-
         // storage property
         uint256 bucket = (tokenId - 1) >> 4;
-        uint256 mask = properties[bucket];
-        mask |= uint256(property) << (((tokenId - 1) % 16) * 16);
-        properties[bucket] = mask;
+        uint256 pos = (tokenId - 1) % 16;
+        uint256 mask = uint256(property) << (pos * 16);
+        uint256 data = properties[bucket];
+        // clear the data on the tokenId pos
+        data &= ~(uint256(type(uint16).max) << (pos * 16));
+        properties[bucket] = data | mask;
 
         emit SetProperties(tokenId, property_);
         emit MetadataUpdate(tokenId);
