@@ -75,6 +75,30 @@ contract SacellumTest is Test, ISacellumDef {
         vm.stopPrank();
     }
 
+    function testOwnerCanWithdraw(uint256 amount) public {
+        deal(address(degen), address(sa), amount);
+        deal(address(degen), sa.owner(), 0);
+
+        vm.expectEmit(true, true, true, true);
+        emit Withdraw(sa.owner(), amount);
+
+        vm.startPrank(sa.owner());
+        sa.withdrawRemaining(sa.owner());
+        vm.stopPrank();
+
+        assertEq(degen.balanceOf(sa.owner()), amount);
+    }
+
+    function testNotOwnerCannotWithdraw(address caller, uint256 amount) public {
+        vm.assume(caller != sa.owner());
+
+        deal(address(degen), address(sa), amount);
+
+        vm.expectRevert();
+        vm.prank(caller);
+        sa.withdrawRemaining(caller);
+    }
+
     function mockSetRate(uint256 rate) public {
         vm.prank(_owner);
         sa.setRate(rate);

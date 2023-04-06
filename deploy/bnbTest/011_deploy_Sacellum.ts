@@ -1,14 +1,17 @@
-import { formatBytes32String, parseEther } from "ethers/lib/utils";
+import { formatBytes32String } from "ethers/lib/utils";
 import { DeployFunction } from "hardhat-deploy/types";
 
 const func: DeployFunction = async function ({
   deployments,
   getNamedAccounts,
 }) {
-  const { deploy } = deployments;
+  const { deploy, get } = deployments;
   const { deployer, owner } = await getNamedAccounts();
 
-  await deploy("RBTDup", {
+  const cz = await get("RBT");
+  const degen = await get("RBTDup");
+
+  await deploy("Sacellum", {
     from: deployer,
     proxy: {
       proxyContract: "ERC1967Proxy",
@@ -16,19 +19,15 @@ const func: DeployFunction = async function ({
       execute: {
         init: {
           methodName: "initialize",
-          args: [
-            "DegenReborn Token",
-            "DEGEN",
-            parseEther(Number(10 ** 14).toString()),
-            owner,
-          ],
+          args: [cz.address, degen.address, owner],
         },
       },
     },
     log: true,
-    deterministicDeployment: formatBytes32String("DegenRebornDup_Test"),
+    deterministicDeployment: formatBytes32String("DegenReborn_Test"),
   });
 };
-func.tags = ["RBTDup"];
+
+func.tags = ["Sacellum"];
 
 export default func;
