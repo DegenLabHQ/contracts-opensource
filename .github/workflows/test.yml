@@ -51,6 +51,7 @@ jobs:
         env:
           BNB_CHAIN_URL: ${{ secrets.BNB_CHAIN_URL }}
           BNB_CHAIN_TEST_URL: ${{ secrets.BNB_CHAIN_TEST_URL }}
+          ETH_CHAIN_URL: ${{ secrets.ETH_CHAIN_URL }}
 
       - name: Run Hardhat Compile
         id: hardhat-compile
