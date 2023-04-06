@@ -558,9 +558,19 @@ contract RebornPortal is
         uint256[] memory topTens = _getTopNTokenId(10);
         uint256[] memory topTenToHundreds = _getFirstNTokenIdByOffSet(10, 90);
 
+        uint256 dropTopAmount;
+        uint256 dropRaffleAmount;
+
+        unchecked {
+            dropTopAmount = uint256(_dropConf._rebornTopEthAmount) * 1 ether;
+            dropRaffleAmount =
+                uint256(_dropConf._rebornRaffleEthAmount) *
+                1 ether;
+        }
+
         PortalLib._directDropRebornToTopTokenIds(
             topTens,
-            _dropConf,
+            dropTopAmount,
             _seasonData[_season]
         );
 
@@ -575,7 +585,7 @@ contract RebornPortal is
 
         PortalLib._directDropRebornToRaffleTokenIds(
             selectedTokenIds,
-            _dropConf,
+            dropRaffleAmount,
             _seasonData[_season]
         );
 

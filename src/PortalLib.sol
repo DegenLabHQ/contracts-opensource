@@ -325,36 +325,40 @@ library PortalLib {
 
     function _directDropRebornToTopTokenIds(
         uint256[] memory tokenIds,
-        AirdropConf storage _dropConf,
+        uint256 dropAmount,
         IRebornDefination.SeasonData storage _seasonData
     ) external {
-        uint256 dropAmount = uint256(_dropConf._rebornTopEthAmount) * 1 ether;
         for (uint256 i = 0; i < tokenIds.length; i++) {
             uint256 tokenId = tokenIds[i];
 
-            // if tokenId is zero, continue
+            // if tokenId is zero, return
+            // as 0 means there is no more tokenIds
             if (tokenId == 0) {
                 return;
             }
             Pool storage pool = _seasonData.pools[tokenId];
 
-            // if no one tribute, continue
+            // if no one tribute, return
             // as it's loof from high tvl to low tvl
             if (pool.totalAmount == 0) {
                 return;
             }
 
-            // 80% to pool
-            pool.accRebornPerShare +=
-                (dropAmount * 4 * PortalLib.PERSHARE_BASE) /
-                (5 * pool.totalAmount);
+            unchecked {
+                // 80% to pool
+                pool.accRebornPerShare +=
+                    (dropAmount * 4 * PortalLib.PERSHARE_BASE) /
+                    (5 * pool.totalAmount);
+            }
 
             // 20% to owner
             address owner = IERC721(address(this)).ownerOf(tokenId);
             Portfolio storage portfolio = _seasonData.portfolios[owner][
                 tokenId
             ];
-            portfolio.pendingOwnerRebornReward += (dropAmount * 1) / 5;
+            unchecked {
+                portfolio.pendingOwnerRebornReward += (dropAmount * 1) / 5;
+            }
 
             emit DropReborn(tokenId, dropAmount);
         }
@@ -362,11 +366,9 @@ library PortalLib {
 
     function _directDropRebornToRaffleTokenIds(
         uint256[] memory tokenIds,
-        AirdropConf storage _dropConf,
+        uint256 dropAmount,
         IRebornDefination.SeasonData storage _seasonData
     ) external {
-        uint256 dropAmount = uint256(_dropConf._rebornRaffleEthAmount) *
-            1 ether;
         for (uint256 i = 0; i < tokenIds.length; i++) {
             uint256 tokenId = tokenIds[i];
 
@@ -382,17 +384,22 @@ library PortalLib {
                 return;
             }
 
-            // 80% to pool
-            pool.accRebornPerShare +=
-                (dropAmount * 4 * PortalLib.PERSHARE_BASE) /
-                (5 * pool.totalAmount);
+            unchecked {
+                // 80% to pool
+                pool.accRebornPerShare +=
+                    (dropAmount * 4 * PortalLib.PERSHARE_BASE) /
+                    (5 * pool.totalAmount);
+            }
 
             // 20% to owner
             address owner = IERC721(address(this)).ownerOf(tokenId);
             Portfolio storage portfolio = _seasonData.portfolios[owner][
                 tokenId
             ];
-            portfolio.pendingOwnerRebornReward += (dropAmount * 1) / 5;
+
+            unchecked {
+                portfolio.pendingOwnerRebornReward += (dropAmount * 1) / 5;
+            }
 
             emit DropReborn(tokenId, dropAmount);
         }
