@@ -57,12 +57,4 @@ abstract contract RankUpgradeable is RebornPortalStorage {
     ) internal view returns (uint256[] memory values) {
         return _seasonData[_season]._tributeRank.get(offSet, n);
     }
-
-    /**
-     * @dev get n the tokenId
-     * @param n n th
-     */
-    function getNthScoreTokenId(uint256 n) public view returns (uint256) {
-        return _seasonData[_season]._scoreRank.getNthValue(n);
-    }
 }

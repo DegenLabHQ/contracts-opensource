@@ -589,6 +589,7 @@ contract RebornPortal is
      */
     function _fulfillDropNative(uint256 requestId) internal onlyDropOn {
         uint256[] memory topTens = _getTopNTokenId(10);
+        uint256[] memory topTenToHundreds = _getFirstNTokenIdByOffSet(10, 90);
 
         uint256 nativeTopAmount;
         uint256 nativeRaffleAmount;
@@ -620,9 +621,7 @@ contract RebornPortal is
         rs.executed = true;
 
         for (uint256 i = 0; i < 10; ) {
-            selectedTokenIds[i] = getNthScoreTokenId(
-                (rs.randomWords[i] % 90) + 10
-            );
+            selectedTokenIds[i] = topTenToHundreds[rs.randomWords[i] % 90];
             unchecked {
                 i++;
             }
