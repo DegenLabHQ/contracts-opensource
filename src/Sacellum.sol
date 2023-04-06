@@ -81,7 +81,7 @@ contract Sacellum is
      */
     function withdrawRemaining(address to) external onlyOwner {
         uint256 b = DEGENToken.balanceOf(address(this));
-        DEGENToken.transfer(to, b);
+        DEGENToken.safeTransfer(to, b);
 
         emit Withdraw(to, b);
     }
