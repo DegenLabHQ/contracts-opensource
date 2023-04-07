@@ -140,7 +140,7 @@ contract NFTManagerTest is Test, IDegenNFTDefination, INFTManagerDefination {
         testPublicMint();
 
         vm.prank(user);
-        vm.expectRevert(LevelZeroCannotBurn.selector);
+        vm.expectRevert(MysteryBoxCannotBurn.selector);
         nftManager.burn(1);
     }
 
