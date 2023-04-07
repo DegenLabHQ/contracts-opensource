@@ -148,10 +148,12 @@ contract NFTManager is
         uint256 level = degenNFT.getLevel(tokenId);
         // level == 0 && not openMystoryBox
         if (level == 0) {
-            IDegenNFTDefination.Property memory token1Property = degenNFT
-                .getProperty(1);
-            if (token1Property.nameId == uint16(0)) {
-                revert LevelZeroCannotBurn();
+            if (tokenId <= SUPPORT_MAX_MINT_COUNT) {
+                IDegenNFTDefination.Property memory token1Property = degenNFT
+                    .getProperty(tokenId);
+                if (token1Property.nameId == uint16(0)) {
+                    revert MysteryBoxCannotBurn();
+                }
             }
         }
 
