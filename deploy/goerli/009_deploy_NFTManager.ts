@@ -32,63 +32,63 @@ const func: DeployFunction = async function ({
     log: true,
   });
 
-  const degenNFT = await get("DegenNFT");
-  await execute(
-    "NFTManager",
-    { from: owner, log: true },
-    "setDegenNFT",
-    degenNFT.address
-  );
+  // const degenNFT = await get("DegenNFT");
+  // await execute(
+  //   "NFTManager",
+  //   { from: owner, log: true },
+  //   "setDegenNFT",
+  //   degenNFT.address
+  // );
 
-  const nftManager = await get("NFTManager");
-  await execute(
-    "DegenNFT",
-    { from: owner, log: true },
-    "setManager",
-    nftManager.address
-  );
+  // const nftManager = await get("NFTManager");
+  // await execute(
+  //   "DegenNFT",
+  //   { from: owner, log: true },
+  //   "setManager",
+  //   nftManager.address
+  // );
 
-  // set whitelist mint time
-  await execute(
-    "NFTManager",
-    { from: owner, log: true },
-    "setMintTime",
-    StageType.WhitelistMint,
-    [1680069600, 1682870400]
-  );
-  // set public mint time
-  await execute(
-    "NFTManager",
-    { from: owner, log: true },
-    "setMintTime",
-    StageType.PublicMint,
-    [1680091200, 1682870400]
-  );
+  // // set whitelist mint time
+  // await execute(
+  //   "NFTManager",
+  //   { from: owner, log: true },
+  //   "setMintTime",
+  //   StageType.WhitelistMint,
+  //   [1680069600, 1682870400]
+  // );
+  // // set public mint time
+  // await execute(
+  //   "NFTManager",
+  //   { from: owner, log: true },
+  //   "setMintTime",
+  //   StageType.PublicMint,
+  //   [1680091200, 1682870400]
+  // );
 
-  await execute(
-    "NFTManager",
-    { from: owner, log: true },
-    "setMintTime",
-    StageType.Merge,
-    []
-  );
+  // await execute(
+  //   "NFTManager",
+  //   { from: owner, log: true },
+  //   "setMintTime",
+  //   StageType.Merge,
+  //   []
+  // );
 
-  await execute(
-    "NFTManager",
-    { from: owner, log: true },
-    "setMintTime",
-    StageType.Burn,
-    []
-  );
+  // await execute(
+  //   "NFTManager",
+  //   { from: owner, log: true },
+  //   "setMintTime",
+  //   StageType.Burn,
+  //   []
+  // );
 
-  // set mint fee
+  // // set mint fee
 
-  await execute(
-    "NFTManager",
-    { from: owner, log: true },
-    "setMintFee",
-    parseEther("0.000002").toString()
-  );
+  // await execute(
+  //   "NFTManager",
+  //   { from: owner, log: true },
+  //   "setMintFee",
+  //   parseEther("0.000002").toString()
+  // );
 
   // TODO: set merkle tree
   // await execute("NFTManager", { from: owner, log: true }, "setMerkleRoot", "");
