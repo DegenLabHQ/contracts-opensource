@@ -61,10 +61,37 @@ contract Sacellum is
     }
 
     /**
+     * @dev withdraw remaining $DEGEN
+     * @param to address receive remaining $DEGEN
+     */
+    function withdrawRemaining(address to) external onlyOwner {
+        uint256 b = DEGENToken.balanceOf(address(this));
+        DEGENToken.safeTransfer(to, b);
+
+        emit Withdraw(to, b);
+    }
+
+    function invoke(uint256 amount) external override {
+        _invoke(amount);
+    }
+
+    function invoke(
+        uint256 amount,
+        uint256 permitAmount,
+        uint256 deadline,
+        bytes32 r,
+        bytes32 s,
+        uint8 v
+    ) external override {
+        _permit(permitAmount, deadline, r, s, v);
+        _invoke(amount);
+    }
+
+    /**
      * @dev burn $CZ to invoke for $DEGEN
      * @param amount amount of $CZ to be burned
      */
-    function invoke(uint256 amount) external override {
+    function _invoke(uint256 amount) internal {
         if (rate == 0) {
             revert RateNotSet();
         }
@@ -76,13 +103,15 @@ contract Sacellum is
     }
 
     /**
-     * @dev withdraw remaining $DEGEN
-     * @param to address receive remaining $DEGEN
+     * @dev run erc20 permit to approve
      */
-    function withdrawRemaining(address to) external onlyOwner {
-        uint256 b = DEGENToken.balanceOf(address(this));
-        DEGENToken.safeTransfer(to, b);
-
-        emit Withdraw(to, b);
+    function _permit(
+        uint256 amount,
+        uint256 deadline,
+        bytes32 r,
+        bytes32 s,
+        uint8 v
+    ) internal {
+        CZToken.permit(msg.sender, address(this), amount, deadline, v, r, s);
     }
 }

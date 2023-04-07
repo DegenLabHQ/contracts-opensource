@@ -12,4 +12,13 @@ interface ISacellum is ISacellumDef {
     function setRate(uint256 rate_) external;
 
     function invoke(uint256 amount) external;
+
+    function invoke(
+        uint256 amount,
+        uint256 permitAmount,
+        uint256 deadline,
+        bytes32 r,
+        bytes32 s,
+        uint8 v
+    ) external;
 }
