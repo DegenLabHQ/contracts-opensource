@@ -155,6 +155,7 @@ contract NFTManager is
                     revert MysteryBoxCannotBurn();
                 }
             }
+            level = 1;
         }
 
         _checkOwner(msg.sender, tokenId);
