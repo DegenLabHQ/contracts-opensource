@@ -152,7 +152,7 @@ contract NFTManager is
                 IDegenNFTDefination.Property memory token1Property = degenNFT
                     .getProperty(tokenId);
                 if (token1Property.nameId == uint16(0)) {
-                    revert LevelZeroCannotBurn();
+                    revert MysteryBoxCannotBurn();
                 }
             }
         }
