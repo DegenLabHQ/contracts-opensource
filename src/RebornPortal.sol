@@ -506,10 +506,9 @@ contract RebornPortal is
      * @dev implementation of incarnate
      */
     function _incarnate(Innate calldata innate, uint256 _soupPrice) internal {
-        uint256 totalFee;
-        unchecked {
-            totalFee = _soupPrice + innate.talentPrice + innate.propertyPrice;
-        }
+        uint256 totalFee = _soupPrice +
+            innate.talentPrice +
+            innate.propertyPrice;
 
         if (msg.value < totalFee) {
             revert InsufficientAmount();
