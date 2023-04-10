@@ -42,6 +42,18 @@ contract RebornPortalReg is Test {
         portal.performUpkeep(b);
     }
 
+    /**
+     * @dev for test gas cost
+     */
+    function testPerformUpkeepCaseTwo() public {
+        portal = PortalMock(0xA751c9Ad92472D1E4eb6B6F9803311E22C5FbA9F);
+        vm.selectFork(bnbMain);
+        vm.rollFork(26575522);
+        mockUpgradeToDevVersion();
+        (bool up, bytes memory b) = portal.checkUpkeep(abi.encode(0));
+        portal.performUpkeep(b);
+    }
+
     function testSimulateGetTvlRankCaseOne() public {
         portal = PortalMock(0xA751c9Ad92472D1E4eb6B6F9803311E22C5FbA9F);
         vm.selectFork(bnbMain);

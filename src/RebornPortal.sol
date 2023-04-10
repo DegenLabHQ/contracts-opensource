@@ -558,9 +558,19 @@ contract RebornPortal is
         uint256[] memory topTens = _getTopNTokenId(10);
         uint256[] memory topTenToHundreds = _getFirstNTokenIdByOffSet(10, 90);
 
+        uint256 dropTopAmount;
+        uint256 dropRaffleAmount;
+
+        unchecked {
+            dropTopAmount = uint256(_dropConf._rebornTopEthAmount) * 1 ether;
+            dropRaffleAmount =
+                uint256(_dropConf._rebornRaffleEthAmount) *
+                1 ether;
+        }
+
         PortalLib._directDropRebornToTopTokenIds(
             topTens,
-            _dropConf,
+            dropTopAmount,
             _seasonData[_season]
         );
 
@@ -575,7 +585,7 @@ contract RebornPortal is
 
         PortalLib._directDropRebornToRaffleTokenIds(
             selectedTokenIds,
-            _dropConf,
+            dropRaffleAmount,
             _seasonData[_season]
         );
 
@@ -591,9 +601,27 @@ contract RebornPortal is
         uint256[] memory topTens = _getTopNTokenId(10);
         uint256[] memory topTenToHundreds = _getFirstNTokenIdByOffSet(10, 90);
 
+        uint256 nativeTopAmount;
+        uint256 nativeRaffleAmount;
+
+        unchecked {
+            nativeTopAmount =
+                (uint256(_dropConf._nativeTopDropRatio) *
+                    _seasonData[_season]._jackpot) /
+                PortalLib.PERCENTAGE_BASE;
+            nativeRaffleAmount =
+                (uint256(_dropConf._nativeRaffleDropRatio) *
+                    _seasonData[_season]._jackpot) /
+                PortalLib.PERCENTAGE_BASE;
+            // remove the amount from jackpot
+            uint256 totalDropAmount = (nativeTopAmount + nativeRaffleAmount) *
+                10;
+            _seasonData[_season]._jackpot -= totalDropAmount;
+        }
+
         PortalLib._directDropNativeToTopTokenIds(
             topTens,
-            _dropConf,
+            nativeTopAmount,
             _seasonData[_season]
         );
 
@@ -602,21 +630,18 @@ contract RebornPortal is
         RequestStatus storage rs = _vrfRequests[requestId];
         rs.executed = true;
 
-        for (uint256 i = 0; i < 10; i++) {
+        for (uint256 i = 0; i < 10; ) {
             selectedTokenIds[i] = topTenToHundreds[rs.randomWords[i] % 90];
+            unchecked {
+                i++;
+            }
         }
 
         PortalLib._directDropNativeToRaffleTokenIds(
             selectedTokenIds,
-            _dropConf,
+            nativeRaffleAmount,
             _seasonData[_season]
         );
-
-        // remove the amount from jackpot
-        uint256 totalDropAmount = (((uint256(_dropConf._nativeTopDropRatio) *
-            10) + (uint256(_dropConf._nativeRaffleDropRatio) * 10)) *
-            _seasonData[_season]._jackpot) / PortalLib.PERCENTAGE_BASE;
-        _seasonData[_season]._jackpot -= totalDropAmount;
 
         _pendingDrops.remove(requestId);
     }
