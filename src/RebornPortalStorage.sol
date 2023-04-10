@@ -4,7 +4,7 @@ pragma solidity 0.8.17;
 import {IRebornDefination} from "src/interfaces/IRebornPortal.sol";
 import {RBT} from "src/RBT.sol";
 import {RewardVault} from "src/RewardVault.sol";
-import {BitMapsUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/structs/BitMapsUpgradeable.sol";
+import {BitMapsUpgradeable} from "./oz/contracts-upgradeable/utils/structs/BitMapsUpgradeable.sol";
 import {SingleRanking} from "src/lib/SingleRanking.sol";
 import {PortalLib} from "src/PortalLib.sol";
 import {FastArray} from "src/lib/FastArray.sol";

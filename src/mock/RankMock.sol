@@ -2,7 +2,7 @@
 pragma solidity 0.8.17;
 
 import "src/RankUpgradeable.sol";
-import {BitMapsUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/structs/BitMapsUpgradeable.sol";
+import {BitMapsUpgradeable} from "../oz/contracts-upgradeable/utils/structs/BitMapsUpgradeable.sol";
 
 contract RankMock is RankUpgradeable {
     using BitMapsUpgradeable for BitMapsUpgradeable.BitMap;
@@ -26,9 +26,9 @@ contract RankMock is RankUpgradeable {
         return _seasonData[_season]._scoreRank.get(n, 1)[0];
     }
 
-    function setTokenIdToTvlRank(uint256 tokenId) public {
-        _seasonData[_season]._isTopHundredScore.set(tokenId);
-    }
+    // function setTokenIdToTvlRank(uint256 tokenId) public {
+    //     _seasonData[_season]._isTopHundredScore.set(tokenId);
+    // }
 
     function setTokenIdsToTvlRank(uint256[] memory tokenIds) public {
         for (uint256 i = 0; i < tokenIds.length; i++) {
