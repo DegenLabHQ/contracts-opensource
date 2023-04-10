@@ -10,6 +10,12 @@ import {PortalLib} from "src/PortalLib.sol";
 import {FastArray} from "src/lib/FastArray.sol";
 
 contract RebornPortalStorage is IRebornDefination {
+    uint256 internal constant ONE_HUNDRED = 100;
+    bytes32 internal constant _CHARACTER_TYPEHASH =
+        keccak256(
+            "AuthenticateCharacterOwnership(address user,uint256 tokenId,uint256 deadline)"
+        );
+
     uint256 internal _season;
 
     RBT public rebornToken;
@@ -57,6 +63,10 @@ contract RebornPortalStorage is IRebornDefination {
 
     uint256 internal _stopBetaBlockNumber;
 
+    // tokenId => character property
+    mapping(uint256 => PortalLib.CharacterProperty)
+        internal _characterProperties;
+
     /// @dev gap for potential variable
-    uint256[29] private _gap;
+    uint256[28] private _gap;
 }

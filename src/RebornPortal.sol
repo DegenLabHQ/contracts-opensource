@@ -16,7 +16,9 @@ import {RebornPortalStorage} from "src/RebornPortalStorage.sol";
 import {RBT} from "src/RBT.sol";
 import {RewardVault} from "src/RewardVault.sol";
 import {RankUpgradeable} from "src/RankUpgradeable.sol";
+import {Altar} from "src/Altar.sol";
 import {Renderer} from "src/lib/Renderer.sol";
+import {CommonError} from "src/lib/CommonError.sol";
 
 import {PortalLib} from "src/PortalLib.sol";
 import {FastArray} from "src/lib/FastArray.sol";
@@ -31,7 +33,8 @@ contract RebornPortal is
     PausableUpgradeable,
     AutomationCompatible,
     RankUpgradeable,
-    VRFConsumerBaseV2Upgradeable
+    VRFConsumerBaseV2Upgradeable,
+    Altar
 {
     using BitMapsUpgradeable for BitMapsUpgradeable.BitMap;
     using FastArray for FastArray.Data;
@@ -60,6 +63,7 @@ contract RebornPortal is
         __ReentrancyGuard_init();
         __Pausable_init();
         __VRFConsumerBaseV2_init(vrfCoordinator_);
+        __Alter_init_unchained();
     }
 
     // solhint-disable-next-line no-empty-blocks
@@ -71,9 +75,9 @@ contract RebornPortal is
      * @inheritdoc IRebornPortal
      */
     function incarnate(
-        Innate calldata innate,
+        InnateParams calldata innate,
         address referrer,
-        uint256 _soupPrice
+        CharParams calldata charParams
     )
         external
         payable
@@ -84,7 +88,43 @@ contract RebornPortal is
     {
         _checkStoped();
         _refer(referrer);
-        _incarnate(innate, _soupPrice);
+
+        _useChar(charParams);
+        uint256 discount = _characterProperties[charParams.charTokenId]
+            .discountPercentage;
+        _incarnate(innate, discount);
+    }
+
+    /**
+     * @inheritdoc IRebornPortal
+     */
+    function incarnate(
+        InnateParams calldata innate,
+        address referrer,
+        CharParams calldata charParams,
+        PermitParams calldata permitParams
+    )
+        external
+        payable
+        override
+        checkIncarnationCount
+        whenNotPaused
+        nonReentrant
+    {
+        _checkStoped();
+        _refer(referrer);
+        _permit(
+            permitParams.amount,
+            permitParams.deadline,
+            permitParams.r,
+            permitParams.s,
+            permitParams.v
+        );
+
+        _useChar(charParams);
+        uint256 discount = _characterProperties[charParams.charTokenId]
+            .discountPercentage;
+        _incarnate(innate, discount);
     }
 
     /**
@@ -518,33 +558,51 @@ contract RebornPortal is
     /**
      * @dev implementation of incarnate
      */
-    function _incarnate(Innate calldata innate, uint256 _soupPrice) internal {
-        uint256 totalFee = _soupPrice +
-            innate.talentPrice +
-            innate.propertyPrice;
+    function _incarnate(
+        InnateParams calldata innate,
+        uint256 discountPercent
+    ) internal {
+        uint256 nativeFee = innate.soupPrice +
+            innate.talentNativePrice +
+            innate.propertyNativePrice;
 
-        if (msg.value < totalFee) {
+        uint256 rebornFee = innate.talentRebornPrice +
+            innate.propertyRebornPrice;
+
+        // apply discount
+        uint256 discountNativeFee = nativeFee -
+            (nativeFee * discountPercent) /
+            ONE_HUNDRED;
+        uint256 discountRebornFee = rebornFee -
+            (rebornFee * discountPercent) /
+            ONE_HUNDRED;
+
+        if (msg.value < nativeFee) {
             revert InsufficientAmount();
         }
 
         unchecked {
             // transfer redundant native token back
-            payable(msg.sender).transfer(msg.value - totalFee);
+            payable(msg.sender).transfer(msg.value - discountNativeFee);
         }
 
         // reward referrers
-        uint256 referAmount = _sendRewardToRefs(msg.sender, totalFee);
+        uint256 referAmount = _sendRewardToRefs(msg.sender, discountNativeFee);
 
         unchecked {
             // rest native token to to jackpot
-            _seasonData[_season]._jackpot += totalFee - referAmount;
+            _seasonData[_season]._jackpot += discountNativeFee - referAmount;
         }
+
+        rebornToken.transferFrom(msg.sender, burnPool, discountRebornFee);
 
         emit Incarnate(
             msg.sender,
-            innate.talentPrice,
-            innate.propertyPrice,
-            _soupPrice
+            innate.talentNativePrice,
+            innate.talentRebornPrice,
+            innate.propertyRebornPrice,
+            innate.propertyRebornPrice,
+            innate.soupPrice
         );
     }
 
@@ -982,7 +1040,7 @@ contract RebornPortal is
      */
     function _checkSigner() internal view {
         if (!signers[msg.sender]) {
-            revert NotSigner();
+            revert CommonError.NotSigner();
         }
     }
 
@@ -1000,14 +1058,6 @@ contract RebornPortal is
             revert IncarnationExceedLimit();
         }
         _incarnateCounts[msg.sender] += 1;
-        _;
-    }
-
-    /**
-     * @dev only allowed signer address can do something
-     */
-    modifier onlySigner() {
-        _checkSigner();
         _;
     }
 
