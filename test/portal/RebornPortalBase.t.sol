@@ -10,8 +10,8 @@ import {RewardVault} from "src/RewardVault.sol";
 import {IRebornDefination} from "src/interfaces/IRebornPortal.sol";
 import {EventDefination} from "src/test/EventDefination.sol";
 import {TestUtils} from "test/TestUtils.sol";
-import {ECDSAUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/cryptography/ECDSAUpgradeable.sol";
-import {IERC20Upgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
+import {ECDSAUpgradeable} from "@oz/contracts-upgradeable/utils/cryptography/ECDSAUpgradeable.sol";
+import {IERC20Upgradeable} from "@oz/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
 import {BurnPool} from "src/BurnPool.sol";
 import {VRFCoordinatorV2Mock} from "src/mock/VRFCoordinatorV2Mock.sol";
 

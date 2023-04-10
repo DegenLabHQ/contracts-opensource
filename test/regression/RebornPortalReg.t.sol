@@ -3,9 +3,10 @@ pragma solidity 0.8.17;
 
 import "src/deprecated/DeprecatedRBT.sol";
 import "src/RBT.sol";
-import "src/RebornPortal.sol";
+import {RebornPortal} from "src/RebornPortal.sol";
+import {PortalLib} from "src/PortalLib.sol";
 
-import "src/mock/PortalMock.sol";
+import {PortalMock} from "src/mock/PortalMock.sol";
 
 import "forge-std/Test.sol";
 import "forge-std/Vm.sol";

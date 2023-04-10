@@ -4,7 +4,7 @@ pragma solidity 0.8.17;
 import {RankingRedBlackTree} from "src/lib/RankingRedBlackTree.sol";
 import {SingleRanking} from "src/lib/SingleRanking.sol";
 import {RebornPortalStorage} from "src/RebornPortalStorage.sol";
-import {BitMapsUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/structs/BitMapsUpgradeable.sol";
+import {BitMapsUpgradeable} from "./oz/contracts-upgradeable/utils/structs/BitMapsUpgradeable.sol";
 
 import {DegenRank} from "src/DegenRank.sol";
 

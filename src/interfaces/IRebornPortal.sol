@@ -3,7 +3,7 @@ pragma solidity 0.8.17;
 
 import {PortalLib} from "src/PortalLib.sol";
 import {SingleRanking} from "src/lib/SingleRanking.sol";
-import {BitMapsUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/structs/BitMapsUpgradeable.sol";
+import {BitMapsUpgradeable} from "../oz/contracts-upgradeable/utils/structs/BitMapsUpgradeable.sol";
 
 interface IRebornDefination {
     struct Innate {

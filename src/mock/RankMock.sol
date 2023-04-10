@@ -2,7 +2,8 @@
 pragma solidity 0.8.17;
 
 import "src/RankUpgradeable.sol";
-import {BitMapsUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/structs/BitMapsUpgradeable.sol";
+
+import {BitMapsUpgradeable} from "../oz/contracts-upgradeable/utils/structs/BitMapsUpgradeable.sol";
 
 contract RankMock is RankUpgradeable {
     using BitMapsUpgradeable for BitMapsUpgradeable.BitMap;

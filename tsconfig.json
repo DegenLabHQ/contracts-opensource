@@ -6,8 +6,13 @@
     "esModuleInterop": true,
     "outDir": "dist",
     "declaration": true,
-    "resolveJsonModule": true
+    "resolveJsonModule": true,
+    "baseUrl": ".",
+    "paths": {
+      "~/*": ["src/*"],
+      "@oz/": ["src/oz/"]
+    }
   },
-  "include": ["./tasks", "./test", "./typechain-types","deploy"],
+  "include": ["./tasks", "./test", "./typechain-types", "deploy", "./src"],
   "files": ["./hardhat.config.ts"]
 }

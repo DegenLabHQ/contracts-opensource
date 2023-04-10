@@ -10,3 +10,4 @@ foundry-upgrades/=lib/foundry-upgrades/src/
 contracts/=contracts/
 src/=src/
 erc721a-upgradeable=node_modules/erc721a-upgradeable/
+@oz=src/oz/

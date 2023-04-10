@@ -1,13 +1,13 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity 0.8.17;
 
-import {UUPSUpgradeable} from "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
-import {PausableUpgradeable} from "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
-import {SafeOwnableUpgradeable} from "@p12/contracts-lib/contracts/access/SafeOwnableUpgradeable.sol";
+import {UUPSUpgradeable} from "./oz/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
+import {PausableUpgradeable} from "./oz/contracts-upgradeable/security/PausableUpgradeable.sol";
+import {SafeOwnableUpgradeable} from "./utils/SafeOwnableUpgradeable.sol";
 import {RBT} from "src/RBT.sol";
 import {CommonError} from "src/lib/CommonError.sol";
 import {ISacellum} from "src/interfaces/ISacellum.sol";
-import {SafeERC20Upgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC20/utils/SafeERC20Upgradeable.sol";
+import {SafeERC20Upgradeable} from "./oz/contracts-upgradeable/token/ERC20/utils/SafeERC20Upgradeable.sol";
 
 contract Sacellum is
     ISacellum,
