@@ -55,4 +55,23 @@ interface ICustomError {
     error TransferFromIncorrectOwner();
     error TransferToZeroAddress();
     error ApproveToCaller();
+
+    /**********************************
+     * ERC20Upgradeable
+     **********************************/
+    error DecreasedAllowanceBelowZero();
+    error TransferFromZeroAddress();
+    error TransferAmountExceedsBalance();
+    error BurnFromZeroAddress();
+    error BurnAmountExceedsBalance();
+    error ApproveFromZeroAddress();
+    error ApproveToZeroAddress();
+    error InsufficientAllowance();
+
+    /**********************************
+     * SafeERC20Upgradeable
+     **********************************/
+    error ApproveFromNonZeroToNonZeroAllowance();
+    error PermitDidNotSucceed();
+    error ERC20OperationDidNotSucceed();
 }
