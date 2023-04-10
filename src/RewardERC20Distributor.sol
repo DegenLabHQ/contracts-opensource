@@ -14,7 +14,7 @@ contract RewardERC20Distributor is IRewardDistributor, SafeOwnable {
     using SafeERC20 for IERC20;
 
     bytes32 public merkleRoot;
-    IERC20 public rewardToken;
+    IERC20 public immutable rewardToken;
     uint256 public claimPeriodEnds;
     BitMaps.BitMap private claimed;
 
@@ -50,7 +50,7 @@ contract RewardERC20Distributor is IRewardDistributor, SafeOwnable {
         if (!valid) {
             revert InvalidProof();
         }
-        if (isClaimed(uint160(_msgSender()))) {
+        if (isClaimed(_msgSender())) {
             revert AlreadyClaimed();
         }
 
@@ -61,10 +61,10 @@ contract RewardERC20Distributor is IRewardDistributor, SafeOwnable {
 
     /**
      * @dev Returns true if the claim at the given index in the merkle tree has already been made.
-     * @param index The index into the merkle tree.
+     * @param account address of account
      */
-    function isClaimed(uint256 index) public view returns (bool) {
-        return claimed.get(index);
+    function isClaimed(address account) public view returns (bool) {
+        return claimed.get(uint160(account));
     }
 
     /**
