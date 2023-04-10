@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity 0.8.17;
 
-import {ERC20CappedUpgradeable, ERC20Upgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC20/extensions/ERC20CappedUpgradeable.sol";
-import {SafeOwnableUpgradeable} from "@p12/contracts-lib/contracts/access/SafeOwnableUpgradeable.sol";
-import {UUPSUpgradeable} from "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
-import {ERC20PermitUpgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC20/extensions/draft-ERC20PermitUpgradeable.sol";
-import {ERC20BurnableUpgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC20/extensions/ERC20BurnableUpgradeable.sol";
+import {ERC20CappedUpgradeable, ERC20Upgradeable} from "./oz/contracts-upgradeable/token/ERC20/extensions/ERC20CappedUpgradeable.sol";
+import {SafeOwnableUpgradeable} from "./utils/SafeOwnableUpgradeable.sol";
+import {UUPSUpgradeable} from "./oz/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
+import {ERC20PermitUpgradeable} from "./oz/contracts-upgradeable/token/ERC20/extensions/draft-ERC20PermitUpgradeable.sol";
+import {ERC20BurnableUpgradeable} from "./oz/contracts-upgradeable/token/ERC20/extensions/ERC20BurnableUpgradeable.sol";
 
 import {IRebornToken} from "src/interfaces/IRebornToken.sol";
 import {RBTStorage} from "src/RBTStorage.sol";

@@ -2,7 +2,7 @@
 pragma solidity 0.8.17;
 import {SingleRanking} from "src/lib/SingleRanking.sol";
 import {IRebornPortal} from "src/interfaces/IRebornPortal.sol";
-import {BitMapsUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/structs/BitMapsUpgradeable.sol";
+import {BitMapsUpgradeable} from "./oz/contracts-upgradeable/utils/structs/BitMapsUpgradeable.sol";
 
 library DegenRank {
     using SingleRanking for SingleRanking.Data;
