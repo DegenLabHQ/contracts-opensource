@@ -1,21 +1,28 @@
-// SPDX-License-Identifier: GPL-3.0
+// SPDX-License-Identifier: GPL-3.0-only
 pragma solidity 0.8.17;
 
-import {MerkleProof} from "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
-import {BitMaps} from "@openzeppelin/contracts/utils/structs/BitMaps.sol";
-import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
-import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
-import {IRewardDistributor} from "src/interfaces/IRewardDistributor.sol";
+import "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
+import "@openzeppelin/contracts/utils/structs/BitMaps.sol";
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import "@p12/contracts-lib/contracts/access/SafeOwnable.sol";
 
-contract RewardDistributor is IRewardDistributor, Ownable {
+import "src/interfaces/IRewardDistributor.sol";
+
+contract RewardERC20Distributor is IRewardDistributor, SafeOwnable {
     using BitMaps for BitMaps.BitMap;
+    using SafeERC20 for IERC20;
 
     bytes32 public merkleRoot;
+    IERC20 public immutable rewardToken;
     uint256 public claimPeriodEnds;
     BitMaps.BitMap private claimed;
 
-    constructor(address owner_) {
-        _transferOwnership(owner_);
+    constructor(address owner_, IERC20 rewardToken_) SafeOwnable(owner_) {
+        if (owner_ == address(0) || address(rewardToken_) == address(0)) {
+            revert ZeroAddressSet();
+        }
+        rewardToken = rewardToken_;
     }
 
     /**
@@ -31,11 +38,10 @@ contract RewardDistributor is IRewardDistributor, Ownable {
             revert ClaimPeriodNotStartOrEnd();
         }
 
-        if (amount > (address(this)).balance) {
+        if (amount > rewardToken.balanceOf(address(this))) {
             revert AmountExceedBalance();
         }
 
-        // bytes32 leaf = keccak256(abi.encodePacked(msg.sender, amount));
         bytes32 leaf = keccak256(
             bytes.concat(keccak256(abi.encode(msg.sender, amount)))
         );
@@ -44,21 +50,21 @@ contract RewardDistributor is IRewardDistributor, Ownable {
         if (!valid) {
             revert InvalidProof();
         }
-        if (isClaimed(uint160(_msgSender()))) {
+        if (isClaimed(_msgSender())) {
             revert AlreadyClaimed();
         }
 
         claimed.set(uint160(_msgSender()));
-        payable(msg.sender).transfer(amount);
+        rewardToken.safeTransfer(msg.sender, amount);
         emit Claim(msg.sender, amount);
     }
 
     /**
      * @dev Returns true if the claim at the given index in the merkle tree has already been made.
-     * @param index The index into the merkle tree.
+     * @param account address of account
      */
-    function isClaimed(uint256 index) public view returns (bool) {
-        return claimed.get(index);
+    function isClaimed(address account) public view returns (bool) {
+        return claimed.get(uint160(account));
     }
 
     /**
@@ -92,13 +98,8 @@ contract RewardDistributor is IRewardDistributor, Ownable {
      * @dev withdraw remaining native tokens.
      */
     function withdraw(address to) external onlyOwner {
-        uint256 balance = (address(this)).balance;
-        payable(to).transfer(balance);
+        uint256 balance = rewardToken.balanceOf(address(this));
+        rewardToken.safeTransfer(to, balance);
         emit WithDrawn(to, balance);
     }
-
-    /**
-     * @dev receive native token as reward
-     */
-    receive() external payable {}
 }

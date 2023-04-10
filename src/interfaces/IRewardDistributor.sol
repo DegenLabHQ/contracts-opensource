@@ -2,6 +2,7 @@
 pragma solidity 0.8.17;
 
 interface IRewardDistributorDef {
+    error ZeroAddressSet();
     error ClaimPeriodNotStartOrEnd();
     error AmountExceedBalance();
     error InvalidProof();
