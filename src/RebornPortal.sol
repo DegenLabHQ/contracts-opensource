@@ -149,11 +149,12 @@ contract RebornPortal is
      */
     function infuse(
         uint256 tokenId,
-        uint256 amount
+        uint256 amount,
+        Direction direction
     ) external override whenNotPaused {
         _checkStoped();
         _claimPoolDrop(tokenId);
-        _infuse(tokenId, amount);
+        _infuse(tokenId, amount, direction);
     }
 
     /**
@@ -166,12 +167,13 @@ contract RebornPortal is
         uint256 deadline,
         bytes32 r,
         bytes32 s,
-        uint8 v
+        uint8 v,
+        Direction direction
     ) external override whenNotPaused {
         _checkStoped();
         _claimPoolDrop(tokenId);
         _permit(permitAmount, deadline, r, s, v);
-        _infuse(tokenId, amount);
+        _infuse(tokenId, amount, direction);
     }
 
     /**
@@ -180,13 +182,14 @@ contract RebornPortal is
     function switchPool(
         uint256 fromTokenId,
         uint256 toTokenId,
-        uint256 amount
+        uint256 amount,
+        Direction direction
     ) external override whenNotPaused {
         _checkStoped();
         _claimPoolDrop(fromTokenId);
         _claimPoolDrop(toTokenId);
         _decreaseFromPool(fromTokenId, amount);
-        _increaseToPool(toTokenId, amount);
+        _increaseToPool(toTokenId, amount, direction);
     }
 
     /**
@@ -492,14 +495,18 @@ contract RebornPortal is
         );
     }
 
-    function _infuse(uint256 tokenId, uint256 amount) internal {
+    function _infuse(
+        uint256 tokenId,
+        uint256 amount,
+        Direction direction
+    ) internal {
         // it's not necessary to check the whether the address of burnPool is zero
         // as function tranferFrom does not allow transfer to zero address by default
         rebornToken.transferFrom(msg.sender, burnPool, amount);
 
-        _increasePool(tokenId, amount);
+        _increasePool(tokenId, amount, direction);
 
-        emit Infuse(msg.sender, tokenId, amount);
+        emit Infuse(msg.sender, tokenId, amount, direction);
     }
 
     /**
@@ -749,8 +756,10 @@ contract RebornPortal is
         pool.totalAmount -= amount;
 
         PortalLib._flattenRewardDebt(pool, portfolio);
+        pool.totalReverseTribute += amount;
+        uint256 totalTribute = getTotalTributeOfPool(pool);
 
-        _enterTvlRank(tokenId, pool.totalAmount);
+        _enterTvlRank(tokenId, totalTribute);
 
         emit DecreaseFromPool(msg.sender, tokenId, amount);
     }
@@ -758,15 +767,23 @@ contract RebornPortal is
     /**
      * @dev increase amount to pool of switch to
      */
-    function _increaseToPool(uint256 tokenId, uint256 amount) internal {
+    function _increaseToPool(
+        uint256 tokenId,
+        uint256 amount,
+        Direction direction
+    ) internal {
         uint256 restakeAmount = (amount * 95) / 100;
 
-        _increasePool(tokenId, restakeAmount);
+        _increasePool(tokenId, restakeAmount, direction);
 
-        emit IncreaseToPool(msg.sender, tokenId, restakeAmount);
+        emit IncreaseToPool(msg.sender, tokenId, restakeAmount, direction);
     }
 
-    function _increasePool(uint256 tokenId, uint256 amount) internal {
+    function _increasePool(
+        uint256 tokenId,
+        uint256 amount,
+        Direction direction
+    ) internal {
         PortalLib.Portfolio storage portfolio = _seasonData[_season].portfolios[
             msg.sender
         ][tokenId];
@@ -782,7 +799,14 @@ contract RebornPortal is
 
         PortalLib._flattenRewardDebt(pool, portfolio);
 
-        _enterTvlRank(tokenId, pool.totalAmount);
+        if (direction == Direction.Forward) {
+            pool.totalForwardTribute += amount;
+        } else {
+            pool.totalReverseTribute += amount;
+        }
+        uint256 totalPoolTribute = getTotalTributeOfPool(pool);
+
+        _enterTvlRank(tokenId, totalPoolTribute);
     }
 
     function _updateCoinday(
@@ -824,6 +848,15 @@ contract RebornPortal is
             userCoinday = userPending + portfolio.coindayCumulant;
             poolCoinday = poolPending + pool.coindayCumulant;
         }
+    }
+
+    function getTotalTributeOfPool(
+        PortalLib.Pool memory pool
+    ) public pure returns (uint256) {
+        return
+            pool.totalForwardTribute > pool.totalReverseTribute
+                ? pool.totalForwardTribute - pool.totalReverseTribute
+                : 0;
     }
 
     /**

@@ -44,6 +44,11 @@ interface IRebornDefination {
         DropNative
     }
 
+    enum Direction {
+        Reverse,
+        Forward
+    }
+
     struct RequestStatus {
         bool fulfilled; // whether the request has been successfully fulfilled
         bool exists; // whether a requestId exists
@@ -67,7 +72,12 @@ interface IRebornDefination {
         uint256 reward
     );
 
-    event Infuse(address indexed user, uint256 indexed tokenId, uint256 amount);
+    event Infuse(
+        address indexed user,
+        uint256 indexed tokenId,
+        uint256 amount,
+        Direction direction
+    );
 
     event Dry(address indexed user, uint256 indexed tokenId, uint256 amount);
 
@@ -86,7 +96,8 @@ interface IRebornDefination {
     event IncreaseToPool(
         address indexed account,
         uint256 tokenId,
-        uint256 amount
+        uint256 amount,
+        Direction direction
     );
 
     event Drop(uint256[] tokenIds);
@@ -169,7 +180,11 @@ interface IRebornPortal is IRebornDefination {
      * @param tokenId tokenId of the life to stake
      * @param amount stake amount, decimal 10^18
      */
-    function infuse(uint256 tokenId, uint256 amount) external;
+    function infuse(
+        uint256 tokenId,
+        uint256 amount,
+        Direction direction
+    ) external;
 
     /**
      * @dev stake $REBORN with permit
@@ -187,7 +202,8 @@ interface IRebornPortal is IRebornDefination {
         uint256 deadline,
         bytes32 r,
         bytes32 s,
-        uint8 v
+        uint8 v,
+        Direction direction
     ) external;
 
     /**
@@ -199,7 +215,8 @@ interface IRebornPortal is IRebornDefination {
     function switchPool(
         uint256 fromTokenId,
         uint256 toTokenId,
-        uint256 amount
+        uint256 amount,
+        Direction direction
     ) external;
 
     /**

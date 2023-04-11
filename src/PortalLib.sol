@@ -30,6 +30,8 @@ library PortalLib {
         uint256 lastUpdated;
         uint256 coindayCumulant;
         uint256 coindayUpdateLastTime;
+        uint256 totalForwardTribute;
+        uint256 totalReverseTribute;
     }
 
     struct Portfolio {
