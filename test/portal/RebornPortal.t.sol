@@ -150,6 +150,34 @@ contract RebornPortalCommonTest is RebornPortalBaseTest {
         portal.switchPool(1, 2, 0.5 * 1 ether);
     }
 
+    function testCoinday() public {
+        testEngrave(bytes32(new bytes(32)), 10, 10, 10);
+        address user1 = address(20);
+        address user2 = address(21);
+        address user3 = address(23);
+
+        mockInfuse(user1, 1, 10 ether);
+        vm.warp(block.timestamp + 1 days);
+
+        mockInfuse(user1, 1, 1 ether);
+        mockInfuse(user2, 1, 10 ether);
+        vm.warp(block.timestamp + 1 days);
+
+        mockInfuse(user3, 1, 3 ether);
+        vm.warp(block.timestamp + 2 days);
+        uint256 poolCoinday;
+        uint256 user1Coinday;
+        uint256 user2Coinday;
+        uint256 user3Coinday;
+        (user1Coinday, poolCoinday) = portal.getCoinday(1, user1);
+        (user2Coinday, poolCoinday) = portal.getCoinday(1, user2);
+        (user3Coinday, poolCoinday) = portal.getCoinday(1, user3);
+        assertEq(user1Coinday, 43 ether);
+        assertEq(user2Coinday, 30 ether);
+        assertEq(user3Coinday, 6 ether);
+        assertEq(poolCoinday, 79 ether);
+    }
+
     function testTokenUri(
         bytes32 seed,
         uint208 reward,
