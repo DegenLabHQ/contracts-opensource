@@ -832,22 +832,7 @@ contract RebornPortal is
         uint256 tokenId,
         address account
     ) public view returns (uint256 userCoinday, uint256 poolCoinday) {
-        PortalLib.Portfolio memory portfolio = _seasonData[_season].portfolios[
-            account
-        ][tokenId];
-        PortalLib.Pool memory pool = _seasonData[_season].pools[tokenId];
-
-        unchecked {
-            uint256 userPending = ((block.timestamp -
-                portfolio.coindayUpdateLastTime) *
-                portfolio.accumulativeAmount) / 1 days;
-
-            uint256 poolPending = ((block.timestamp -
-                pool.coindayUpdateLastTime) * pool.totalAmount) / 1 days;
-
-            userCoinday = userPending + portfolio.coindayCumulant;
-            poolCoinday = poolPending + pool.coindayCumulant;
-        }
+        return PortalLib.getCoinday(tokenId, account, _seasonData[_season]);
     }
 
     function getTotalTributeOfPool(

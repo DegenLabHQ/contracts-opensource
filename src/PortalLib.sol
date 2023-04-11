@@ -104,13 +104,18 @@ library PortalLib {
         ];
 
         uint256 pendingTributeReborn;
+        (uint256 userCoinday, uint256 poolCoinday) = getCoinday(
+            tokenId,
+            msg.sender,
+            _seasonData
+        );
         // if no portfolio, no pending tribute reward
         if (portfolio.accumulativeAmount == 0) {
             pendingTributeReborn = 0;
         } else {
             pendingTributeReborn =
-                ((portfolio.accumulativeAmount * pool.accRebornPerShare) /
-                    PERSHARE_BASE) -
+                (userCoinday * pool.accRebornPerShare) /
+                (PERSHARE_BASE * poolCoinday) -
                 portfolio.rebornRewardDebt;
         }
 
@@ -119,8 +124,8 @@ library PortalLib {
 
         // set current amount as debt
         portfolio.rebornRewardDebt =
-            (portfolio.accumulativeAmount * pool.accRebornPerShare) /
-            PERSHARE_BASE;
+            (userCoinday * pool.accRebornPerShare) /
+            (PERSHARE_BASE * poolCoinday);
 
         // clean up reward as owner
         portfolio.pendingOwnerRebornReward = 0;
@@ -142,13 +147,18 @@ library PortalLib {
         ];
 
         uint256 pendingTributeNative;
+        (uint256 userCoinday, uint256 poolCoinday) = getCoinday(
+            tokenId,
+            msg.sender,
+            _seasonData
+        );
         // if no portfolio, no pending tribute reward
         if (portfolio.accumulativeAmount == 0) {
             pendingTributeNative = 0;
         } else {
             pendingTributeNative =
-                (portfolio.accumulativeAmount * pool.accNativePerShare) /
-                PERSHARE_BASE -
+                (userCoinday * pool.accNativePerShare) /
+                (PERSHARE_BASE * poolCoinday) -
                 portfolio.nativeRewardDebt;
         }
 
@@ -157,8 +167,8 @@ library PortalLib {
 
         // set current amount as debt
         portfolio.nativeRewardDebt =
-            (portfolio.accumulativeAmount * pool.accNativePerShare) /
-            PERSHARE_BASE;
+            (userCoinday * pool.accNativePerShare) /
+            (PERSHARE_BASE * poolCoinday);
 
         // clean up reward as owner
         portfolio.pendingOwnerNativeReward = 0;
@@ -176,15 +186,25 @@ library PortalLib {
         Portfolio storage portfolio
     ) external {
         unchecked {
+            uint256 userPending = ((block.timestamp -
+                portfolio.coindayUpdateLastTime) *
+                portfolio.accumulativeAmount) / 1 days;
+
+            uint256 poolPending = ((block.timestamp -
+                pool.coindayUpdateLastTime) * pool.totalAmount) / 1 days;
+
+            uint256 userCoinday = userPending + portfolio.coindayCumulant;
+            uint256 poolCoinday = poolPending + pool.coindayCumulant;
+
             // flatten native reward
             portfolio.nativeRewardDebt =
-                (portfolio.accumulativeAmount * pool.accNativePerShare) /
-                PERSHARE_BASE;
+                (userCoinday * pool.accNativePerShare) /
+                (poolCoinday * PERSHARE_BASE);
 
             // flatten reborn reward
             portfolio.rebornRewardDebt =
-                (portfolio.accumulativeAmount * pool.accRebornPerShare) /
-                PERSHARE_BASE;
+                (userCoinday * pool.accRebornPerShare) /
+                (poolCoinday * PERSHARE_BASE);
         }
     }
 
@@ -207,14 +227,19 @@ library PortalLib {
             pendingTributeNative = 0;
             pendingTributeReborn = 0;
         } else {
+            (uint256 userCoinday, uint256 poolCoinday) = getCoinday(
+                tokenId,
+                msg.sender,
+                _seasonData
+            );
             pendingTributeNative =
-                (portfolio.accumulativeAmount * pool.accNativePerShare) /
-                PERSHARE_BASE -
+                (userCoinday * pool.accNativePerShare) /
+                (PERSHARE_BASE * poolCoinday) -
                 portfolio.nativeRewardDebt;
 
             pendingTributeReborn =
-                ((portfolio.accumulativeAmount * pool.accRebornPerShare) /
-                    PERSHARE_BASE) -
+                (userCoinday * pool.accRebornPerShare) /
+                (PERSHARE_BASE * poolCoinday) -
                 portfolio.rebornRewardDebt;
         }
 
@@ -589,5 +614,28 @@ library PortalLib {
             ref2Reward,
             RewardType.RebornToken
         );
+    }
+
+    function getCoinday(
+        uint256 tokenId,
+        address account,
+        IRebornDefination.SeasonData storage _seasonData
+    ) public view returns (uint256 userCoinday, uint256 poolCoinday) {
+        PortalLib.Portfolio storage portfolio = _seasonData.portfolios[account][
+            tokenId
+        ];
+        PortalLib.Pool storage pool = _seasonData.pools[tokenId];
+
+        unchecked {
+            uint256 userPending = ((block.timestamp -
+                portfolio.coindayUpdateLastTime) *
+                portfolio.accumulativeAmount) / 1 days;
+
+            uint256 poolPending = ((block.timestamp -
+                pool.coindayUpdateLastTime) * pool.totalAmount) / 1 days;
+
+            userCoinday = userPending + portfolio.coindayCumulant;
+            poolCoinday = poolPending + pool.coindayCumulant;
+        }
     }
 }
