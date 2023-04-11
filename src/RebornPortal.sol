@@ -767,14 +767,17 @@ contract RebornPortal is
         portfolio.coindayDebt +=
             ((block.timestamp - portfolio.coindayUpdateLastTime) *
                 portfolio.accumulativeAmount) /
-            3600;
+            1 days;
+        portfolio.coindayUpdateLastTime = block.timestamp;
+
         pool.coindayDebt +=
             ((block.timestamp - pool.coindayUpdateLastTime) *
                 pool.totalAmount) /
-            3600;
+            1 days;
+        pool.coindayUpdateLastTime = block.timestamp;
     }
 
-    function getConday(
+    function getCoinday(
         uint256 tokenId,
         address account
     ) public view returns (uint256 userCoinday, uint256 poolCoinday) {
@@ -785,9 +788,9 @@ contract RebornPortal is
 
         uint256 userPending = ((block.timestamp -
             portfolio.coindayUpdateLastTime) * portfolio.accumulativeAmount) /
-            3600;
+            1 days;
         uint256 poolPending = ((block.timestamp - pool.coindayUpdateLastTime) *
-            pool.totalAmount) / 3600;
+            pool.totalAmount) / 1 days;
 
         userCoinday = userPending + portfolio.coindayDebt;
         poolCoinday = poolPending + pool.coindayDebt;
