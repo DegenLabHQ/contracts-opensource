@@ -7,10 +7,12 @@ import {CommonError} from "src/lib/CommonError.sol";
 import {EIP712Upgradeable} from "src/oz/contracts-upgradeable/utils/cryptography/EIP712Upgradeable.sol";
 import {ECDSAUpgradeable} from "src/oz/contracts-upgradeable/utils/cryptography/ECDSAUpgradeable.sol";
 
+import {AccessBase} from "src/base/AccessBase.sol";
+
 /**
  * @title Altar of heros
  */
-abstract contract Altar is EIP712Upgradeable, RebornPortalStorage {
+abstract contract Altar is EIP712Upgradeable, RebornPortalStorage, AccessBase {
     function __Alter_init_unchained() internal onlyInitializing {
         __EIP712_init_unchained("Altar", "1");
     }
@@ -30,7 +32,7 @@ abstract contract Altar is EIP712Upgradeable, RebornPortalStorage {
     function _checkChar(CharParams calldata charparams) internal view {
         bytes32 structHash = keccak256(
             abi.encode(
-                _CHARACTER_TYPEHASH,
+                PortalLib._CHARACTER_TYPEHASH,
                 msg.sender,
                 charparams.charTokenId,
                 charparams.deadline
@@ -61,12 +63,5 @@ abstract contract Altar is EIP712Upgradeable, RebornPortalStorage {
         uint256 tokenId
     ) public view returns (PortalLib.CharacterProperty memory) {
         return _characterProperties[tokenId];
-    }
-
-    modifier onlySigner() {
-        if (!signers[msg.sender]) {
-            revert CommonError.NotSigner();
-        }
-        _;
     }
 }

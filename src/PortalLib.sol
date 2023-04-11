@@ -10,6 +10,13 @@ library PortalLib {
     // percentage base of refer reward fees
     uint256 public constant PERCENTAGE_BASE = 10000;
 
+    bytes32 public constant _CHARACTER_TYPEHASH =
+        keccak256(
+            "AuthenticateCharacterOwnership(address user,uint256 tokenId,uint256 deadline)"
+        );
+
+    uint256 public constant ONE_HUNDRED = 100;
+
     struct CharacterParams {
         uint256 maxAP;
         uint256 restoreTimePerAP;

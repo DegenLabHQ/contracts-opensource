@@ -7,9 +7,16 @@ import {CommonError} from "src/lib/CommonError.sol";
 
 contract AccessBase is IRebornDefination, RebornPortalStorage {
     modifier onlySigner() {
+        _checkSigner();
+        _;
+    }
+
+    /**
+     * @dev check signer implementation
+     */
+    function _checkSigner() internal view {
         if (!signers[msg.sender]) {
             revert CommonError.NotSigner();
         }
-        _;
     }
 }

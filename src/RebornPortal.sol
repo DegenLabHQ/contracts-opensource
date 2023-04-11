@@ -235,17 +235,6 @@ contract RebornPortal is
     /**
      * @inheritdoc IRebornPortal
      */
-    function claimDrops(
-        uint256[] calldata tokenIds
-    ) external override whenNotPaused {
-        for (uint256 i = 0; i < tokenIds.length; i++) {
-            _claimPoolDrop(tokenIds[i]);
-        }
-    }
-
-    /**
-     * @inheritdoc IRebornPortal
-     */
     function claimNativeDrops(
         uint256[] calldata tokenIds
     ) external override whenNotPaused {
@@ -572,10 +561,10 @@ contract RebornPortal is
         // apply discount
         uint256 discountNativeFee = nativeFee -
             (nativeFee * discountPercent) /
-            ONE_HUNDRED;
+            PortalLib.ONE_HUNDRED;
         uint256 discountRebornFee = rebornFee -
             (rebornFee * discountPercent) /
-            ONE_HUNDRED;
+            PortalLib.ONE_HUNDRED;
 
         if (msg.value < nativeFee) {
             revert InsufficientAmount();
@@ -1035,18 +1024,15 @@ contract RebornPortal is
         return _seasonData[_season]._jackpot;
     }
 
-    /**
-     * @dev check signer implementation
-     */
-    function _checkSigner() internal view {
-        if (!signers[msg.sender]) {
-            revert CommonError.NotSigner();
-        }
-    }
-
     function _checkStoped() internal view {
         if (_stopBetaBlockNumber > 0 && block.number > _stopBetaBlockNumber) {
             revert BetaStoped();
+        }
+    }
+
+    function _checkDropOn() internal view {
+        if (_dropConf._dropOn == 0) {
+            revert DropOff();
         }
     }
 
@@ -1065,9 +1051,7 @@ contract RebornPortal is
      * @dev only allowed when drop is on
      */
     modifier onlyDropOn() {
-        if (_dropConf._dropOn == 0) {
-            revert DropOff();
-        }
+        _checkDropOn();
         _;
     }
 }

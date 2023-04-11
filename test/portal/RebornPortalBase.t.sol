@@ -4,7 +4,7 @@ pragma solidity 0.8.17;
 import "forge-std/Test.sol";
 import {DeployProxy} from "foundry-upgrades/utils/DeployProxy.sol";
 
-import "src/RebornPortal.sol";
+import "src/mock/PortalMock.sol";
 import {RBT} from "src/RBT.sol";
 import {RewardVault} from "src/RewardVault.sol";
 import {IRebornDefination} from "src/interfaces/IRebornPortal.sol";
@@ -17,7 +17,7 @@ import {VRFCoordinatorV2Mock} from "src/mock/VRFCoordinatorV2Mock.sol";
 
 contract RebornPortalBaseTest is Test, IRebornDefination, EventDefination {
     uint256 public constant SOUP_PRICE = 0.01 * 1 ether;
-    RebornPortal portal;
+    PortalMock portal;
     RBT rbt;
     BurnPool burnPool;
     address owner = vm.addr(2);
@@ -71,8 +71,8 @@ contract RebornPortalBaseTest is Test, IRebornDefination, EventDefination {
 
     function setUp() public virtual deployAll {}
 
-    function deployPortal() public returns (RebornPortal portal_) {
-        portal_ = new RebornPortal();
+    function deployPortal() public returns (PortalMock portal_) {
+        portal_ = new PortalMock();
         portal_.initialize(
             rbt,
             owner,
