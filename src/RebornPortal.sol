@@ -764,17 +764,19 @@ contract RebornPortal is
         PortalLib.Portfolio storage portfolio,
         PortalLib.Pool storage pool
     ) internal {
-        portfolio.coindayDebt +=
-            ((block.timestamp - portfolio.coindayUpdateLastTime) *
-                portfolio.accumulativeAmount) /
-            1 days;
-        portfolio.coindayUpdateLastTime = block.timestamp;
+        unchecked {
+            portfolio.coindayCumulant +=
+                ((block.timestamp - portfolio.coindayUpdateLastTime) *
+                    portfolio.accumulativeAmount) /
+                1 days;
+            portfolio.coindayUpdateLastTime = block.timestamp;
 
-        pool.coindayDebt +=
-            ((block.timestamp - pool.coindayUpdateLastTime) *
-                pool.totalAmount) /
-            1 days;
-        pool.coindayUpdateLastTime = block.timestamp;
+            pool.coindayCumulant +=
+                ((block.timestamp - pool.coindayUpdateLastTime) *
+                    pool.totalAmount) /
+                1 days;
+            pool.coindayUpdateLastTime = block.timestamp;
+        }
     }
 
     function getCoinday(
@@ -786,14 +788,17 @@ contract RebornPortal is
         ][tokenId];
         PortalLib.Pool memory pool = _seasonData[_season].pools[tokenId];
 
-        uint256 userPending = ((block.timestamp -
-            portfolio.coindayUpdateLastTime) * portfolio.accumulativeAmount) /
-            1 days;
-        uint256 poolPending = ((block.timestamp - pool.coindayUpdateLastTime) *
-            pool.totalAmount) / 1 days;
+        unchecked {
+            uint256 userPending = ((block.timestamp -
+                portfolio.coindayUpdateLastTime) *
+                portfolio.accumulativeAmount) / 1 days;
 
-        userCoinday = userPending + portfolio.coindayDebt;
-        poolCoinday = poolPending + pool.coindayDebt;
+            uint256 poolPending = ((block.timestamp -
+                pool.coindayUpdateLastTime) * pool.totalAmount) / 1 days;
+
+            userCoinday = userPending + portfolio.coindayCumulant;
+            poolCoinday = poolPending + pool.coindayCumulant;
+        }
     }
 
     /**

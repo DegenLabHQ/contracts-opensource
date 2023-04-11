@@ -28,7 +28,7 @@ library PortalLib {
         uint256 accNativePerShare;
         uint256 epoch;
         uint256 lastUpdated;
-        uint256 coindayDebt;
+        uint256 coindayCumulant;
         uint256 coindayUpdateLastTime;
     }
 
@@ -51,7 +51,7 @@ library PortalLib {
         /// @dev reward for holding the NFT when the NFT is selected
         uint256 pendingOwnerRebornReward;
         uint256 pendingOwnerNativeReward;
-        uint256 coindayDebt;
+        uint256 coindayCumulant;
         uint256 coindayUpdateLastTime;
     }
 
