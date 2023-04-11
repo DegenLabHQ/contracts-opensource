@@ -717,6 +717,8 @@ contract RebornPortal is
         ][tokenId];
         PortalLib.Pool storage pool = _seasonData[_season].pools[tokenId];
 
+        _updateCoinday(portfolio, pool);
+
         // don't need to check accumulativeAmount, as it would revert if accumulativeAmount is less
         portfolio.accumulativeAmount -= amount;
         pool.totalAmount -= amount;
@@ -745,6 +747,9 @@ contract RebornPortal is
         ][tokenId];
         PortalLib.Pool storage pool = _seasonData[_season].pools[tokenId];
 
+        // update coinday
+        _updateCoinday(portfolio, pool);
+
         unchecked {
             portfolio.accumulativeAmount += amount;
             pool.totalAmount += amount;
@@ -753,6 +758,39 @@ contract RebornPortal is
         PortalLib._flattenRewardDebt(pool, portfolio);
 
         _enterTvlRank(tokenId, pool.totalAmount);
+    }
+
+    function _updateCoinday(
+        PortalLib.Portfolio storage portfolio,
+        PortalLib.Pool storage pool
+    ) internal {
+        portfolio.coindayDebt +=
+            ((block.timestamp - portfolio.coindayUpdateLastTime) *
+                portfolio.accumulativeAmount) /
+            3600;
+        pool.coindayDebt +=
+            ((block.timestamp - pool.coindayUpdateLastTime) *
+                pool.totalAmount) /
+            3600;
+    }
+
+    function getConday(
+        uint256 tokenId,
+        address account
+    ) public view returns (uint256 userCoinday, uint256 poolCoinday) {
+        PortalLib.Portfolio memory portfolio = _seasonData[_season].portfolios[
+            account
+        ][tokenId];
+        PortalLib.Pool memory pool = _seasonData[_season].pools[tokenId];
+
+        uint256 userPending = ((block.timestamp -
+            portfolio.coindayUpdateLastTime) * portfolio.accumulativeAmount) /
+            3600;
+        uint256 poolPending = ((block.timestamp - pool.coindayUpdateLastTime) *
+            pool.totalAmount) / 3600;
+
+        userCoinday = userPending + portfolio.coindayDebt;
+        poolCoinday = poolPending + pool.coindayDebt;
     }
 
     /**
