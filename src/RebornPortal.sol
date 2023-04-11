@@ -92,7 +92,7 @@ contract RebornPortal is
         _useChar(charParams);
         uint256 discount = _characterProperties[charParams.charTokenId]
             .discountPercentage;
-        _incarnate(innate, discount);
+        _incarnate(innate, discount, charParams.charTokenId);
     }
 
     /**
@@ -124,7 +124,7 @@ contract RebornPortal is
         _useChar(charParams);
         uint256 discount = _characterProperties[charParams.charTokenId]
             .discountPercentage;
-        _incarnate(innate, discount);
+        _incarnate(innate, discount, charParams.charTokenId);
     }
 
     /**
@@ -549,7 +549,8 @@ contract RebornPortal is
      */
     function _incarnate(
         InnateParams calldata innate,
-        uint256 discountPercent
+        uint256 discountPercent,
+        uint256 charTokenId
     ) internal {
         uint256 nativeFee = innate.soupPrice +
             innate.talentNativePrice +
@@ -587,6 +588,7 @@ contract RebornPortal is
 
         emit Incarnate(
             msg.sender,
+            charTokenId,
             innate.talentNativePrice,
             innate.talentRebornPrice,
             innate.propertyRebornPrice,

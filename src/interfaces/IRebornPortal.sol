@@ -78,6 +78,7 @@ interface IRebornDefination {
 
     event Incarnate(
         address indexed user,
+        uint256 indexed charTokenId,
         uint256 talentNativePrice,
         uint256 talenRebornPrice,
         uint256 propertyNativePrice,

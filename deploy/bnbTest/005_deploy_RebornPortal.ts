@@ -42,31 +42,31 @@ const func: DeployFunction = async function ({
     deterministicDeployment: formatBytes32String("DegenReborn_Test"),
   });
 
-  // await execute(
-  //   "RebornPortal",
-  //   { from: owner, log: true },
-  //   "updateSigners",
-  //   ["0x803470638940Ec595B40397cbAa597439DE55907"],
-  //   []
-  // );
+  await execute(
+    "RebornPortal",
+    { from: owner, log: true },
+    "updateSigners",
+    ["0x803470638940Ec595B40397cbAa597439DE55907"],
+    []
+  );
 
-  // // set refer reward
-  // await execute(
-  //   "RebornPortal",
-  //   { from: owner, log: true },
-  //   "setReferrerRewardFee",
-  //   800,
-  //   200,
-  //   0
-  // );
-  // await execute(
-  //   "RebornPortal",
-  //   { from: owner, log: true },
-  //   "setReferrerRewardFee",
-  //   1800,
-  //   200,
-  //   0
-  // );
+  // set refer reward
+  await execute(
+    "RebornPortal",
+    { from: owner, log: true },
+    "setReferrerRewardFee",
+    800,
+    200,
+    0
+  );
+  await execute(
+    "RebornPortal",
+    { from: owner, log: true },
+    "setReferrerRewardFee",
+    1800,
+    200,
+    0
+  );
 
   await execute(
     "RebornPortal",
@@ -79,7 +79,7 @@ const func: DeployFunction = async function ({
     "RebornPortal",
     { from: owner, log: true },
     "setIncarnationLimit",
-    2
+    10
   );
 };
 func.tags = ["Portal"];
