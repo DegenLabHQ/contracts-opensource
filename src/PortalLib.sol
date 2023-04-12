@@ -55,6 +55,8 @@ library PortalLib {
         uint256 pendingOwnerNativeReward;
         uint256 coindayCumulant;
         uint256 coindayUpdateLastTime;
+        uint256 totalForwardTribute;
+        uint256 totalReverseTribute;
     }
 
     struct AirdropConf {

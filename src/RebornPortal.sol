@@ -756,7 +756,17 @@ contract RebornPortal is
         pool.totalAmount -= amount;
 
         PortalLib._flattenRewardDebt(pool, portfolio);
-        pool.totalReverseTribute += amount;
+
+        if (portfolio.totalForwardTribute > portfolio.totalReverseTribute) {
+            portfolio.totalReverseTribute += amount;
+            pool.totalReverseTribute += amount;
+        } else if (
+            portfolio.totalForwardTribute < portfolio.totalReverseTribute
+        ) {
+            portfolio.totalForwardTribute += amount;
+            pool.totalForwardTribute += amount;
+        }
+
         uint256 totalTribute = getTotalTributeOfPool(pool);
 
         _enterTvlRank(tokenId, totalTribute);
@@ -799,10 +809,21 @@ contract RebornPortal is
 
         PortalLib._flattenRewardDebt(pool, portfolio);
 
+        if (
+            (portfolio.totalForwardTribute > portfolio.totalReverseTribute &&
+                direction == Direction.Reverse) ||
+            (portfolio.totalForwardTribute < portfolio.totalReverseTribute &&
+                direction == Direction.Forward)
+        ) {
+            revert DirectionError();
+        }
+
         if (direction == Direction.Forward) {
             pool.totalForwardTribute += amount;
+            portfolio.totalForwardTribute += amount;
         } else {
             pool.totalReverseTribute += amount;
+            portfolio.totalReverseTribute += amount;
         }
         uint256 totalPoolTribute = getTotalTributeOfPool(pool);
 

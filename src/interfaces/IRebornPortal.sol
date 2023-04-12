@@ -136,6 +136,8 @@ interface IRebornDefination {
 
     /// @dev revert user continue play game when beta stoped
     error BetaStoped();
+
+    error DirectionError();
 }
 
 interface IRebornPortal is IRebornDefination {
