@@ -80,7 +80,7 @@ interface IRebornDefination {
         address indexed user,
         uint256 indexed charTokenId,
         uint256 talentNativePrice,
-        uint256 talenRebornPrice,
+        uint256 talentRebornPrice,
         uint256 propertyNativePrice,
         uint256 propertyRebornPrice,
         uint256 soupPrice

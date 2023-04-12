@@ -1012,7 +1012,7 @@ contract RebornPortal is
      * A -> B -> C: B: level1 A: level2
      * @dev referrer1: level1 of referrers referrer2: level2 of referrers
      */
-    function getRerferrers(
+    function getReferrers(
         address account
     ) public view returns (address referrer1, address referrer2) {
         referrer1 = referrals[account];
