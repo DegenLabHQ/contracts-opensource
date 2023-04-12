@@ -53,7 +53,7 @@ contract RebornPortalCommonTest is RebornPortalBaseTest {
         vm.stopPrank();
     }
 
-    function testIncarnateWithChar() public {
+    function testIncarnateWithChar(uint256 tokenId) public {
         InnateParams memory innateParams = InnateParams(
             0.1 ether,
             10 ether,
@@ -62,13 +62,19 @@ contract RebornPortalCommonTest is RebornPortalBaseTest {
             SOUP_PRICE
         );
 
-        CharParams memory charParams = CharParams(
-            0,
-            0,
-            bytes32(0),
-            bytes32(0),
-            uint8(0)
-        );
+        // set default property
+        mockSetOneTokenIdDefaultProperty(tokenId);
+        // time pass by to restore AP
+        vm.warp(block.timestamp + 86400);
+
+        (
+            uint256 deadline,
+            bytes32 r,
+            bytes32 s,
+            uint8 v
+        ) = mockSignCharOwnership(_user, tokenId);
+
+        CharParams memory charParams = CharParams(tokenId, deadline, r, s, v);
 
         vm.expectRevert(InsufficientAmount.selector);
 
@@ -80,6 +86,18 @@ contract RebornPortalCommonTest is RebornPortalBaseTest {
         );
 
         deal(address(rbt), _user, 1 << 128);
+
+        vm.expectEmit(true, true, true, true);
+        emit Incarnate(
+            _user,
+            tokenId,
+            0.1 ether,
+            10 ether,
+            0.2 ether,
+            20 ether,
+            SOUP_PRICE
+        );
+
         vm.startPrank(_user);
         rbt.approve(address(portal), UINT256_MAX);
         portal.incarnate{value: 0.3 ether + SOUP_PRICE}(
@@ -87,6 +105,7 @@ contract RebornPortalCommonTest is RebornPortalBaseTest {
             address(0),
             charParams
         );
+        vm.stopPrank();
     }
 
     function testEngrave(
@@ -103,7 +122,7 @@ contract RebornPortalCommonTest is RebornPortalBaseTest {
         vm.expectEmit(true, true, true, true);
         emit Engrave(seed, _user, 1, score, reward);
 
-        vm.prank(signer);
+        vm.prank(_signer);
         portal.engrave(seed, _user, reward, score, age, 1, "@ElonMusk");
     }
 
@@ -179,7 +198,7 @@ contract RebornPortalCommonTest is RebornPortalBaseTest {
     function testSwitchPool() public {
         deal(address(rbt), address(portal.vault()), 2 * 1 ether);
 
-        vm.startPrank(signer);
+        vm.startPrank(_signer);
         portal.engrave(bytes32("0x1"), _user, 100, 10, 10, 10, "vitalik.eth");
         portal.engrave(
             bytes32("0x2"),
@@ -272,7 +291,7 @@ contract RebornPortalCommonTest is RebornPortalBaseTest {
         emit Baptise(user, amount);
         emit Transfer(address(0), user, amount);
 
-        vm.prank(signer);
+        vm.prank(_signer);
         portal.baptise(user, amount);
     }
 

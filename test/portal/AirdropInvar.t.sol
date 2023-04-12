@@ -10,7 +10,7 @@ contract AirdropInvar is RebornPortalBaseTest, InvariantTest {
     DropHandler internal _dropHandler;
 
     function setUp() public override deployAll {
-        _dropHandler = new DropHandler(portal, rbt, _vrfCoordinator, signer);
+        _dropHandler = new DropHandler(portal, rbt, _vrfCoordinator, _signer);
         targetContract(address(_dropHandler));
     }
 

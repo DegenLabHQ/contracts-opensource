@@ -22,7 +22,7 @@ contract RebornPortalBaseTest is Test, IRebornDefination, EventDefination {
     BurnPool burnPool;
     address owner = vm.addr(2);
     address _user = vm.addr(10);
-    address signer = vm.addr(11);
+    address _signer = vm.addr(11);
     uint256 internal _seedIndex;
     // address on bnb testnet
     address internal _vrfCoordinator;
@@ -42,7 +42,7 @@ contract RebornPortalBaseTest is Test, IRebornDefination, EventDefination {
         portal = deployPortal();
         vm.prank(owner);
         address[] memory toAdd = new address[](1);
-        toAdd[0] = signer;
+        toAdd[0] = _signer;
         address[] memory toRemove;
         portal.updateSigners(toAdd, toRemove);
         vm.startPrank(owner);
@@ -86,7 +86,7 @@ contract RebornPortalBaseTest is Test, IRebornDefination, EventDefination {
         r = ++_seedIndex;
         deal(address(rbt), address(portal.vault()), r);
 
-        vm.prank(signer);
+        vm.prank(_signer);
         portal.engrave(
             keccak256(abi.encode(r)),
             _user,
@@ -102,7 +102,7 @@ contract RebornPortalBaseTest is Test, IRebornDefination, EventDefination {
         r = 1 ether - ++_seedIndex;
         deal(address(rbt), address(portal.vault()), r);
 
-        vm.prank(signer);
+        vm.prank(_signer);
         portal.engrave(
             keccak256(abi.encode(r)),
             _user,
@@ -140,5 +140,30 @@ contract RebornPortalBaseTest is Test, IRebornDefination, EventDefination {
         rbt.approve(address(portal), amount);
         portal.infuse(tokenId, amount, TributeDirection.Forward);
         vm.stopPrank();
+    }
+
+    function mockSignCharOwnership(
+        address user,
+        uint256 tokenId
+    ) public view returns (uint256 deadline, bytes32 r, bytes32 s, uint8 v) {
+        (deadline, r, s, v) = TestUtils.signCharOwnership(
+            11,
+            address(portal),
+            user,
+            tokenId
+        );
+    }
+
+    function mockSetOneTokenIdDefaultProperty(uint256 tokenId) public {
+        vm.prank(_signer);
+
+        uint256[] memory tokenIds = new uint256[](1);
+        tokenIds[0] = tokenId;
+        PortalLib.CharacterParams[]
+            memory charPs = new PortalLib.CharacterParams[](1);
+
+        charPs[0] = PortalLib.CharacterParams(3, 28800, 0);
+
+        portal.setCharProperty(tokenIds, charPs);
     }
 }

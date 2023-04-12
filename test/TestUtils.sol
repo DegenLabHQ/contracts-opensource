@@ -4,6 +4,7 @@ pragma solidity 0.8.17;
 import {RBT} from "src/RBT.sol";
 import "forge-std/Test.sol";
 import {ECDSAUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/cryptography/ECDSAUpgradeable.sol";
+import {PortalLib} from "src/PortalLib.sol";
 
 library TestUtils {
     Vm private constant vm =
@@ -76,5 +77,36 @@ library TestUtils {
 
         // sign
         (v, r, s) = vm.sign(private_key, hash);
+    }
+
+    function signCharOwnership(
+        uint256 signerPrivateKey,
+        address contractAddr,
+        address user,
+        uint256 tokenId
+    ) public view returns (uint256 deadline, bytes32 r, bytes32 s, uint8 v) {
+        deadline = block.timestamp + 100;
+
+        bytes32 structHash = keccak256(
+            abi.encode(PortalLib._CHARACTER_TYPEHASH, user, tokenId, deadline)
+        );
+
+        bytes32 domainSeparator = keccak256(
+            abi.encode(
+                _TYPE_HASH,
+                keccak256(abi.encodePacked("Altar")),
+                keccak256("1"),
+                block.chainid,
+                contractAddr
+            )
+        );
+
+        bytes32 hash = ECDSAUpgradeable.toTypedDataHash(
+            domainSeparator,
+            structHash
+        );
+
+        // sign
+        (v, r, s) = vm.sign(signerPrivateKey, hash);
     }
 }
