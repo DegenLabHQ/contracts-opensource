@@ -6,4 +6,5 @@ library CommonError {
     error InvalidParams();
     /// @dev revert when to caller is not signer
     error NotSigner();
+    error SignatureExpired();
 }

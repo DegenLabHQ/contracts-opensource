@@ -30,6 +30,10 @@ abstract contract Altar is EIP712Upgradeable, RebornPortalStorage, AccessBase {
     }
 
     function _checkChar(CharParams calldata charparams) internal view {
+        if (block.timestamp >= charparams.deadline) {
+            revert CommonError.SignatureExpired();
+        }
+
         bytes32 structHash = keccak256(
             abi.encode(
                 PortalLib._CHARACTER_TYPEHASH,
