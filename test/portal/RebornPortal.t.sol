@@ -4,24 +4,89 @@ pragma solidity 0.8.17;
 import "test/portal/RebornPortalBase.t.sol";
 
 contract RebornPortalCommonTest is RebornPortalBaseTest {
-    function testIncarnate() public {
-        hoax(_user);
-        bytes memory callData = abi.encodeWithSignature(
-            "incarnate((uint256,uint256),address,uint256)",
-            0.1 * 1 ether,
-            0.5 * 1 ether,
-            address(0),
+    function testIncarnateWithoutChar() public {
+        InnateParams memory innateParams = InnateParams(
+            0.1 ether,
+            10 ether,
+            0.2 ether,
+            20 ether,
             SOUP_PRICE
         );
 
-        vm.expectRevert(InsufficientAmount.selector);
-        payable(address(portal)).call{value: 0.1 ether}(callData);
-
-        vm.prank(_user);
-        (bool success, ) = payable(address(portal)).call{value: 0.61 * 1 ether}(
-            callData
+        CharParams memory charParams = CharParams(
+            0,
+            0,
+            bytes32(0),
+            bytes32(0),
+            uint8(0)
         );
-        assertTrue(success);
+
+        vm.expectRevert(InsufficientAmount.selector);
+
+        hoax(_user);
+        portal.incarnate{value: 0.1 ether}(
+            innateParams,
+            address(0),
+            charParams
+        );
+
+        deal(address(rbt), _user, 1 << 128);
+
+        vm.expectEmit(true, true, true, true);
+        emit Incarnate(
+            _user,
+            0,
+            0.1 ether,
+            10 ether,
+            0.2 ether,
+            20 ether,
+            SOUP_PRICE
+        );
+
+        vm.startPrank(_user);
+        rbt.approve(address(portal), UINT256_MAX);
+        portal.incarnate{value: 0.3 ether + SOUP_PRICE}(
+            innateParams,
+            address(0),
+            charParams
+        );
+        vm.stopPrank();
+    }
+
+    function testIncarnateWithChar() public {
+        InnateParams memory innateParams = InnateParams(
+            0.1 ether,
+            10 ether,
+            0.2 ether,
+            20 ether,
+            SOUP_PRICE
+        );
+
+        CharParams memory charParams = CharParams(
+            0,
+            0,
+            bytes32(0),
+            bytes32(0),
+            uint8(0)
+        );
+
+        vm.expectRevert(InsufficientAmount.selector);
+
+        hoax(_user);
+        portal.incarnate{value: 0.1 ether}(
+            innateParams,
+            address(0),
+            charParams
+        );
+
+        deal(address(rbt), _user, 1 << 128);
+        vm.startPrank(_user);
+        rbt.approve(address(portal), UINT256_MAX);
+        portal.incarnate{value: 0.3 ether + SOUP_PRICE}(
+            innateParams,
+            address(0),
+            charParams
+        );
     }
 
     function testEngrave(
@@ -34,7 +99,7 @@ contract RebornPortalCommonTest is RebornPortalBaseTest {
         deal(address(rbt), address(portal.vault()), reward);
 
         // testIncarnateWithPermit();
-        testIncarnate();
+        testIncarnateWithoutChar();
         vm.expectEmit(true, true, true, true);
         emit Engrave(seed, _user, 1, score, reward);
 

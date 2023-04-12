@@ -591,7 +591,7 @@ contract RebornPortal is
             charTokenId,
             innate.talentNativePrice,
             innate.talentRebornPrice,
-            innate.propertyRebornPrice,
+            innate.propertyNativePrice,
             innate.propertyRebornPrice,
             innate.soupPrice
         );
