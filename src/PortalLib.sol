@@ -730,6 +730,9 @@ library PortalLib {
                 charParam.discountPercentage
             );
 
+            // TODO: to check, restore all AP immediately
+            charProperty.currentAP = uint8(charParam.maxAP);
+
             unchecked {
                 i++;
             }

@@ -79,7 +79,7 @@ const func: DeployFunction = async function ({
     "RebornPortal",
     { from: owner, log: true },
     "setIncarnationLimit",
-    10
+    1000
   );
 };
 func.tags = ["Portal"];
