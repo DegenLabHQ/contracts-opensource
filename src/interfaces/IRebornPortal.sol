@@ -44,7 +44,7 @@ interface IRebornDefination {
         DropNative
     }
 
-    enum Direction {
+    enum TributeDirection {
         Reverse,
         Forward
     }
@@ -76,7 +76,7 @@ interface IRebornDefination {
         address indexed user,
         uint256 indexed tokenId,
         uint256 amount,
-        Direction direction
+        TributeDirection tributeDirection
     );
 
     event Dry(address indexed user, uint256 indexed tokenId, uint256 amount);
@@ -97,7 +97,7 @@ interface IRebornDefination {
         address indexed account,
         uint256 tokenId,
         uint256 amount,
-        Direction direction
+        TributeDirection tributeDirection
     );
 
     event Drop(uint256[] tokenIds);
@@ -185,7 +185,7 @@ interface IRebornPortal is IRebornDefination {
     function infuse(
         uint256 tokenId,
         uint256 amount,
-        Direction direction
+        TributeDirection tributeDirection
     ) external;
 
     /**
@@ -205,7 +205,7 @@ interface IRebornPortal is IRebornDefination {
         bytes32 r,
         bytes32 s,
         uint8 v,
-        Direction direction
+        TributeDirection tributeDirection
     ) external;
 
     /**
@@ -218,7 +218,7 @@ interface IRebornPortal is IRebornDefination {
         uint256 fromTokenId,
         uint256 toTokenId,
         uint256 amount,
-        Direction direction
+        TributeDirection tributeDirection
     ) external;
 
     /**

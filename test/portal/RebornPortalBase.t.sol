@@ -138,7 +138,7 @@ contract RebornPortalBaseTest is Test, IRebornDefination, EventDefination {
 
         vm.startPrank(user);
         rbt.approve(address(portal), amount);
-        portal.infuse(tokenId, amount);
+        portal.infuse(tokenId, amount, TributeDirection.Forward);
         vm.stopPrank();
     }
 }

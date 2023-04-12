@@ -5,7 +5,7 @@ import "forge-std/Test.sol";
 import "forge-std/console.sol";
 
 import "src/RebornPortal.sol";
-// import "src/interfaces/IRebornPortal.sol";
+import {IRebornDefination} from "src/interfaces/IRebornPortal.sol";
 import "src/mock/VRFCoordinatorV2Mock.sol";
 import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 
@@ -124,7 +124,11 @@ contract DropHandler is Test {
         deal(address(_rbt), user, amount);
         vm.startPrank(user);
         _rbt.approve(address(_portal), amount);
-        _portal.infuse(tokenId, amount);
+        _portal.infuse(
+            tokenId,
+            amount,
+            IRebornDefination.TributeDirection.Forward
+        );
         vm.stopPrank();
     }
 
