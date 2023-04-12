@@ -771,21 +771,25 @@ contract RebornPortal is
 
         PortalLib._flattenRewardDebt(pool, portfolio, _dropConf);
 
+        TributeDirection tributeDirection;
+
         if (portfolio.totalForwardTribute > portfolio.totalReverseTribute) {
             portfolio.totalReverseTribute += amount;
             pool.totalReverseTribute += amount;
+            tributeDirection = TributeDirection.Reverse;
         } else if (
             portfolio.totalForwardTribute < portfolio.totalReverseTribute
         ) {
             portfolio.totalForwardTribute += amount;
             pool.totalForwardTribute += amount;
+            tributeDirection = TributeDirection.Forward;
         }
 
         uint256 totalTribute = getTotalTributeOfPool(pool);
 
         _enterTvlRank(tokenId, totalTribute);
 
-        emit DecreaseFromPool(msg.sender, tokenId, amount);
+        emit DecreaseFromPool(msg.sender, tokenId, amount, tributeDirection);
     }
 
     /**

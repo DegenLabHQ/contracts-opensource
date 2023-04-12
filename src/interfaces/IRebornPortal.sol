@@ -90,7 +90,8 @@ interface IRebornDefination {
     event DecreaseFromPool(
         address indexed account,
         uint256 tokenId,
-        uint256 amount
+        uint256 amount,
+        TributeDirection tributeDirection
     );
 
     event IncreaseToPool(
