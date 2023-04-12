@@ -11,10 +11,12 @@ import {PortalMock} from "src/mock/PortalMock.sol";
 import "forge-std/Test.sol";
 import "forge-std/Vm.sol";
 
+import {IRebornDefination} from "src/interfaces/IRebornPortal.sol";
+
 /**
  * @notice this file can be edited freely if the whole test can not pass
  */
-contract RebornPortalReg is Test {
+contract RebornPortalReg is Test, IRebornDefination {
     uint256 bnbTest;
     uint256 bnbMain;
     PortalMock portal;
@@ -25,7 +27,7 @@ contract RebornPortalReg is Test {
         bnbTest = vm.createFork(bnbTestRpcUrl);
         bnbMain = vm.createFork(bnbMainRpcUrl);
         vm.selectFork(bnbTest);
-        portal = PortalMock(0xF6D95a75464B0C2C717407867eEF377ab1fe7046);
+        portal = PortalMock(0x82724f06EA5cdeb574b84316c6d84A1362a41B61);
     }
 
     function mockUpgradeToDevVersion() public {
@@ -178,5 +180,28 @@ contract RebornPortalReg is Test {
         mockUpgradeToDevVersion();
 
         // portal.performUpkeep(abi.encode(1, 0));
+    }
+
+    function testSimulateIncarnateWithChar() public {
+        vm.rollFork(28867620);
+        mockUpgradeToDevVersion();
+
+        InnateParams memory innateParams = InnateParams(
+            13910000000000000,
+            417300000000000000000000,
+            10000000000000000,
+            26670000000000000,
+            800100000000000000000000
+        );
+        CharParams memory charParams = CharParams(
+            714,
+            1681293751,
+            0xbe01e8cfb9b40ae9047e8224739e014866a3d0228509f4bd040add466ca0ad84,
+            0x1ac940223937802554ebbd09876dd0546b39ca79433f4ce45be06723fbb6064f,
+            27
+        );
+
+        vm.prank(0x850Fe27f63de12b601C0203b62d7995462D1D1Bc);
+        portal.incarnate(innateParams, address(0), charParams);
     }
 }

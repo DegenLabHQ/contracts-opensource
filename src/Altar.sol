@@ -21,8 +21,8 @@ abstract contract Altar is EIP712Upgradeable, RebornPortalStorage, AccessBase {
         if (charparams.charTokenId == 0) {
             return;
         }
-        _comsumeAP(charparams.charTokenId);
         _checkChar(charparams);
+        _comsumeAP(charparams.charTokenId);
     }
 
     function _comsumeAP(uint256 tokenId) internal {
