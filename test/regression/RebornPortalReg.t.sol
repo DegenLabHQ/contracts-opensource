@@ -183,7 +183,7 @@ contract RebornPortalReg is Test, IRebornDefination {
     }
 
     function testSimulateIncarnateWithChar() public {
-        vm.rollFork(28867620);
+        vm.rollFork(28870846);
         mockUpgradeToDevVersion();
 
         InnateParams memory innateParams = InnateParams(
@@ -195,10 +195,10 @@ contract RebornPortalReg is Test, IRebornDefination {
         );
         CharParams memory charParams = CharParams(
             714,
-            1681293751,
-            0xbe01e8cfb9b40ae9047e8224739e014866a3d0228509f4bd040add466ca0ad84,
-            0x1ac940223937802554ebbd09876dd0546b39ca79433f4ce45be06723fbb6064f,
-            27
+            1681303348,
+            0x9427e6840d26c8fc80476ef0f8e7df104feb7deba98fffa4b7b559f9738f5058,
+            0x67c6bfa90acba928129d7750e44d5d5e15d65aa906e72049d82b900b3b31d7eb,
+            28
         );
 
         vm.prank(0x850Fe27f63de12b601C0203b62d7995462D1D1Bc);
