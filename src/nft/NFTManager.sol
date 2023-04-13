@@ -138,6 +138,11 @@ contract NFTManager is
         }
     }
 
+    /**
+     * @dev set only when nft is upgraded
+     * @param tokenId nft tokenId
+     * @param level new level
+     */
     function setLevel(uint256 tokenId, uint256 level) external onlySigner {
         degenNFT.setLevel(tokenId, level);
     }
