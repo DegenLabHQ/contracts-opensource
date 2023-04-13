@@ -769,7 +769,7 @@ contract RebornPortal is
         portfolio.accumulativeAmount -= amount;
         pool.totalAmount -= amount;
 
-        PortalLib._flattenRewardDebt(pool, portfolio, _dropConf);
+        PortalLib._flattenRewardDebt(pool, portfolio);
 
         TributeDirection tributeDirection;
 
@@ -830,7 +830,7 @@ contract RebornPortal is
             pool.totalAmount += amount;
         }
 
-        PortalLib._flattenRewardDebt(pool, portfolio, _dropConf);
+        PortalLib._flattenRewardDebt(pool, portfolio);
 
         if (
             (portfolio.totalForwardTribute > portfolio.totalReverseTribute &&

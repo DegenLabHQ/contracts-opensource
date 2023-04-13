@@ -189,36 +189,17 @@ library PortalLib {
 
     function _flattenRewardDebt(
         Pool storage pool,
-        Portfolio storage portfolio,
-        AirdropConf storage dropConf
+        Portfolio storage portfolio
     ) external {
         unchecked {
-            uint256 userNativePending = dropConf._nativeDropLastUpdate >
-                portfolio.coindayUpdateLastTime
-                ? ((dropConf._nativeDropLastUpdate -
-                    portfolio.coindayUpdateLastTime) *
-                    portfolio.accumulativeAmount) / 1 days
-                : 0;
-            uint256 userRebornPending = dropConf._rebornDropLastUpdate >
-                portfolio.coindayUpdateLastTime
-                ? ((dropConf._nativeDropLastUpdate -
-                    portfolio.coindayUpdateLastTime) *
-                    portfolio.accumulativeAmount) / 1 days
-                : 0;
-
-            uint256 userNativeCoinday = userNativePending +
-                portfolio.coindayCumulant;
-            uint256 userRebornCoinday = userRebornPending +
-                portfolio.coindayCumulant;
-
             // flatten native reward
             portfolio.nativeRewardDebt =
-                (userNativeCoinday * pool.accNativePerShare) /
+                (portfolio.coindayCumulant * pool.accNativePerShare) /
                 PERSHARE_BASE;
 
             // flatten reborn reward
             portfolio.rebornRewardDebt =
-                (userRebornCoinday * pool.accRebornPerShare) /
+                (portfolio.coindayCumulant * pool.accRebornPerShare) /
                 PERSHARE_BASE;
         }
     }
