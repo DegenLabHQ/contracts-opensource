@@ -107,7 +107,6 @@ interface IRebornDefination {
 
     event NewSoupPrice(uint256 price);
 
-    event Refer(address referee, address referrer);
 
     event DecreaseFromPool(
         address indexed account,

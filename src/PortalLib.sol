@@ -117,6 +117,7 @@ library PortalLib {
         uint256 amount2,
         RewardType rewardType
     );
+    event Refer(address referee, address referrer);
 
     function _claimPoolRebornDrop(
         uint256 tokenId,
@@ -684,6 +685,57 @@ library PortalLib {
         }
     }
 
+    function _updateCoinday(
+        PortalLib.Portfolio storage portfolio,
+        PortalLib.Pool storage pool
+    ) external {
+        unchecked {
+            portfolio.coindayCumulant +=
+                ((block.timestamp - portfolio.coindayUpdateLastTime) *
+                    portfolio.accumulativeAmount) /
+                1 days;
+            portfolio.coindayUpdateLastTime = block.timestamp;
+
+            pool.coindayCumulant +=
+                ((block.timestamp - pool.coindayUpdateLastTime) *
+                    pool.totalAmount) /
+                1 days;
+            pool.coindayUpdateLastTime = block.timestamp;
+        }
+    }
+
+    function getCoinday(
+        uint256 tokenId,
+        address account,
+        IRebornDefination.SeasonData storage _seasonData
+    ) public view returns (uint256 userCoinday, uint256 poolCoinday) {
+        PortalLib.Portfolio memory portfolio = _seasonData.portfolios[account][
+            tokenId
+        ];
+        PortalLib.Pool memory pool = _seasonData.pools[tokenId];
+
+        unchecked {
+            uint256 userPending = ((block.timestamp -
+                portfolio.coindayUpdateLastTime) *
+                portfolio.accumulativeAmount) / 1 days;
+
+            uint256 poolPending = ((block.timestamp -
+                pool.coindayUpdateLastTime) * pool.totalAmount) / 1 days;
+
+            userCoinday = userPending + portfolio.coindayCumulant;
+            poolCoinday = poolPending + pool.coindayCumulant;
+        }
+    }
+
+    function _getTotalTributeOfPool(
+        PortalLib.Pool storage pool
+    ) external view returns (uint256) {
+        return
+            pool.totalForwardTribute > pool.totalReverseTribute
+                ? pool.totalForwardTribute - pool.totalReverseTribute
+                : 0;
+    }
+
     function _comsumeAP(
         uint256 tokenId,
         mapping(uint256 => CharacterProperty) storage _characterProperties
@@ -736,6 +788,23 @@ library PortalLib {
             unchecked {
                 i++;
             }
+        }
+    }
+
+    /**
+     * @dev record referrer relationship
+     */
+    function _refer(
+        mapping(address => address) storage referrals,
+        address referrer
+    ) external {
+        if (
+            referrals[msg.sender] == address(0) &&
+            referrer != address(0) &&
+            referrer != msg.sender
+        ) {
+            referrals[msg.sender] = referrer;
+            emit Refer(msg.sender, referrer);
         }
     }
 }
