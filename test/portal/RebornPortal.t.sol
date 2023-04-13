@@ -186,12 +186,12 @@ contract RebornPortalCommonTest is RebornPortalBaseTest {
         portal.infuse(
             1,
             amount,
+            TributeDirection.Forward,
             permitAmount,
             deadline,
             r,
             s,
-            v,
-            TributeDirection.Forward
+            v
         );
     }
 

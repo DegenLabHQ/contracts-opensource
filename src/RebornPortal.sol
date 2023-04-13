@@ -203,12 +203,12 @@ contract RebornPortal is
     function infuse(
         uint256 tokenId,
         uint256 amount,
+        TributeDirection tributeDirection,
         uint256 permitAmount,
         uint256 deadline,
         bytes32 r,
         bytes32 s,
-        uint8 v,
-        TributeDirection tributeDirection
+        uint8 v
     ) external override whenNotPaused {
         _checkStoped();
         _claimPoolDrop(tokenId);
