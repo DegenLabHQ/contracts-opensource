@@ -63,7 +63,7 @@ contract RebornPortal is
         __ReentrancyGuard_init();
         __Pausable_init();
         __VRFConsumerBaseV2_init(vrfCoordinator_);
-        __Alter_init_unchained();
+        __Altar_init_unchained();
     }
 
     // solhint-disable-next-line no-empty-blocks
@@ -86,13 +86,11 @@ contract RebornPortal is
         whenNotPaused
         nonReentrant
     {
-        _checkStoped();
         _refer(referrer);
 
         _useChar(charParams);
-        uint256 discount = _characterProperties[charParams.charTokenId]
-            .discountPercentage;
-        _incarnate(innate, discount, charParams.charTokenId);
+
+        _incarnate(innate, charParams.charTokenId);
     }
 
     /**
@@ -111,7 +109,6 @@ contract RebornPortal is
         whenNotPaused
         nonReentrant
     {
-        _checkStoped();
         _refer(referrer);
         _permit(
             permitParams.amount,
@@ -122,9 +119,8 @@ contract RebornPortal is
         );
 
         _useChar(charParams);
-        uint256 discount = _characterProperties[charParams.charTokenId]
-            .discountPercentage;
-        _incarnate(innate, discount, charParams.charTokenId);
+
+        _incarnate(innate, charParams.charTokenId);
     }
 
     /**
@@ -166,8 +162,14 @@ contract RebornPortal is
         // let tokenId enter the score rank
         _enterScoreRank(tokenId, score);
 
-        // mint to referrer
-        _vaultRewardToRefs(user, reward);
+        PortalLib._vaultRewardToRefs(
+            referrals,
+            rewardFees,
+            vault,
+            user,
+            reward,
+            _extraReward
+        );
 
         emit Engrave(seed, user, tokenId, score, reward);
     }
@@ -192,7 +194,6 @@ contract RebornPortal is
         uint256 amount,
         TributeDirection tributeDirection
     ) external override whenNotPaused {
-        _checkStoped();
         _claimPoolDrop(tokenId);
         _infuse(tokenId, amount, tributeDirection);
     }
@@ -210,7 +211,6 @@ contract RebornPortal is
         bytes32 s,
         uint8 v
     ) external override whenNotPaused {
-        _checkStoped();
         _claimPoolDrop(tokenId);
         _permit(permitAmount, deadline, r, s, v);
         _infuse(tokenId, amount, tributeDirection);
@@ -225,7 +225,6 @@ contract RebornPortal is
         uint256 amount,
         TributeDirection tributeDirection
     ) external override whenNotPaused {
-        _checkStoped();
         _claimPoolDrop(fromTokenId);
         _claimPoolDrop(toTokenId);
         _decreaseFromPool(fromTokenId, amount);
@@ -549,7 +548,6 @@ contract RebornPortal is
      */
     function _incarnate(
         InnateParams calldata innate,
-        uint256 discountPercent,
         uint256 charTokenId
     ) internal {
         uint256 nativeFee = innate.soupPrice +
@@ -559,32 +557,24 @@ contract RebornPortal is
         uint256 rebornFee = innate.talentRebornPrice +
             innate.propertyRebornPrice;
 
-        // apply discount
-        uint256 discountNativeFee = nativeFee -
-            (nativeFee * discountPercent) /
-            PortalLib.ONE_HUNDRED;
-        uint256 discountRebornFee = rebornFee -
-            (rebornFee * discountPercent) /
-            PortalLib.ONE_HUNDRED;
-
         if (msg.value < nativeFee) {
             revert InsufficientAmount();
         }
 
         unchecked {
             // transfer redundant native token back
-            payable(msg.sender).transfer(msg.value - discountNativeFee);
+            payable(msg.sender).transfer(msg.value - nativeFee);
         }
 
         // reward referrers
-        uint256 referAmount = _sendRewardToRefs(msg.sender, discountNativeFee);
+        uint256 referAmount = _sendRewardToRefs(msg.sender, rebornFee);
 
         unchecked {
             // rest native token to to jackpot
-            _seasonData[_season]._jackpot += discountNativeFee - referAmount;
+            _seasonData[_season]._jackpot += nativeFee - referAmount;
         }
 
-        rebornToken.transferFrom(msg.sender, burnPool, discountRebornFee);
+        rebornToken.transferFrom(msg.sender, burnPool, rebornFee);
 
         emit Incarnate(
             msg.sender,
@@ -601,14 +591,7 @@ contract RebornPortal is
      * @dev record referrer relationship
      */
     function _refer(address referrer) internal {
-        if (
-            referrals[msg.sender] == address(0) &&
-            referrer != address(0) &&
-            referrer != msg.sender
-        ) {
-            referrals[msg.sender] = referrer;
-            emit Refer(msg.sender, referrer);
-        }
+        PortalLib._refer(referrals, referrer);
     }
 
     /**
@@ -780,20 +763,6 @@ contract RebornPortal is
     }
 
     /**
-     * @dev vault $REBORN token to referrers
-     */
-    function _vaultRewardToRefs(address account, uint256 amount) internal {
-        PortalLib._vaultRewardToRefs(
-            referrals,
-            rewardFees,
-            vault,
-            account,
-            amount,
-            _extraReward
-        );
-    }
-
-    /**
      * @dev send NativeToken to referrers
      */
     function _sendRewardToRefs(
@@ -808,38 +777,13 @@ contract RebornPortal is
      * @dev decrease amount from pool of switch from
      */
     function _decreaseFromPool(uint256 tokenId, uint256 amount) internal {
-        PortalLib.Portfolio storage portfolio = _seasonData[_season].portfolios[
-            msg.sender
-        ][tokenId];
-        PortalLib.Pool storage pool = _seasonData[_season].pools[tokenId];
-
-        _updateCoinday(portfolio, pool);
-
-        // don't need to check accumulativeAmount, as it would revert if accumulativeAmount is less
-        portfolio.accumulativeAmount -= amount;
-        pool.totalAmount -= amount;
-
-        PortalLib._flattenRewardDebt(pool, portfolio);
-
-        TributeDirection tributeDirection;
-
-        if (portfolio.totalForwardTribute > portfolio.totalReverseTribute) {
-            portfolio.totalReverseTribute += amount;
-            pool.totalReverseTribute += amount;
-            tributeDirection = TributeDirection.Reverse;
-        } else if (
-            portfolio.totalForwardTribute < portfolio.totalReverseTribute
-        ) {
-            portfolio.totalForwardTribute += amount;
-            pool.totalForwardTribute += amount;
-            tributeDirection = TributeDirection.Forward;
-        }
-
-        uint256 totalTribute = _getTotalTributeOfPool(pool);
+        uint256 totalTribute = PortalLib._decreaseFromPool(
+            tokenId,
+            amount,
+            _seasonData[_season]
+        );
 
         _enterTvlRank(tokenId, totalTribute);
-
-        emit DecreaseFromPool(msg.sender, tokenId, amount, tributeDirection);
     }
 
     /**
@@ -850,7 +794,10 @@ contract RebornPortal is
         uint256 amount,
         TributeDirection tributeDirection
     ) internal {
-        uint256 restakeAmount = (amount * 95) / 100;
+        uint256 restakeAmount;
+        unchecked {
+            restakeAmount = (amount * 95) / 100;
+        }
 
         _increasePool(tokenId, restakeAmount, tributeDirection);
 
@@ -867,90 +814,25 @@ contract RebornPortal is
         uint256 amount,
         TributeDirection tributeDirection
     ) internal {
-        PortalLib.Portfolio storage portfolio = _seasonData[_season].portfolios[
-            msg.sender
-        ][tokenId];
-        PortalLib.Pool storage pool = _seasonData[_season].pools[tokenId];
-
-        // update coinday
-        _updateCoinday(portfolio, pool);
-
-        unchecked {
-            portfolio.accumulativeAmount += amount;
-            pool.totalAmount += amount;
-        }
-
-        PortalLib._flattenRewardDebt(pool, portfolio);
-
-        if (
-            (portfolio.totalForwardTribute > portfolio.totalReverseTribute &&
-                tributeDirection == TributeDirection.Reverse) ||
-            (portfolio.totalForwardTribute < portfolio.totalReverseTribute &&
-                tributeDirection == TributeDirection.Forward)
-        ) {
-            revert DirectionError();
-        }
-
-        if (tributeDirection == TributeDirection.Forward) {
-            pool.totalForwardTribute += amount;
-            portfolio.totalForwardTribute += amount;
-        } else {
-            pool.totalReverseTribute += amount;
-            portfolio.totalReverseTribute += amount;
-        }
-        uint256 totalPoolTribute = _getTotalTributeOfPool(pool);
+        uint256 totalPoolTribute = PortalLib._increasePool(
+            tokenId,
+            amount,
+            tributeDirection,
+            _seasonData[_season]
+        );
 
         _enterTvlRank(tokenId, totalPoolTribute);
-    }
-
-    function _updateCoinday(
-        PortalLib.Portfolio storage portfolio,
-        PortalLib.Pool storage pool
-    ) internal {
-        unchecked {
-            portfolio.coindayCumulant +=
-                ((block.timestamp - portfolio.coindayUpdateLastTime) *
-                    portfolio.accumulativeAmount) /
-                1 days;
-            portfolio.coindayUpdateLastTime = block.timestamp;
-
-            pool.coindayCumulant +=
-                ((block.timestamp - pool.coindayUpdateLastTime) *
-                    pool.totalAmount) /
-                1 days;
-            pool.coindayUpdateLastTime = block.timestamp;
-        }
     }
 
     function getCoinday(
         uint256 tokenId,
         address account
     ) public view returns (uint256 userCoinday, uint256 poolCoinday) {
-        PortalLib.Portfolio memory portfolio = _seasonData[_season].portfolios[
-            account
-        ][tokenId];
-        PortalLib.Pool memory pool = _seasonData[_season].pools[tokenId];
-
-        unchecked {
-            uint256 userPending = ((block.timestamp -
-                portfolio.coindayUpdateLastTime) *
-                portfolio.accumulativeAmount) / 1 days;
-
-            uint256 poolPending = ((block.timestamp -
-                pool.coindayUpdateLastTime) * pool.totalAmount) / 1 days;
-
-            userCoinday = userPending + portfolio.coindayCumulant;
-            poolCoinday = poolPending + pool.coindayCumulant;
-        }
-    }
-
-    function _getTotalTributeOfPool(
-        PortalLib.Pool memory pool
-    ) internal pure returns (uint256) {
-        return
-            pool.totalForwardTribute > pool.totalReverseTribute
-                ? pool.totalForwardTribute - pool.totalReverseTribute
-                : 0;
+        (userCoinday, poolCoinday) = PortalLib.getCoinday(
+            tokenId,
+            account,
+            _seasonData[_season]
+        );
     }
 
     /**
@@ -1026,26 +908,24 @@ contract RebornPortal is
         return _seasonData[_season]._jackpot;
     }
 
-    function _checkStoped() internal view {
-        if (_stopBetaBlockNumber > 0 && block.number > _stopBetaBlockNumber) {
-            revert BetaStoped();
-        }
-    }
-
     function _checkDropOn() internal view {
         if (_dropConf._dropOn == 0) {
             revert DropOff();
         }
     }
 
-    /**
-     * @dev check incarnation Count and auto increment if it meets
-     */
-    modifier checkIncarnationCount() {
+    function _checkIncarnationCount() internal {
         if (_incarnateCounts[msg.sender] >= _incarnateCountLimit) {
             revert IncarnationExceedLimit();
         }
         _incarnateCounts[msg.sender] += 1;
+    }
+
+    /**
+     * @dev check incarnation Count and auto increment if it meets
+     */
+    modifier checkIncarnationCount() {
+        _checkIncarnationCount();
         _;
     }
 

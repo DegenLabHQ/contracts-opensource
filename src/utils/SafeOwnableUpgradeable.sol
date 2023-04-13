@@ -55,13 +55,17 @@ contract SafeOwnableUpgradeable is Initializable, ContextUpgradeable {
         return _pendingOwner;
     }
 
+    function _checkOwner() internal view {
+        if (owner() != _msgSender()) {
+            revert CallerNotOwner();
+        }
+    }
+
     /**
      * @dev Throws if called by any account other than the owner.
      */
     modifier onlyOwner() {
-        if (owner() != _msgSender()) {
-            revert CallerNotOwner();
-        }
+        _checkOwner();
         _;
     }
 

@@ -129,24 +129,14 @@ contract ERC721Upgradeable is
      */
     function tokenURI(
         uint256 tokenId
-    ) public view virtual override returns (string memory) {
-        _requireMinted(tokenId);
-
-        string memory baseURI = _baseURI();
-        return
-            bytes(baseURI).length > 0
-                ? string(abi.encodePacked(baseURI, tokenId.toString()))
-                : "";
-    }
+    ) public view virtual override returns (string memory) {}
 
     /**
      * @dev Base URI for computing {tokenURI}. If set, the resulting URI for each
      * token will be the concatenation of the `baseURI` and the `tokenId`. Empty
      * by default, can be overridden in child contracts.
      */
-    function _baseURI() internal view virtual returns (string memory) {
-        return "";
-    }
+    function _baseURI() internal view virtual returns (string memory) {}
 
     /**
      * @dev See {IERC721-approve}.

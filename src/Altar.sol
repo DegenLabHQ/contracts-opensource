@@ -6,14 +6,13 @@ import {RebornPortalStorage} from "src/RebornPortalStorage.sol";
 import {CommonError} from "src/lib/CommonError.sol";
 import {EIP712Upgradeable} from "src/oz/contracts-upgradeable/utils/cryptography/EIP712Upgradeable.sol";
 import {ECDSAUpgradeable} from "src/oz/contracts-upgradeable/utils/cryptography/ECDSAUpgradeable.sol";
-
 import {AccessBase} from "src/base/AccessBase.sol";
 
 /**
  * @title Altar of heros
  */
 abstract contract Altar is EIP712Upgradeable, RebornPortalStorage, AccessBase {
-    function __Alter_init_unchained() internal onlyInitializing {
+    function __Altar_init_unchained() internal onlyInitializing {
         __EIP712_init_unchained("Altar", "1");
     }
 
@@ -22,11 +21,7 @@ abstract contract Altar is EIP712Upgradeable, RebornPortalStorage, AccessBase {
             return;
         }
         _checkChar(charparams);
-        _comsumeAP(charparams.charTokenId);
-    }
-
-    function _comsumeAP(uint256 tokenId) internal {
-        PortalLib._comsumeAP(tokenId, _characterProperties);
+        PortalLib._comsumeAP(charparams.charTokenId, _characterProperties);
     }
 
     function _checkChar(CharParams calldata charparams) internal view {
