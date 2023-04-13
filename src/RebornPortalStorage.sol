@@ -57,6 +57,10 @@ contract RebornPortalStorage is IRebornDefination {
 
     uint256 internal _stopBetaBlockNumber;
 
+    // tokenId => character property
+    mapping(uint256 => PortalLib.CharacterProperty)
+        internal _characterProperties;
+
     /// @dev gap for potential variable
-    uint256[29] private _gap;
+    uint256[28] private _gap;
 }

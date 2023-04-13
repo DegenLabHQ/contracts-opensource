@@ -3,11 +3,34 @@ pragma solidity 0.8.17;
 import {IRebornDefination} from "src/interfaces/IRebornPortal.sol";
 import {IERC721} from "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import {RewardVault} from "src/RewardVault.sol";
+import {CommonError} from "src/lib/CommonError.sol";
 
 library PortalLib {
     uint256 public constant PERSHARE_BASE = 10e18;
     // percentage base of refer reward fees
     uint256 public constant PERCENTAGE_BASE = 10000;
+
+    bytes32 public constant _CHARACTER_TYPEHASH =
+        keccak256(
+            "AuthenticateCharacterOwnership(address user,uint256 tokenId,uint256 deadline)"
+        );
+
+    uint256 public constant ONE_HUNDRED = 100;
+
+    struct CharacterParams {
+        uint256 maxAP;
+        uint256 restoreTimePerAP;
+        uint256 discountPercentage;
+    }
+
+    // TODO: use more compact storage
+    struct CharacterProperty {
+        uint8 currentAP;
+        uint8 maxAP;
+        uint40 restoreTimePerAP; // Time Needed to Restore One Action Point
+        uint40 lastTimeAPUpdate;
+        uint8 discountPercentage; // base is 100
+    }
 
     enum RewardType {
         NativeToken,
@@ -658,6 +681,61 @@ library PortalLib {
             uint256 poolPending = ((block.timestamp -
                 pool.coindayUpdateLastTime) * pool.totalAmount) / 1 days;
             poolCoinday = poolPending + pool.coindayCumulant;
+        }
+    }
+
+    function _comsumeAP(
+        uint256 tokenId,
+        mapping(uint256 => CharacterProperty) storage _characterProperties
+    ) external {
+        CharacterProperty storage charProperty = _characterProperties[tokenId];
+
+        // restore AP
+        uint256 calculatedRestoreAp = (block.timestamp -
+            charProperty.lastTimeAPUpdate) / charProperty.restoreTimePerAP;
+        charProperty.lastTimeAPUpdate = uint40(block.timestamp);
+
+        uint256 calculatedCurrentAP = calculatedRestoreAp +
+            charProperty.currentAP;
+
+        if (calculatedCurrentAP <= charProperty.maxAP) {
+            charProperty.currentAP = uint8(calculatedCurrentAP);
+        } else {
+            charProperty.currentAP = charProperty.maxAP;
+        }
+
+        // AP decrement
+        charProperty.currentAP -= 1;
+    }
+
+    function setCharProperty(
+        uint256[] calldata tokenIds,
+        CharacterParams[] calldata charParams,
+        mapping(uint256 => CharacterProperty) storage _characterProperties
+    ) external {
+        uint256 tokenIdLength = tokenIds.length;
+        uint256 charParamsLength = charParams.length;
+        if (tokenIdLength != charParamsLength) {
+            revert CommonError.InvalidParams();
+        }
+        for (uint256 i = 0; i < tokenIdLength; ) {
+            uint256 tokenId = tokenIds[i];
+            PortalLib.CharacterParams memory charParam = charParams[i];
+            PortalLib.CharacterProperty
+                storage charProperty = _characterProperties[tokenId];
+
+            charProperty.maxAP = uint8(charParam.maxAP);
+            charProperty.restoreTimePerAP = uint40(charParam.restoreTimePerAP);
+            charProperty.discountPercentage = uint8(
+                charParam.discountPercentage
+            );
+
+            // TODO: to check, restore all AP immediately
+            charProperty.currentAP = uint8(charParam.maxAP);
+
+            unchecked {
+                i++;
+            }
         }
     }
 }

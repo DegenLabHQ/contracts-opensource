@@ -6,9 +6,28 @@ import {SingleRanking} from "src/lib/SingleRanking.sol";
 import {BitMapsUpgradeable} from "../oz/contracts-upgradeable/utils/structs/BitMapsUpgradeable.sol";
 
 interface IRebornDefination {
-    struct Innate {
-        uint256 talentPrice;
-        uint256 propertyPrice;
+    struct InnateParams {
+        uint256 talentNativePrice;
+        uint256 talentRebornPrice;
+        uint256 propertyNativePrice;
+        uint256 propertyRebornPrice;
+        uint256 soupPrice;
+    }
+
+    struct CharParams {
+        uint256 charTokenId;
+        uint256 deadline;
+        bytes32 r;
+        bytes32 s;
+        uint8 v;
+    }
+
+    struct PermitParams {
+        uint256 amount;
+        uint256 deadline;
+        bytes32 r;
+        bytes32 s;
+        uint8 v;
     }
 
     struct LifeDetail {
@@ -59,8 +78,11 @@ interface IRebornDefination {
 
     event Incarnate(
         address indexed user,
-        uint256 indexed talentPrice,
-        uint256 indexed PropertyPrice,
+        uint256 indexed charTokenId,
+        uint256 talentNativePrice,
+        uint256 talentRebornPrice,
+        uint256 propertyNativePrice,
+        uint256 propertyRebornPrice,
         uint256 soupPrice
     );
 
@@ -117,8 +139,6 @@ interface IRebornDefination {
 
     /// @dev revert when msg.value is insufficient
     error InsufficientAmount();
-    /// @dev revert when to caller is not signer
-    error NotSigner();
 
     /// @dev revert when some address var are set to zero
     error ZeroAddressSet();
@@ -148,9 +168,16 @@ interface IRebornPortal is IRebornDefination {
      * @param referrer the referrer address
      */
     function incarnate(
-        Innate memory innate,
+        InnateParams calldata innate,
         address referrer,
-        uint256 soupPrice
+        CharParams calldata charParams
+    ) external payable;
+
+    function incarnate(
+        InnateParams calldata innate,
+        address referrer,
+        CharParams calldata charParams,
+        PermitParams calldata permitParams
     ) external payable;
 
     /**
@@ -243,12 +270,6 @@ interface IRebornPortal is IRebornDefination {
      * @param tokenIds pools' tokenId array to claim
      */
     function claimRebornDrops(uint256[] calldata tokenIds) external;
-
-    /**
-     * @dev user claim many pools' airdrop
-     * @param tokenIds pools' tokenId array to claim
-     */
-    function claimDrops(uint256[] calldata tokenIds) external;
 
     /**
      * @dev switch to next season, call by owner
