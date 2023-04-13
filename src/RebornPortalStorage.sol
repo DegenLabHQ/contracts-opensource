@@ -61,6 +61,9 @@ contract RebornPortalStorage is IRebornDefination {
     mapping(uint256 => PortalLib.CharacterProperty)
         internal _characterProperties;
 
+    // tokenId => token required 
+    mapping(uint256 => uint256) internal _forgeRequiredMaterials;
+
     /// @dev gap for potential variable
-    uint256[28] private _gap;
+    uint256[27] private _gap;
 }

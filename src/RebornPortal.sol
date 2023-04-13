@@ -371,6 +371,41 @@ contract RebornPortal is
         PortalLib._updateSigners(signers, toAdd, toRemove);
     }
 
+    function forging(uint256 tokenId) external {
+        uint256 level = _characterProperties[tokenId].level;
+        uint256 requiredAmount = _forgeRequiredMaterials[level];
+        if (requiredAmount == 0) {
+            revert CommonError.InvalidParams();
+        }
+
+        rebornToken.transferFrom(msg.sender, burnPool, requiredAmount);
+
+        unchecked {
+            level += 1;
+        }
+
+        emit ForgedTo(level);
+    }
+
+    function setForgingRequiredAmount(
+        uint256[] calldata levels,
+        uint256[] calldata amounts
+    ) external onlyOwner {
+        uint256 levelsLength = levels.length;
+        uint256 amountsLength = amounts.length;
+
+        if (levelsLength != amountsLength) {
+            revert CommonError.InvalidParams();
+        }
+
+        for (uint256 i = 0; i < levelsLength; ) {
+            _forgeRequiredMaterials[levels[i]] = amounts[i];
+            unchecked {
+                i++;
+            }
+        }
+    }
+
     /**
      * @notice mul 100 when set. eg: 8% -> 800 18%-> 1800
      * @dev set percentage of referrer reward

@@ -26,9 +26,10 @@ contract DegenNFT is
     string public baseURI;
 
     // Mapping tokenId to level
-    mapping(uint256 => uint256) internal levels;
+    // bucket => value
+    mapping(uint256 => uint256) internal levelBucket;
 
-    address _royaltyReceiver; //  ---|
+    address _royaltyReceiver; //   ---|
     uint96 _royaltyPercentage; //  ---|
 
     uint256[45] private _gap;
@@ -107,7 +108,15 @@ contract DegenNFT is
     }
 
     function setLevel(uint256 tokenId, uint256 level) external onlyManager {
-        levels[tokenId] = level;
+        uint256 bucket = (tokenId - 1) >> 5;
+        uint256 pos = (tokenId - 1) % 32;
+        uint256 mask = level << (pos * 32);
+        uint256 data = properties[bucket];
+        // clear the data on the tokenId pos
+        data &= ~(uint256(type(uint8).max) << (pos * 32));
+        levelBucket[bucket] = data | mask;
+
+        emit LevelSet(tokenId, level);
     }
 
     /**
@@ -222,7 +231,12 @@ contract DegenNFT is
     }
 
     function getLevel(uint256 tokenId) external view returns (uint256) {
-        return levels[tokenId];
+        uint256 bucket = (tokenId - 1) >> 5;
+        uint256 compactData = properties[bucket];
+        uint16 level = uint8(
+            (compactData >> (((tokenId - 1) % 32) * 32)) & 0xff
+        );
+        return uint256(level);
     }
 
     function _baseURI() internal view override returns (string memory) {

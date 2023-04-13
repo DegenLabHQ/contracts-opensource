@@ -20,7 +20,7 @@ library PortalLib {
     struct CharacterParams {
         uint256 maxAP;
         uint256 restoreTimePerAP;
-        uint256 discountPercentage;
+        uint256 level;
     }
 
     // TODO: use more compact storage
@@ -29,7 +29,7 @@ library PortalLib {
         uint8 maxAP;
         uint40 restoreTimePerAP; // Time Needed to Restore One Action Point
         uint40 lastTimeAPUpdate;
-        uint8 discountPercentage; // base is 100
+        uint8 level;
     }
 
     enum RewardType {
@@ -854,12 +854,11 @@ library PortalLib {
 
             charProperty.maxAP = uint8(charParam.maxAP);
             charProperty.restoreTimePerAP = uint40(charParam.restoreTimePerAP);
-            charProperty.discountPercentage = uint8(
-                charParam.discountPercentage
-            );
 
             // TODO: to check, restore all AP immediately
             charProperty.currentAP = uint8(charParam.maxAP);
+
+            charProperty.level = uint8(charParam.level);
 
             unchecked {
                 i++;

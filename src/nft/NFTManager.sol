@@ -138,6 +138,10 @@ contract NFTManager is
         }
     }
 
+    function setLevel(uint256 tokenId, uint256 level) external onlySigner {
+        degenNFT.setLevel(tokenId, level);
+    }
+
     function burn(
         uint256 tokenId
     ) external override onlyStageTime(StageType.Burn) whenNotPaused {
