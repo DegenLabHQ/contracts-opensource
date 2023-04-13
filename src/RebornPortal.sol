@@ -162,8 +162,14 @@ contract RebornPortal is
         // let tokenId enter the score rank
         _enterScoreRank(tokenId, score);
 
-        // mint to referrer
-        _vaultRewardToRefs(user, reward);
+        PortalLib._vaultRewardToRefs(
+            referrals,
+            rewardFees,
+            vault,
+            user,
+            reward,
+            _extraReward
+        );
 
         emit Engrave(seed, user, tokenId, score, reward);
     }
@@ -757,20 +763,6 @@ contract RebornPortal is
     }
 
     /**
-     * @dev vault $REBORN token to referrers
-     */
-    function _vaultRewardToRefs(address account, uint256 amount) internal {
-        PortalLib._vaultRewardToRefs(
-            referrals,
-            rewardFees,
-            vault,
-            account,
-            amount,
-            _extraReward
-        );
-    }
-
-    /**
      * @dev send NativeToken to referrers
      */
     function _sendRewardToRefs(
@@ -785,38 +777,13 @@ contract RebornPortal is
      * @dev decrease amount from pool of switch from
      */
     function _decreaseFromPool(uint256 tokenId, uint256 amount) internal {
-        PortalLib.Portfolio storage portfolio = _seasonData[_season].portfolios[
-            msg.sender
-        ][tokenId];
-        PortalLib.Pool storage pool = _seasonData[_season].pools[tokenId];
-
-        PortalLib._updateCoinday(portfolio, pool);
-
-        // don't need to check accumulativeAmount, as it would revert if accumulativeAmount is less
-        portfolio.accumulativeAmount -= amount;
-        pool.totalAmount -= amount;
-
-        PortalLib._flattenRewardDebt(pool, portfolio);
-
-        TributeDirection tributeDirection;
-
-        if (portfolio.totalForwardTribute > portfolio.totalReverseTribute) {
-            portfolio.totalReverseTribute += amount;
-            pool.totalReverseTribute += amount;
-            tributeDirection = TributeDirection.Reverse;
-        } else if (
-            portfolio.totalForwardTribute < portfolio.totalReverseTribute
-        ) {
-            portfolio.totalForwardTribute += amount;
-            pool.totalForwardTribute += amount;
-            tributeDirection = TributeDirection.Forward;
-        }
-
-        uint256 totalTribute = PortalLib._getTotalTributeOfPool(pool);
+        uint256 totalTribute = PortalLib._decreaseFromPool(
+            tokenId,
+            amount,
+            _seasonData[_season]
+        );
 
         _enterTvlRank(tokenId, totalTribute);
-
-        emit DecreaseFromPool(msg.sender, tokenId, amount, tributeDirection);
     }
 
     /**
@@ -847,38 +814,12 @@ contract RebornPortal is
         uint256 amount,
         TributeDirection tributeDirection
     ) internal {
-        PortalLib.Portfolio storage portfolio = _seasonData[_season].portfolios[
-            msg.sender
-        ][tokenId];
-        PortalLib.Pool storage pool = _seasonData[_season].pools[tokenId];
-
-        // update coinday
-        PortalLib._updateCoinday(portfolio, pool);
-
-        unchecked {
-            portfolio.accumulativeAmount += amount;
-            pool.totalAmount += amount;
-        }
-
-        PortalLib._flattenRewardDebt(pool, portfolio);
-
-        if (
-            (portfolio.totalForwardTribute > portfolio.totalReverseTribute &&
-                tributeDirection == TributeDirection.Reverse) ||
-            (portfolio.totalForwardTribute < portfolio.totalReverseTribute &&
-                tributeDirection == TributeDirection.Forward)
-        ) {
-            revert DirectionError();
-        }
-
-        if (tributeDirection == TributeDirection.Forward) {
-            pool.totalForwardTribute += amount;
-            portfolio.totalForwardTribute += amount;
-        } else {
-            pool.totalReverseTribute += amount;
-            portfolio.totalReverseTribute += amount;
-        }
-        uint256 totalPoolTribute = PortalLib._getTotalTributeOfPool(pool);
+        uint256 totalPoolTribute = PortalLib._increasePool(
+            tokenId,
+            amount,
+            tributeDirection,
+            _seasonData[_season]
+        );
 
         _enterTvlRank(tokenId, totalPoolTribute);
     }

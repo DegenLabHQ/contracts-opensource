@@ -214,7 +214,7 @@ library PortalLib {
     function _flattenRewardDebt(
         Pool storage pool,
         Portfolio storage portfolio
-    ) external {
+    ) public {
         unchecked {
             // flatten native reward
             portfolio.nativeRewardDebt =
@@ -688,7 +688,7 @@ library PortalLib {
     function _updateCoinday(
         PortalLib.Portfolio storage portfolio,
         PortalLib.Pool storage pool
-    ) external {
+    ) public {
         unchecked {
             portfolio.coindayCumulant +=
                 ((block.timestamp - portfolio.coindayUpdateLastTime) *
@@ -727,9 +727,85 @@ library PortalLib {
         }
     }
 
+    function _increasePool(
+        uint256 tokenId,
+        uint256 amount,
+        IRebornDefination.TributeDirection tributeDirection,
+        IRebornDefination.SeasonData storage _seasonData
+    ) internal returns (uint256 totalPoolTribute) {
+        Portfolio storage portfolio = _seasonData.portfolios[msg.sender][
+            tokenId
+        ];
+        Pool storage pool = _seasonData.pools[tokenId];
+
+        // update coinday
+        _updateCoinday(portfolio, pool);
+
+        unchecked {
+            portfolio.accumulativeAmount += amount;
+            pool.totalAmount += amount;
+        }
+
+        _flattenRewardDebt(pool, portfolio);
+
+        if (
+            (portfolio.totalForwardTribute > portfolio.totalReverseTribute &&
+                tributeDirection ==
+                IRebornDefination.TributeDirection.Reverse) ||
+            (portfolio.totalForwardTribute < portfolio.totalReverseTribute &&
+                tributeDirection == IRebornDefination.TributeDirection.Forward)
+        ) {
+            revert IRebornDefination.DirectionError();
+        }
+
+        if (tributeDirection == IRebornDefination.TributeDirection.Forward) {
+            pool.totalForwardTribute += amount;
+            portfolio.totalForwardTribute += amount;
+        } else {
+            pool.totalReverseTribute += amount;
+            portfolio.totalReverseTribute += amount;
+        }
+        totalPoolTribute = _getTotalTributeOfPool(pool);
+    }
+
+    function _decreaseFromPool(
+        uint256 tokenId,
+        uint256 amount,
+        IRebornDefination.SeasonData storage _seasonData
+    ) internal returns (uint256 totalTribute) {
+        PortalLib.Portfolio storage portfolio = _seasonData.portfolios[
+            msg.sender
+        ][tokenId];
+        PortalLib.Pool storage pool = _seasonData.pools[tokenId];
+
+        _updateCoinday(portfolio, pool);
+
+        // don't need to check accumulativeAmount, as it would revert if accumulativeAmount is less
+        portfolio.accumulativeAmount -= amount;
+        pool.totalAmount -= amount;
+
+        _flattenRewardDebt(pool, portfolio);
+
+        IRebornDefination.TributeDirection tributeDirection;
+
+        if (portfolio.totalForwardTribute > portfolio.totalReverseTribute) {
+            portfolio.totalReverseTribute += amount;
+            pool.totalReverseTribute += amount;
+            tributeDirection = IRebornDefination.TributeDirection.Reverse;
+        } else if (
+            portfolio.totalForwardTribute < portfolio.totalReverseTribute
+        ) {
+            portfolio.totalForwardTribute += amount;
+            pool.totalForwardTribute += amount;
+            tributeDirection = IRebornDefination.TributeDirection.Forward;
+        }
+
+        totalTribute = _getTotalTributeOfPool(pool);
+    }
+
     function _getTotalTributeOfPool(
         PortalLib.Pool storage pool
-    ) external view returns (uint256) {
+    ) public view returns (uint256) {
         return
             pool.totalForwardTribute > pool.totalReverseTribute
                 ? pool.totalForwardTribute - pool.totalReverseTribute
