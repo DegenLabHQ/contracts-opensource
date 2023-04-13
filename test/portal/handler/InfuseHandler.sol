@@ -3,6 +3,7 @@ pragma solidity 0.8.17;
 
 import "forge-std/Test.sol";
 import "src/RebornPortal.sol";
+import {IRebornDefination} from "src/interfaces/IRebornPortal.sol";
 import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 
 contract InfuseHandler is Test {
@@ -53,7 +54,11 @@ contract InfuseHandler is Test {
         uint256 amount = bound(amountSeed, 0, 1 << 128);
 
         _rbt.approve(address(_portal), amount);
-        _portal.infuse(tokenId, amount);
+        _portal.infuse(
+            tokenId,
+            amount,
+            IRebornDefination.TributeDirection.Forward
+        );
 
         EnumerableSet.UintSet storage stakedPoolArray = _stakedPool[
             currentActor
@@ -83,7 +88,12 @@ contract InfuseHandler is Test {
             _portal.getPortfolio(currentActor, fromTokenId).accumulativeAmount
         );
 
-        _portal.switchPool(fromTokenId, toTokenId, amount);
+        _portal.switchPool(
+            fromTokenId,
+            toTokenId,
+            amount,
+            IRebornDefination.TributeDirection.Forward
+        );
 
         // if the resume is zero, remove it
         if (

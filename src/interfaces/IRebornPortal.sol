@@ -44,6 +44,11 @@ interface IRebornDefination {
         DropNative
     }
 
+    enum TributeDirection {
+        Reverse,
+        Forward
+    }
+
     struct RequestStatus {
         bool fulfilled; // whether the request has been successfully fulfilled
         bool exists; // whether a requestId exists
@@ -67,7 +72,12 @@ interface IRebornDefination {
         uint256 reward
     );
 
-    event Infuse(address indexed user, uint256 indexed tokenId, uint256 amount);
+    event Infuse(
+        address indexed user,
+        uint256 indexed tokenId,
+        uint256 amount,
+        TributeDirection tributeDirection
+    );
 
     event Dry(address indexed user, uint256 indexed tokenId, uint256 amount);
 
@@ -80,13 +90,15 @@ interface IRebornDefination {
     event DecreaseFromPool(
         address indexed account,
         uint256 tokenId,
-        uint256 amount
+        uint256 amount,
+        TributeDirection tributeDirection
     );
 
     event IncreaseToPool(
         address indexed account,
         uint256 tokenId,
-        uint256 amount
+        uint256 amount,
+        TributeDirection tributeDirection
     );
 
     event Drop(uint256[] tokenIds);
@@ -125,6 +137,8 @@ interface IRebornDefination {
 
     /// @dev revert user continue play game when beta stoped
     error BetaStoped();
+
+    error DirectionError();
 }
 
 interface IRebornPortal is IRebornDefination {
@@ -169,7 +183,11 @@ interface IRebornPortal is IRebornDefination {
      * @param tokenId tokenId of the life to stake
      * @param amount stake amount, decimal 10^18
      */
-    function infuse(uint256 tokenId, uint256 amount) external;
+    function infuse(
+        uint256 tokenId,
+        uint256 amount,
+        TributeDirection tributeDirection
+    ) external;
 
     /**
      * @dev stake $REBORN with permit
@@ -187,7 +205,8 @@ interface IRebornPortal is IRebornDefination {
         uint256 deadline,
         bytes32 r,
         bytes32 s,
-        uint8 v
+        uint8 v,
+        TributeDirection tributeDirection
     ) external;
 
     /**
@@ -199,7 +218,8 @@ interface IRebornPortal is IRebornDefination {
     function switchPool(
         uint256 fromTokenId,
         uint256 toTokenId,
-        uint256 amount
+        uint256 amount,
+        TributeDirection tributeDirection
     ) external;
 
     /**

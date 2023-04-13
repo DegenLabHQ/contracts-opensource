@@ -57,7 +57,7 @@ contract RebornPortalCommonTest is RebornPortalBaseTest {
         vm.assume(amount > 0);
 
         vm.expectEmit(true, true, true, true);
-        emit Infuse(_user, 1, amount);
+        emit Infuse(_user, 1, amount, TributeDirection.Forward);
         emit Transfer(_user, address(portal), amount);
 
         mockInfuse(_user, 1, amount);
@@ -99,7 +99,16 @@ contract RebornPortalCommonTest is RebornPortalBaseTest {
         // 10 is _user's private key
 
         vm.prank(_user);
-        portal.infuse(1, amount, permitAmount, deadline, r, s, v);
+        portal.infuse(
+            1,
+            amount,
+            permitAmount,
+            deadline,
+            r,
+            s,
+            v,
+            TributeDirection.Forward
+        );
     }
 
     function testSwitchPool() public {
@@ -133,7 +142,7 @@ contract RebornPortalCommonTest is RebornPortalBaseTest {
 
         // switch pool 1 -> pool 2
         vm.prank(_user);
-        portal.switchPool(1, 2, 0.1 * 1 ether);
+        portal.switchPool(1, 2, 0.1 * 1 ether, TributeDirection.Forward);
         assertEq(portal.getPool(1).totalAmount, 0.4 * 1 ether);
         assertEq(
             portal.getPortfolio(_user, 1).accumulativeAmount,
@@ -147,7 +156,7 @@ contract RebornPortalCommonTest is RebornPortalBaseTest {
 
         vm.expectRevert();
         vm.prank(_user);
-        portal.switchPool(1, 2, 0.5 * 1 ether);
+        portal.switchPool(1, 2, 0.5 * 1 ether, TributeDirection.Forward);
     }
 
     function testCoinday() public {
@@ -343,7 +352,7 @@ contract RebornPortalCommonTest is RebornPortalBaseTest {
         vm.startPrank(_user);
         rbt.approve(address(portal), 1 ether);
         vm.expectRevert(BetaStoped.selector);
-        portal.infuse(1, 1 ether);
+        portal.infuse(1, 1 ether, TributeDirection.Forward);
         vm.stopPrank();
     }
 }

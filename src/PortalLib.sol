@@ -30,6 +30,8 @@ library PortalLib {
         uint256 lastUpdated;
         uint256 coindayCumulant;
         uint256 coindayUpdateLastTime;
+        uint256 totalForwardTribute;
+        uint256 totalReverseTribute;
     }
 
     struct Portfolio {
@@ -53,6 +55,8 @@ library PortalLib {
         uint256 pendingOwnerNativeReward;
         uint256 coindayCumulant;
         uint256 coindayUpdateLastTime;
+        uint256 totalForwardTribute;
+        uint256 totalReverseTribute;
     }
 
     struct AirdropConf {
@@ -94,6 +98,7 @@ library PortalLib {
     function _claimPoolRebornDrop(
         uint256 tokenId,
         RewardVault vault,
+        AirdropConf storage dropConf,
         IRebornDefination.SeasonData storage _seasonData
     ) external {
         Pool storage pool = _seasonData.pools[tokenId];
@@ -102,13 +107,19 @@ library PortalLib {
         ];
 
         uint256 pendingTributeReborn;
+        uint256 userCoinday = getUserCoinday(
+            tokenId,
+            msg.sender,
+            dropConf._rebornDropLastUpdate,
+            _seasonData
+        );
         // if no portfolio, no pending tribute reward
         if (portfolio.accumulativeAmount == 0) {
             pendingTributeReborn = 0;
         } else {
             pendingTributeReborn =
-                ((portfolio.accumulativeAmount * pool.accRebornPerShare) /
-                    PERSHARE_BASE) -
+                (userCoinday * pool.accRebornPerShare) /
+                PERSHARE_BASE -
                 portfolio.rebornRewardDebt;
         }
 
@@ -117,7 +128,7 @@ library PortalLib {
 
         // set current amount as debt
         portfolio.rebornRewardDebt =
-            (portfolio.accumulativeAmount * pool.accRebornPerShare) /
+            (userCoinday * pool.accRebornPerShare) /
             PERSHARE_BASE;
 
         // clean up reward as owner
@@ -132,6 +143,7 @@ library PortalLib {
 
     function _claimPoolNativeDrop(
         uint256 tokenId,
+        AirdropConf storage dropConf,
         IRebornDefination.SeasonData storage _seasonData
     ) external {
         Pool storage pool = _seasonData.pools[tokenId];
@@ -140,12 +152,18 @@ library PortalLib {
         ];
 
         uint256 pendingTributeNative;
+        uint256 userCoinday = getUserCoinday(
+            tokenId,
+            msg.sender,
+            dropConf._nativeDropLastUpdate,
+            _seasonData
+        );
         // if no portfolio, no pending tribute reward
         if (portfolio.accumulativeAmount == 0) {
             pendingTributeNative = 0;
         } else {
             pendingTributeNative =
-                (portfolio.accumulativeAmount * pool.accNativePerShare) /
+                (userCoinday * pool.accNativePerShare) /
                 PERSHARE_BASE -
                 portfolio.nativeRewardDebt;
         }
@@ -155,7 +173,7 @@ library PortalLib {
 
         // set current amount as debt
         portfolio.nativeRewardDebt =
-            (portfolio.accumulativeAmount * pool.accNativePerShare) /
+            (userCoinday * pool.accNativePerShare) /
             PERSHARE_BASE;
 
         // clean up reward as owner
@@ -176,12 +194,12 @@ library PortalLib {
         unchecked {
             // flatten native reward
             portfolio.nativeRewardDebt =
-                (portfolio.accumulativeAmount * pool.accNativePerShare) /
+                (portfolio.coindayCumulant * pool.accNativePerShare) /
                 PERSHARE_BASE;
 
             // flatten reborn reward
             portfolio.rebornRewardDebt =
-                (portfolio.accumulativeAmount * pool.accRebornPerShare) /
+                (portfolio.coindayCumulant * pool.accRebornPerShare) /
                 PERSHARE_BASE;
         }
     }
@@ -191,7 +209,8 @@ library PortalLib {
      */
     function _calculatePoolDrop(
         uint256 tokenId,
-        IRebornDefination.SeasonData storage _seasonData
+        IRebornDefination.SeasonData storage _seasonData,
+        AirdropConf storage dropConf
     ) public view returns (uint256 pendingNative, uint256 pendingReborn) {
         Pool storage pool = _seasonData.pools[tokenId];
         Portfolio storage portfolio = _seasonData.portfolios[msg.sender][
@@ -205,14 +224,26 @@ library PortalLib {
             pendingTributeNative = 0;
             pendingTributeReborn = 0;
         } else {
+            uint256 userNativeCoinday = getUserCoinday(
+                tokenId,
+                msg.sender,
+                dropConf._nativeDropLastUpdate,
+                _seasonData
+            );
+            uint256 userRebornCoinday = getUserCoinday(
+                tokenId,
+                msg.sender,
+                dropConf._rebornDropLastUpdate,
+                _seasonData
+            );
             pendingTributeNative =
-                (portfolio.accumulativeAmount * pool.accNativePerShare) /
+                (userNativeCoinday * pool.accNativePerShare) /
                 PERSHARE_BASE -
                 portfolio.nativeRewardDebt;
 
             pendingTributeReborn =
-                ((portfolio.accumulativeAmount * pool.accRebornPerShare) /
-                    PERSHARE_BASE) -
+                (userRebornCoinday * pool.accRebornPerShare) /
+                PERSHARE_BASE -
                 portfolio.rebornRewardDebt;
         }
 
@@ -231,12 +262,14 @@ library PortalLib {
      */
     function _pendingDrop(
         IRebornDefination.SeasonData storage _seasonData,
-        uint256[] memory tokenIds
+        uint256[] memory tokenIds,
+        AirdropConf storage dropConf
     ) external view returns (uint256 pNative, uint256 pReborn) {
         for (uint256 i = 0; i < tokenIds.length; i++) {
             (uint256 n, uint256 r) = _calculatePoolDrop(
                 tokenIds[i],
-                _seasonData
+                _seasonData,
+                dropConf
             );
             pNative += n;
             pReborn += r;
@@ -268,11 +301,13 @@ library PortalLib {
                 tokenId
             ];
 
+            uint256 poolCoinday = getPoolCoinday(tokenId, _seasonData);
+
             unchecked {
                 // 80% to pool
                 pool.accNativePerShare +=
                     (4 * dropAmount * PERSHARE_BASE) /
-                    (5 * pool.totalAmount);
+                    (5 * poolCoinday);
 
                 // 20% to owner
 
@@ -313,11 +348,12 @@ library PortalLib {
                 tokenId
             ];
 
+            uint256 poolCoinday = getPoolCoinday(tokenId, _seasonData);
             unchecked {
                 // 80% to pool
                 pool.accNativePerShare +=
                     (4 * dropAmount * PERSHARE_BASE) /
-                    (5 * pool.totalAmount);
+                    (5 * poolCoinday);
 
                 // 20% to owner
                 portfolio.pendingOwnerNativeReward += (dropAmount * 1) / 5;
@@ -348,11 +384,13 @@ library PortalLib {
                 return;
             }
 
+            uint256 poolCoinday = getPoolCoinday(tokenId, _seasonData);
+
             unchecked {
                 // 80% to pool
                 pool.accRebornPerShare +=
                     (dropAmount * 4 * PortalLib.PERSHARE_BASE) /
-                    (5 * pool.totalAmount);
+                    (5 * poolCoinday);
             }
 
             // 20% to owner
@@ -388,11 +426,13 @@ library PortalLib {
                 return;
             }
 
+            uint256 poolCoinday = getPoolCoinday(tokenId, _seasonData);
+
             unchecked {
                 // 80% to pool
                 pool.accRebornPerShare +=
                     (dropAmount * 4 * PortalLib.PERSHARE_BASE) /
-                    (5 * pool.totalAmount);
+                    (5 * poolCoinday);
             }
 
             // 20% to owner
@@ -587,5 +627,37 @@ library PortalLib {
             ref2Reward,
             RewardType.RebornToken
         );
+    }
+
+    function getUserCoinday(
+        uint256 tokenId,
+        address account,
+        uint256 currentTime,
+        IRebornDefination.SeasonData storage _seasonData
+    ) public view returns (uint256 userCoinday) {
+        PortalLib.Portfolio storage portfolio = _seasonData.portfolios[account][
+            tokenId
+        ];
+
+        unchecked {
+            uint256 userPending = currentTime > portfolio.coindayUpdateLastTime
+                ? ((currentTime - portfolio.coindayUpdateLastTime) *
+                    portfolio.accumulativeAmount) / 1 days
+                : 0;
+            userCoinday = userPending + portfolio.coindayCumulant;
+        }
+    }
+
+    function getPoolCoinday(
+        uint256 tokenId,
+        IRebornDefination.SeasonData storage _seasonData
+    ) public view returns (uint256 poolCoinday) {
+        PortalLib.Pool storage pool = _seasonData.pools[tokenId];
+
+        unchecked {
+            uint256 poolPending = ((block.timestamp -
+                pool.coindayUpdateLastTime) * pool.totalAmount) / 1 days;
+            poolCoinday = poolPending + pool.coindayCumulant;
+        }
     }
 }
