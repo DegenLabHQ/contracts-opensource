@@ -209,7 +209,8 @@ library PortalLib {
      */
     function _calculatePoolDrop(
         uint256 tokenId,
-        IRebornDefination.SeasonData storage _seasonData
+        IRebornDefination.SeasonData storage _seasonData,
+        AirdropConf storage dropConf
     ) public view returns (uint256 pendingNative, uint256 pendingReborn) {
         Pool storage pool = _seasonData.pools[tokenId];
         Portfolio storage portfolio = _seasonData.portfolios[msg.sender][
@@ -223,19 +224,25 @@ library PortalLib {
             pendingTributeNative = 0;
             pendingTributeReborn = 0;
         } else {
-            uint256 userCoinday = getUserCoinday(
+            uint256 userNativeCoinday = getUserCoinday(
                 tokenId,
                 msg.sender,
-                block.timestamp - _toLastHour(block.timestamp),
+                dropConf._nativeDropLastUpdate,
+                _seasonData
+            );
+            uint256 userRebornCoinday = getUserCoinday(
+                tokenId,
+                msg.sender,
+                dropConf._rebornDropLastUpdate,
                 _seasonData
             );
             pendingTributeNative =
-                (userCoinday * pool.accNativePerShare) /
+                (userNativeCoinday * pool.accNativePerShare) /
                 PERSHARE_BASE -
                 portfolio.nativeRewardDebt;
 
             pendingTributeReborn =
-                (userCoinday * pool.accRebornPerShare) /
+                (userRebornCoinday * pool.accRebornPerShare) /
                 PERSHARE_BASE -
                 portfolio.rebornRewardDebt;
         }
@@ -255,12 +262,14 @@ library PortalLib {
      */
     function _pendingDrop(
         IRebornDefination.SeasonData storage _seasonData,
-        uint256[] memory tokenIds
+        uint256[] memory tokenIds,
+        AirdropConf storage dropConf
     ) external view returns (uint256 pNative, uint256 pReborn) {
         for (uint256 i = 0; i < tokenIds.length; i++) {
             (uint256 n, uint256 r) = _calculatePoolDrop(
                 tokenIds[i],
-                _seasonData
+                _seasonData,
+                dropConf
             );
             pNative += n;
             pReborn += r;

@@ -417,7 +417,8 @@ contract RebornPortal is
     function pendingDrop(
         uint256[] memory tokenIds
     ) external view returns (uint256 pNative, uint256 pReborn) {
-        return PortalLib._pendingDrop(_seasonData[_season], tokenIds);
+        return
+            PortalLib._pendingDrop(_seasonData[_season], tokenIds, _dropConf);
     }
 
     /**
@@ -785,7 +786,7 @@ contract RebornPortal is
             tributeDirection = TributeDirection.Forward;
         }
 
-        uint256 totalTribute = getTotalTributeOfPool(pool);
+        uint256 totalTribute = _getTotalTributeOfPool(pool);
 
         _enterTvlRank(tokenId, totalTribute);
 
@@ -848,7 +849,7 @@ contract RebornPortal is
             pool.totalReverseTribute += amount;
             portfolio.totalReverseTribute += amount;
         }
-        uint256 totalPoolTribute = getTotalTributeOfPool(pool);
+        uint256 totalPoolTribute = _getTotalTributeOfPool(pool);
 
         _enterTvlRank(tokenId, totalPoolTribute);
     }
@@ -894,9 +895,9 @@ contract RebornPortal is
         }
     }
 
-    function getTotalTributeOfPool(
+    function _getTotalTributeOfPool(
         PortalLib.Pool memory pool
-    ) public pure returns (uint256) {
+    ) internal pure returns (uint256) {
         return
             pool.totalForwardTribute > pool.totalReverseTribute
                 ? pool.totalForwardTribute - pool.totalReverseTribute
