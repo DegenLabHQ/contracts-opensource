@@ -371,7 +371,28 @@ contract RebornPortal is
         PortalLib._updateSigners(signers, toAdd, toRemove);
     }
 
+    /**
+     * @dev forging with permit
+     */
+    function forging(
+        uint256 tokenId,
+        PermitParams calldata permitParams
+    ) external {
+        _permit(
+            permitParams.amount,
+            permitParams.deadline,
+            permitParams.r,
+            permitParams.s,
+            permitParams.v
+        );
+        _forging(tokenId);
+    }
+
     function forging(uint256 tokenId) external {
+        _forging(tokenId);
+    }
+
+    function _forging(uint256 tokenId) internal {
         uint256 level = _characterProperties[tokenId].level;
         uint256 requiredAmount = _forgeRequiredMaterials[level];
         if (requiredAmount == 0) {
