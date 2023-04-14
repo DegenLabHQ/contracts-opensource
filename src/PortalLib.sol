@@ -772,7 +772,13 @@ library PortalLib {
         uint256 tokenId,
         uint256 amount,
         IRebornDefination.SeasonData storage _seasonData
-    ) internal returns (uint256 totalTribute) {
+    )
+        internal
+        returns (
+            uint256 totalTribute,
+            IRebornDefination.TributeDirection tributeDirection
+        )
+    {
         PortalLib.Portfolio storage portfolio = _seasonData.portfolios[
             msg.sender
         ][tokenId];
@@ -785,8 +791,6 @@ library PortalLib {
         pool.totalAmount -= amount;
 
         _flattenRewardDebt(pool, portfolio);
-
-        IRebornDefination.TributeDirection tributeDirection;
 
         if (portfolio.totalForwardTribute > portfolio.totalReverseTribute) {
             portfolio.totalReverseTribute += amount;
