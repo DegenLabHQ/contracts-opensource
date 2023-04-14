@@ -61,6 +61,14 @@ abstract contract Altar is EIP712Upgradeable, RebornPortalStorage, AccessBase {
     function readCharProperty(
         uint256 tokenId
     ) public view returns (PortalLib.CharacterProperty memory) {
-        return _characterProperties[tokenId];
+        PortalLib.CharacterProperty memory charProperty = _characterProperties[
+            tokenId
+        ];
+
+        charProperty.currentAP = uint8(
+            PortalLib._calculateCurrentAP(charProperty)
+        );
+
+        return charProperty;
     }
 }

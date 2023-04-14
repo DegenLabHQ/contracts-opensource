@@ -812,28 +812,37 @@ library PortalLib {
                 : 0;
     }
 
+    function _calculateCurrentAP(
+        CharacterProperty memory charProperty
+    ) public view returns (uint256 currentAP) {
+        if (charProperty.restoreTimePerAP == 0) {
+            return charProperty.currentAP;
+        }
+
+        uint256 calculatedRestoreAp = (block.timestamp -
+            charProperty.lastTimeAPUpdate) / charProperty.restoreTimePerAP;
+
+        uint256 calculatedCurrentAP = calculatedRestoreAp +
+            charProperty.currentAP;
+
+        if (calculatedCurrentAP <= charProperty.maxAP) {
+            currentAP = calculatedCurrentAP;
+        } else {
+            currentAP = charProperty.maxAP;
+        }
+    }
+
     function _comsumeAP(
         uint256 tokenId,
         mapping(uint256 => CharacterProperty) storage _characterProperties
     ) external {
         CharacterProperty storage charProperty = _characterProperties[tokenId];
 
-        // restore AP
-        uint256 calculatedRestoreAp = (block.timestamp -
-            charProperty.lastTimeAPUpdate) / charProperty.restoreTimePerAP;
+        // restore AP and decrement
+        charProperty.currentAP = uint8(_calculateCurrentAP(charProperty) - 1);
+
         charProperty.lastTimeAPUpdate = uint40(block.timestamp);
-
-        uint256 calculatedCurrentAP = calculatedRestoreAp +
-            charProperty.currentAP;
-
-        if (calculatedCurrentAP <= charProperty.maxAP) {
-            charProperty.currentAP = uint8(calculatedCurrentAP);
-        } else {
-            charProperty.currentAP = charProperty.maxAP;
-        }
-
         // AP decrement
-        charProperty.currentAP -= 1;
     }
 
     function setCharProperty(
