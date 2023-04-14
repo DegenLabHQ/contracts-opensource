@@ -833,13 +833,12 @@ contract RebornPortal is
      * @dev decrease amount from pool of switch from
      */
     function _decreaseFromPool(uint256 tokenId, uint256 amount) internal {
-        uint256 totalTribute = PortalLib._decreaseFromPool(
-            tokenId,
-            amount,
-            _seasonData[_season]
-        );
+        (uint256 totalTribute, TributeDirection tributeDirection) = PortalLib
+            ._decreaseFromPool(tokenId, amount, _seasonData[_season]);
 
         _enterTvlRank(tokenId, totalTribute);
+
+        emit DecreaseFromPool(msg.sender, tokenId, amount, tributeDirection);
     }
 
     /**
