@@ -49,8 +49,8 @@ contract RebornPortalStorage is IRebornDefination {
     // uesless var for backward compatibility
     bool internal _g;
 
-    // user address => count
-    mapping(address => uint256) internal _incarnateCounts;
+    // season => user address => count
+    mapping(uint256 => mapping(address => uint256)) internal _incarnateCounts;
 
     // max incarnation count
     uint256 internal _incarnateCountLimit;
@@ -61,7 +61,7 @@ contract RebornPortalStorage is IRebornDefination {
     mapping(uint256 => PortalLib.CharacterProperty)
         internal _characterProperties;
 
-    // tokenId => token required 
+    // tokenId => token required
     mapping(uint256 => uint256) internal _forgeRequiredMaterials;
 
     /// @dev gap for potential variable
