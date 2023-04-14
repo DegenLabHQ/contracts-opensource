@@ -13,7 +13,7 @@ library SingleRanking {
         uint length;
     }
 
-    function add(Data storage _singleRanking, uint _key, uint _value) internal {
+    function add(Data storage _singleRanking, uint _key, uint _value) public {
         FastArray.Data storage keys = _singleRanking.keys[_value];
 
         if (FastArray.length(keys) == 0) {
@@ -31,7 +31,7 @@ library SingleRanking {
         Data storage _singleRanking,
         uint _key,
         uint _value
-    ) internal {
+    ) public {
         FastArray.Data storage keys = _singleRanking.keys[_value];
 
         if (FastArray.length(keys) > 0) {
