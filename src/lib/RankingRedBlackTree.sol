@@ -148,7 +148,7 @@ library RankingRedBlackTree {
         return self.nodes[_key].value;
     }
 
-    function addToCount(Tree storage self, uint _value, uint amount) internal {
+    function addToCount(Tree storage self, uint _value, uint amount) public {
         self.nodes[find(self, _value)].count += amount;
     }
 
@@ -156,11 +156,11 @@ library RankingRedBlackTree {
         Tree storage self,
         uint _value,
         uint amount
-    ) internal {
+    ) public {
         self.nodes[find(self, _value)].count -= amount;
     }
 
-    function insert(Tree storage self, uint _value) internal returns (uint) {
+    function insert(Tree storage self, uint _value) public returns (uint) {
         uint cursor = EMPTY;
         uint probe = self.root;
         while (probe != EMPTY) {
@@ -192,7 +192,7 @@ library RankingRedBlackTree {
         return self.counter;
     }
 
-    function remove(Tree storage self, uint _value) internal {
+    function remove(Tree storage self, uint _value) public {
         uint key = find(self, _value);
         uint probe;
         uint cursor; // TODO
@@ -236,7 +236,7 @@ library RankingRedBlackTree {
         delete self.nodes[cursor];
     }
 
-    function removeWithKey(Tree storage self, uint key) internal {
+    function removeWithKey(Tree storage self, uint key) public {
         uint probe;
         uint cursor; // TODO
         if (self.nodes[key].left == EMPTY || self.nodes[key].right == EMPTY) {

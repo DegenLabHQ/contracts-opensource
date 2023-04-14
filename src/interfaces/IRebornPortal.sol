@@ -107,7 +107,6 @@ interface IRebornDefination {
 
     event NewSoupPrice(uint256 price);
 
-
     event DecreaseFromPool(
         address indexed account,
         uint256 tokenId,
@@ -135,6 +134,8 @@ interface IRebornDefination {
     event BetaStageSet(bool);
 
     event NewIncarnationLimit(uint256 limit);
+
+    event ForgedTo(uint256 newLevel);
 
     /// @dev revert when msg.value is insufficient
     error InsufficientAmount();

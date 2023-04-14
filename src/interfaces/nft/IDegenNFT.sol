@@ -18,6 +18,7 @@ interface IDegenNFTDefination is IERC4906 {
     event SetBaseURI(string baseURI);
     event RoyaltyInfoSet(address receiver, uint256 percent);
     event SetProperties(uint256 tokenId, Property properties);
+    event LevelSet(uint256 indexed tokenId, uint256 level);
 }
 
 interface IDegenNFT is IDegenNFTDefination, IERC2981 {

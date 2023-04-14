@@ -372,6 +372,62 @@ contract RebornPortal is
     }
 
     /**
+     * @dev forging with permit
+     */
+    function forging(
+        uint256 tokenId,
+        PermitParams calldata permitParams
+    ) external {
+        _permit(
+            permitParams.amount,
+            permitParams.deadline,
+            permitParams.r,
+            permitParams.s,
+            permitParams.v
+        );
+        _forging(tokenId);
+    }
+
+    function forging(uint256 tokenId) external {
+        _forging(tokenId);
+    }
+
+    function _forging(uint256 tokenId) internal {
+        uint256 level = _characterProperties[tokenId].level;
+        uint256 requiredAmount = _forgeRequiredMaterials[level];
+        if (requiredAmount == 0) {
+            revert CommonError.InvalidParams();
+        }
+
+        rebornToken.transferFrom(msg.sender, burnPool, requiredAmount);
+
+        unchecked {
+            level += 1;
+        }
+
+        emit ForgedTo(level);
+    }
+
+    function setForgingRequiredAmount(
+        uint256[] calldata levels,
+        uint256[] calldata amounts
+    ) external onlyOwner {
+        uint256 levelsLength = levels.length;
+        uint256 amountsLength = amounts.length;
+
+        if (levelsLength != amountsLength) {
+            revert CommonError.InvalidParams();
+        }
+
+        for (uint256 i = 0; i < levelsLength; ) {
+            _forgeRequiredMaterials[levels[i]] = amounts[i];
+            unchecked {
+                i++;
+            }
+        }
+    }
+
+    /**
      * @notice mul 100 when set. eg: 8% -> 800 18%-> 1800
      * @dev set percentage of referrer reward
      * @param rewardType 0: incarnate reward 1: engrave reward
