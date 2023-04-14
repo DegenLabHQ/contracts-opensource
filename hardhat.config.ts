@@ -12,6 +12,7 @@ import "hardhat-gas-reporter";
 import { HardhatUserConfig, task } from "hardhat/config";
 
 import example from "./tasks/example";
+import exportRebornPortalAbi from "./tasks/exportRebornPortalAbi";
 
 function getRemappings() {
   return fs
@@ -32,6 +33,10 @@ const degen_deployer =
 const accounts = process.env.ACCOUNTS ? process.env.ACCOUNTS.split(",") : [];
 
 task("example", "Example task").setAction(example);
+task(
+  "exportRebornPortalAbi",
+  "export the aggregate abi of reborn portal"
+).setAction(exportRebornPortalAbi);
 
 const config: HardhatUserConfig = {
   solidity: {
