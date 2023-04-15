@@ -941,6 +941,17 @@ contract RebornPortal is
         return _seasonData[_season].portfolios[user][tokenId];
     }
 
+    function getIncarnateCount(
+        uint256 season,
+        address user
+    ) public view returns (uint256) {
+        return _incarnateCounts[season][user];
+    }
+
+    function getIncarnateLimit() public view returns (uint256) {
+        return _incarnateCountLimit;
+    }
+
     function getDropConf() public view returns (PortalLib.AirdropConf memory) {
         return _dropConf;
     }
@@ -970,10 +981,13 @@ contract RebornPortal is
     }
 
     function _checkIncarnationCount() internal {
-        if (_incarnateCounts[msg.sender] >= _incarnateCountLimit) {
+        uint256 currentIncateCount = _incarnateCounts[_season][msg.sender];
+        if (currentIncateCount >= _incarnateCountLimit) {
             revert IncarnationExceedLimit();
         }
-        _incarnateCounts[msg.sender] += 1;
+        unchecked {
+            _incarnateCounts[_season][msg.sender] = currentIncateCount + 1;
+        }
     }
 
     /**
