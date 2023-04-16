@@ -2,6 +2,7 @@
 pragma solidity 0.8.17;
 
 import {UUPSUpgradeable} from "./oz/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
+import {ECDSAUpgradeable} from "./oz/contracts-upgradeable/utils/cryptography/ECDSAUpgradeable.sol";
 import {SafeOwnableUpgradeable} from "./utils/SafeOwnableUpgradeable.sol";
 import {CommonError} from "./lib/CommonError.sol";
 import {IPiggyBank} from "./interfaces/IPiggyBank.sol";
@@ -14,6 +15,9 @@ contract PiggyBank is SafeOwnableUpgradeable, UUPSUpgradeable, IPiggyBank {
 
     // min time long from season start to end
     uint64 public minTimeLong;
+
+    // Mapping from signer to bool
+    mapping(address => bool) public signers;
 
     // Mapping from season to seasonInfo
     mapping(uint256 => SeasonInfo) seasons;
@@ -76,6 +80,75 @@ contract PiggyBank is SafeOwnableUpgradeable, UUPSUpgradeable, IPiggyBank {
         }
     }
 
+    function newSeason(uint256 season, uint256 startTime) external onlyPortal {
+        if (seasons[season].startTime == 0) {
+            seasons[season].startTime = uint64(startTime);
+        }
+
+        emit NewSeason(season, startTime);
+    }
+
+    function stop(
+        uint256 season,
+        bytes calldata signature
+    ) external override onlySigner {
+        bytes32 messageHash = ECDSAUpgradeable.toEthSignedMessageHash(
+            seasons[season].stopedHash
+        );
+        address signer = ECDSAUpgradeable.recover(messageHash, signature);
+        if (signer != seasons[season].verifySigner) {
+            revert InvalidSignature();
+        }
+
+        seasons[season].stoped = true;
+
+        emit SeasonStoped(season, block.timestamp);
+    }
+
+    function setMultiple(uint8 multiple_) external override onlyOwner {
+        multiple = multiple_;
+
+        emit SetNewMultiple(multiple_);
+    }
+
+    function setMinTimeLong(uint64 minTimeLong_) external override onlyOwner {
+        minTimeLong = minTimeLong_;
+
+        emit SetMinTimeLong(minTimeLong_);
+    }
+
+    function setSeasonStopedHash(
+        uint256 season,
+        bytes32 stopedHash,
+        address verifySigner
+    ) external override onlySigner {
+        if (seasons[season].startTime == 0) {
+            revert InvalidSeason();
+        }
+        if (verifySigner == address(0)) {
+            revert ZeroAddressSet();
+        }
+
+        seasons[season].stopedHash = stopedHash;
+        seasons[season].verifySigner = verifySigner;
+
+        emit SetStopedHash(season, stopedHash, verifySigner);
+    }
+
+    function updateSigners(
+        address[] calldata toAdd,
+        address[] calldata toRemove
+    ) external onlyOwner {
+        for (uint256 i = 0; i < toAdd.length; i++) {
+            signers[toAdd[i]] = true;
+            emit SignerUpdate(toAdd[i], true);
+        }
+        for (uint256 i = 0; i < toRemove.length; i++) {
+            delete signers[toRemove[i]];
+            emit SignerUpdate(toRemove[i], false);
+        }
+    }
+
     function _toNextRound(
         address account,
         uint256 season,
@@ -98,26 +171,6 @@ contract PiggyBank is SafeOwnableUpgradeable, UUPSUpgradeable, IPiggyBank {
         );
     }
 
-    function setMultiple(uint8 multiple_) external override onlyOwner {
-        multiple = multiple_;
-
-        emit SetNewMultiple(multiple_);
-    }
-
-    function setMinTimeLong(uint64 minTimeLong_) external override onlyOwner {
-        minTimeLong = minTimeLong_;
-
-        emit SetMinTimeLong(minTimeLong_);
-    }
-
-    function newSeason(uint256 season, uint256 startTime) external onlyPortal {
-        if (seasons[season].startTime == 0) {
-            seasons[season].startTime = uint64(startTime);
-        }
-
-        emit NewSeason(season, startTime);
-    }
-
     function checkIsSeasonEnd(uint256 season) public view returns (bool) {
         bool isEnd = false;
 
@@ -135,6 +188,13 @@ contract PiggyBank is SafeOwnableUpgradeable, UUPSUpgradeable, IPiggyBank {
     modifier onlyPortal() {
         if (msg.sender != portal) {
             revert CallerNotPortal();
+        }
+        _;
+    }
+
+    modifier onlySigner() {
+        if (!signers[msg.sender]) {
+            revert InvaliedSigner();
         }
         _;
     }
