@@ -4,29 +4,9 @@ pragma solidity 0.8.17;
 import {UUPSUpgradeable} from "./oz/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 import {SafeOwnableUpgradeable} from "./utils/SafeOwnableUpgradeable.sol";
 import {CommonError} from "./lib/CommonError.sol";
+import {IPiggyBank} from "./interfaces/IPiggyBank.sol";
 
-contract PiggyBank is SafeOwnableUpgradeable, UUPSUpgradeable {
-    struct SeasonInfo {
-        uint256 totalAmount;
-        uint256 stopTimestamp;
-        uint256 startTime;
-    }
-
-    struct RoundInfo {
-        uint256 totalAmount;
-        uint256 target;
-        uint256 currentIndex;
-        uint256 startTime;
-    }
-
-    event SetNewMultiple(uint8 multiple);
-    event SetMinTimeLong(uint64 minTimeLong);
-    event NewSeason(uint256 season, uint256 startTime);
-
-    error CallerNotPortal();
-    error InvalidRoundInfo();
-    error SeasonOver();
-
+contract PiggyBank is SafeOwnableUpgradeable, UUPSUpgradeable, IPiggyBank {
     address public portal;
 
     // nextRoundTarget = preRoundTarget * multiple / 100
@@ -74,7 +54,7 @@ contract PiggyBank is SafeOwnableUpgradeable, UUPSUpgradeable {
     function deposit(
         uint256 season,
         address account
-    ) external payable onlyPortal {
+    ) external payable override onlyPortal {
         bool isEnd = checkIsSeasonEnd(season);
         if (isEnd) {
             revert SeasonOver();
@@ -91,6 +71,8 @@ contract PiggyBank is SafeOwnableUpgradeable, UUPSUpgradeable {
         } else {
             roundInfo.totalAmount += msg.value;
             userInfo[account][season][roundInfo.currentIndex] += msg.value;
+
+            emit Deposit(season, account, roundInfo.currentIndex, msg.value);
         }
     }
 
@@ -107,15 +89,22 @@ contract PiggyBank is SafeOwnableUpgradeable, UUPSUpgradeable {
 
         // update userInfo
         userInfo[account][season][roundInfo.currentIndex] = newRoundInitAmount;
+
+        emit Deposit(
+            season,
+            account,
+            roundInfo.currentIndex,
+            newRoundInitAmount
+        );
     }
 
-    function setMultiple(uint8 multiple_) external onlyOwner {
+    function setMultiple(uint8 multiple_) external override onlyOwner {
         multiple = multiple_;
 
         emit SetNewMultiple(multiple_);
     }
 
-    function setMinTimeLong(uint64 minTimeLong_) external onlyOwner {
+    function setMinTimeLong(uint64 minTimeLong_) external override onlyOwner {
         minTimeLong = minTimeLong_;
 
         emit SetMinTimeLong(minTimeLong_);

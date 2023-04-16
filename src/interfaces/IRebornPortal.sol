@@ -137,6 +137,8 @@ interface IRebornDefination {
 
     event ForgedTo(uint256 newLevel);
 
+    event SetPiggyBankFee(address piggyBankFee);
+
     /// @dev revert when msg.value is insufficient
     error InsufficientAmount();
 
