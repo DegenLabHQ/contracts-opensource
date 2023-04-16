@@ -139,6 +139,10 @@ interface IRebornDefination {
 
     event SetPiggyBankFee(address piggyBankFee);
 
+    event SetNewPiggyBank(address piggyBank);
+
+    event SetPiggyBankFee(uint256 piggyBankFee);
+
     /// @dev revert when msg.value is insufficient
     error InsufficientAmount();
 
@@ -161,6 +165,8 @@ interface IRebornDefination {
     error BetaStoped();
 
     error DirectionError();
+
+    error SeasonStoped();
 }
 
 interface IRebornPortal is IRebornDefination {

@@ -23,7 +23,7 @@ import {CommonError} from "src/lib/CommonError.sol";
 import {PortalLib} from "src/PortalLib.sol";
 import {FastArray} from "src/lib/FastArray.sol";
 
-import { IPiggyBank } from "./interfaces/IPiggyBank.sol"
+import {IPiggyBank} from "./interfaces/IPiggyBank.sol";
 
 contract RebornPortal is
     IRebornPortal,
@@ -288,6 +288,9 @@ contract RebornPortal is
      */
     function toNextSeason() external onlyOwner {
         _season += 1;
+
+        // update piggyBank
+        piggyBank.newSeason(_season, block.timestamp);
 
         // pause the contract
         _pause();
@@ -640,7 +643,10 @@ contract RebornPortal is
         uint256 referAmount = _sendRewardToRefs(msg.sender, rebornFee);
 
         // x% to piggyBank
-        payable(piggyBank).deposit{value: nativeFee * piggyBankFee / PERCENTAGE_BASE}(_season,msg.sender);
+        piggyBank.deposit{value: (nativeFee * piggyBankFee) / PERCENTAGE_BASE}(
+            _season,
+            msg.sender
+        );
 
         unchecked {
             // rest native token to to jackpot

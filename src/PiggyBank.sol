@@ -112,7 +112,7 @@ contract PiggyBank is SafeOwnableUpgradeable, UUPSUpgradeable, IPiggyBank {
 
     function newSeason(uint256 season, uint256 startTime) external onlyPortal {
         if (seasons[season].startTime == 0) {
-            seasons[season].startTime = startTime;
+            seasons[season].startTime = uint64(startTime);
         }
 
         emit NewSeason(season, startTime);
@@ -120,11 +120,13 @@ contract PiggyBank is SafeOwnableUpgradeable, UUPSUpgradeable, IPiggyBank {
 
     function checkIsSeasonEnd(uint256 season) public view returns (bool) {
         bool isEnd = false;
-        if (
-            (block.timestamp > seasons[season].startTime + minTimeLong) &&
+
+        bool isAutoEnd = ((block.timestamp >
+            seasons[season].startTime + minTimeLong) &&
             (rounds[season].totalAmount < rounds[season].target) &&
-            (block.timestamp - rounds[season].startTime) >= 3600
-        ) {
+            (block.timestamp - rounds[season].startTime) >= 3600);
+
+        if (isAutoEnd || seasons[season].stoped) {
             isEnd = true;
         }
         return isEnd;

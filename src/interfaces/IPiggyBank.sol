@@ -4,8 +4,9 @@ pragma solidity 0.8.17;
 interface IPiggyBank {
     struct SeasonInfo {
         uint256 totalAmount;
-        uint256 stopTimestamp;
-        uint256 startTime;
+        bytes32 stopedHash;
+        uint64 startTime;
+        bool stoped;
     }
 
     struct RoundInfo {
@@ -36,4 +37,6 @@ interface IPiggyBank {
     function setMinTimeLong(uint64 minTimeLong_) external;
 
     function checkIsSeasonEnd(uint256 season) external view returns (bool);
+
+    function newSeason(uint256 season, uint256 startTime) external;
 }
