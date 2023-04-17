@@ -27,12 +27,7 @@ contract PiggyBank is SafeOwnableUpgradeable, UUPSUpgradeable, IPiggyBank {
 
     uint256[46] internal _gap;
 
-    function initialize(
-        address owner_,
-        address portal_,
-        uint256 season,
-        RoundInfo calldata roundInfo
-    ) public payable initializer {
+    function initialize(address owner_, address portal_) public initializer {
         if (portal_ == address(0) || owner_ == address(0)) {
             revert CommonError.ZeroAddressSet();
         }
@@ -40,14 +35,22 @@ contract PiggyBank is SafeOwnableUpgradeable, UUPSUpgradeable, IPiggyBank {
         __Ownable_init(owner_);
 
         portal = portal;
+    }
 
+    function initializeSeason(
+        uint256 season,
+        uint32 seasonStartTime,
+        RoundInfo calldata roundInfo
+    ) external payable onlyPortal {
         // initialize season roundInfo
         if (roundInfo.totalAmount != msg.value) {
             revert InvalidRoundInfo();
         }
         seasons[season].totalAmount = msg.value;
+        seasons[season].startTime = seasonStartTime;
         rounds[season] = roundInfo;
-        userInfo[msg.sender][season][roundInfo.currentIndex] = msg.value;
+
+        emit InitializeSeason(season, seasonStartTime, roundInfo);
     }
 
     function _authorizeUpgrade(

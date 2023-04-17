@@ -17,6 +17,11 @@ interface IPiggyBank {
         uint256 startTime;
     }
 
+    event InitializeSeason(
+        uint256 season,
+        uint32 seasonStartTime,
+        RoundInfo roundInfo
+    );
     event SetNewMultiple(uint8 multiple);
     event SetMinTimeLong(uint64 minTimeLong);
     event NewSeason(uint256 season, uint256 startTime);
