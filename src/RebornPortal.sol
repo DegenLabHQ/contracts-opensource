@@ -425,11 +425,15 @@ contract RebornPortal is
         emit ForgedTo(tokenId, toLevel);
     }
 
-    function initializeSeason() external payable onlyOwner {
+    function initializeSeason(
+        uint256 totalAmount,
+        uint256 target
+    ) external payable onlyOwner {
         PiggyBank(address(piggyBank)).initializeSeason{value: msg.value}(
             0,
             uint32(block.timestamp),
-            IPiggyBank.RoundInfo(0.1 ether, 1 ether, 0, block.timestamp)
+            totalAmount,
+            target
         );
     }
 
