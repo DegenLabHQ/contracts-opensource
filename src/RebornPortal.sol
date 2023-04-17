@@ -24,6 +24,7 @@ import {PortalLib} from "src/PortalLib.sol";
 import {FastArray} from "src/lib/FastArray.sol";
 
 import {IPiggyBank} from "./interfaces/IPiggyBank.sol";
+import {PiggyBank} from "src/PiggyBank.sol";
 
 contract RebornPortal is
     IRebornPortal,
@@ -422,6 +423,14 @@ contract RebornPortal is
         rebornToken.transferFrom(msg.sender, burnPool, requiredAmount);
 
         emit ForgedTo(toLevel);
+    }
+
+    function initializeSeason() external payable onlyOwner {
+        PiggyBank(address(piggyBank)).initializeSeason{value: msg.value}(
+            0,
+            uint32(block.timestamp),
+            IPiggyBank.RoundInfo(1 ether, 0.1 ether, 0, block.timestamp)
+        );
     }
 
     function setForgingRequiredAmount(

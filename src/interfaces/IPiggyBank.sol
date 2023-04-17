@@ -44,7 +44,6 @@ interface IPiggyBank {
     error InvalidRoundInfo();
     error SeasonOver();
     error InvalidSeason();
-    error ZeroAddressSet();
 
     function deposit(uint256 season, address account) external payable;
 

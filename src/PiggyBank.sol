@@ -25,7 +25,7 @@ contract PiggyBank is SafeOwnableUpgradeable, UUPSUpgradeable, IPiggyBank {
     // mapping(account => mappiing(season=> mapping(roundIndex => userInfo)))
     mapping(address => mapping(uint256 => mapping(uint256 => uint256))) userInfo;
 
-    uint256[46] internal _gap;
+    uint256[44] internal _gap;
 
     function initialize(address owner_, address portal_) public initializer {
         if (portal_ == address(0) || owner_ == address(0)) {
@@ -34,13 +34,13 @@ contract PiggyBank is SafeOwnableUpgradeable, UUPSUpgradeable, IPiggyBank {
 
         __Ownable_init(owner_);
 
-        portal = portal;
+        portal = portal_;
     }
 
     function initializeSeason(
         uint256 season,
         uint32 seasonStartTime,
-        RoundInfo calldata roundInfo
+        RoundInfo memory roundInfo
     ) external payable onlyPortal {
         // initialize season roundInfo
         if (roundInfo.totalAmount != msg.value) {
@@ -129,7 +129,7 @@ contract PiggyBank is SafeOwnableUpgradeable, UUPSUpgradeable, IPiggyBank {
             revert InvalidSeason();
         }
         if (verifySigner == address(0)) {
-            revert ZeroAddressSet();
+            revert CommonError.ZeroAddressSet();
         }
 
         seasons[season].stopedHash = stopedHash;
