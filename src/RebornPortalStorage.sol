@@ -8,8 +8,10 @@ import {BitMapsUpgradeable} from "./oz/contracts-upgradeable/utils/structs/BitMa
 import {SingleRanking} from "src/lib/SingleRanking.sol";
 import {PortalLib} from "src/PortalLib.sol";
 import {FastArray} from "src/lib/FastArray.sol";
+import {IPiggyBank} from "./interfaces/IPiggyBank.sol";
 
 contract RebornPortalStorage is IRebornDefination {
+    uint256 public constant PERCENTAGE_BASE = 10000;
     uint256 internal _season;
 
     RBT public rebornToken;
@@ -64,6 +66,10 @@ contract RebornPortalStorage is IRebornDefination {
     // tokenId => token required
     mapping(uint256 => uint256) internal _forgeRequiredMaterials;
 
+    IPiggyBank internal piggyBank;
+    // X% to piggyBank piggyBankFee / 10000
+    uint16 internal piggyBankFee;
+
     /// @dev gap for potential variable
-    uint256[27] private _gap;
+    uint256[26] private _gap;
 }

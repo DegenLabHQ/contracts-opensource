@@ -23,6 +23,8 @@ import {CommonError} from "src/lib/CommonError.sol";
 import {PortalLib} from "src/PortalLib.sol";
 import {FastArray} from "src/lib/FastArray.sol";
 
+import {IPiggyBank} from "./interfaces/IPiggyBank.sol";
+
 contract RebornPortal is
     IRebornPortal,
     SafeOwnableUpgradeable,
@@ -285,7 +287,12 @@ contract RebornPortal is
      * @inheritdoc IRebornPortal
      */
     function toNextSeason() external onlyOwner {
+        piggyBank.stop(_season);
+
         _season += 1;
+
+        // update piggyBank
+        piggyBank.newSeason(_season, block.timestamp);
 
         // pause the contract
         _pause();
@@ -470,6 +477,18 @@ contract RebornPortal is
         emit NewStopBetaBlockNumberConfig(stopBetaBlockNumber);
     }
 
+    function setPiggyBank(IPiggyBank piggyBank_) external onlyOwner {
+        piggyBank = piggyBank_;
+
+        emit SetNewPiggyBank(address(piggyBank_));
+    }
+
+    function setPiggyBankFee(uint16 piggyBankFee_) external onlyOwner {
+        piggyBankFee = piggyBankFee_;
+
+        emit SetPiggyBankFee(piggyBankFee_);
+    }
+
     /**
      * @dev anticheat, downgrade score and remove from rank
      */
@@ -624,6 +643,12 @@ contract RebornPortal is
 
         // reward referrers
         uint256 referAmount = _sendRewardToRefs(msg.sender, rebornFee);
+
+        // x% to piggyBank
+        piggyBank.deposit{value: (nativeFee * piggyBankFee) / PERCENTAGE_BASE}(
+            _season,
+            msg.sender
+        );
 
         unchecked {
             // rest native token to to jackpot
