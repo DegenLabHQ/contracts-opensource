@@ -145,7 +145,7 @@ interface IRebornDefination {
 
     event NewIncarnationLimit(uint256 limit);
 
-    event ForgedTo(uint256 newLevel);
+    event ForgedTo(uint256 indexed tokenId, uint256 newLevel);
 
     event SetNewPiggyBank(address piggyBank);
 
