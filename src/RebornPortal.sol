@@ -421,7 +421,7 @@ contract RebornPortal is
 
         rebornToken.transferFrom(msg.sender, burnPool, requiredAmount);
 
-        emit ForgedTo(toLevel);
+        emit ForgedTo(tokenId, toLevel);
     }
 
     function setForgingRequiredAmount(
