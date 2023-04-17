@@ -88,10 +88,11 @@ contract PiggyBank is SafeOwnableUpgradeable, UUPSUpgradeable, IPiggyBank {
         emit NewSeason(season, startTime);
     }
 
-    function stop(
-        uint256 season,
-        bytes calldata signature
-    ) external override onlySigner {
+    function stop(uint256 season, bytes calldata signature) external override {
+        if (msg.sender != seasons[season].verifySigner) {
+            revert InvalidSigner();
+        }
+
         bytes32 messageHash = ECDSAUpgradeable.toEthSignedMessageHash(
             seasons[season].stopedHash
         );

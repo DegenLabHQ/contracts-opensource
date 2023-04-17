@@ -41,6 +41,7 @@ interface IPiggyBank {
     error InvalidSignature();
     error ZeroAddressSet();
     error InvaliedSigner();
+    error InvalidSigner();
 
     function deposit(uint256 season, address account) external payable;
 
