@@ -395,7 +395,7 @@ contract RebornPortal is
 
     function _forging(uint256 tokenId, uint256 toLevel) internal {
         uint256 currentLevel = _characterProperties[tokenId].level;
-        if (toLevel >= toLevel) {
+        if (currentLevel >= toLevel) {
             revert CommonError.InvalidParams();
         }
         uint256 requiredAmount;
