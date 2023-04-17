@@ -76,6 +76,12 @@ interface IRebornDefination {
         uint256[] randomWords;
     }
 
+    enum BaptiseType {
+        Invalid,
+        TwitterShare,
+        Airdrop
+    }
+
     event Incarnate(
         address indexed user,
         uint256 indexed charTokenId,
@@ -103,7 +109,11 @@ interface IRebornDefination {
 
     event Dry(address indexed user, uint256 indexed tokenId, uint256 amount);
 
-    event Baptise(address indexed user, uint256 amount);
+    event Baptise(
+        address indexed user,
+        uint256 amount,
+        BaptiseType indexed baptiseType
+    );
 
     event NewSoupPrice(uint256 price);
 
@@ -209,7 +219,11 @@ interface IRebornPortal is IRebornDefination {
      * @param user user address
      * @param amount amount for reward
      */
-    function baptise(address user, uint256 amount) external;
+    function baptise(
+        address user,
+        uint256 amount,
+        BaptiseType baptiseType
+    ) external;
 
     /**
      * @dev stake $REBORN on this tombstone

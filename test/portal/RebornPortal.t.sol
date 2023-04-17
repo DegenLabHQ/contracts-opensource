@@ -288,11 +288,11 @@ contract RebornPortalCommonTest is RebornPortalBaseTest {
         deal(address(rbt), address(portal.vault()), amount);
 
         vm.expectEmit(true, true, true, true);
-        emit Baptise(user, amount);
+        emit Baptise(user, amount, BaptiseType.TwitterShare);
         emit Transfer(address(0), user, amount);
 
         vm.prank(_signer);
-        portal.baptise(user, amount);
+        portal.baptise(user, amount, BaptiseType.TwitterShare);
     }
 
     function testSeedRead(
