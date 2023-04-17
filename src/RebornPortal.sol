@@ -287,6 +287,8 @@ contract RebornPortal is
      * @inheritdoc IRebornPortal
      */
     function toNextSeason() external onlyOwner {
+        piggyBank.stop(_season);
+
         _season += 1;
 
         // update piggyBank

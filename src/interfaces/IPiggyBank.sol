@@ -38,10 +38,7 @@ interface IPiggyBank {
     error InvalidRoundInfo();
     error SeasonOver();
     error InvalidSeason();
-    error InvalidSignature();
     error ZeroAddressSet();
-    error InvaliedSigner();
-    error InvalidSigner();
 
     function deposit(uint256 season, address account) external payable;
 
@@ -59,5 +56,5 @@ interface IPiggyBank {
         address verifySigner
     ) external;
 
-    function stop(uint256 season, bytes calldata signature) external;
+    function stop(uint256 season) external;
 }

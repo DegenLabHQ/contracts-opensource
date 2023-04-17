@@ -16,9 +16,6 @@ contract PiggyBank is SafeOwnableUpgradeable, UUPSUpgradeable, IPiggyBank {
     // min time long from season start to end
     uint64 public minTimeLong;
 
-    // Mapping from signer to bool
-    mapping(address => bool) public signers;
-
     // Mapping from season to seasonInfo
     mapping(uint256 => SeasonInfo) seasons;
 
@@ -61,6 +58,9 @@ contract PiggyBank is SafeOwnableUpgradeable, UUPSUpgradeable, IPiggyBank {
     ) external payable override onlyPortal {
         bool isEnd = checkIsSeasonEnd(season);
         if (isEnd) {
+            if (!seasons[season].stoped) {
+                seasons[season].stoped = true;
+            }
             revert SeasonOver();
         }
 
@@ -88,19 +88,10 @@ contract PiggyBank is SafeOwnableUpgradeable, UUPSUpgradeable, IPiggyBank {
         emit NewSeason(season, startTime);
     }
 
-    function stop(uint256 season, bytes calldata signature) external override {
-        if (msg.sender != seasons[season].verifySigner) {
-            revert InvalidSigner();
+    function stop(uint256 season) external override onlyPortal {
+        if (seasons[season].startTime == 0) {
+            revert InvalidSeason();
         }
-
-        bytes32 messageHash = ECDSAUpgradeable.toEthSignedMessageHash(
-            seasons[season].stopedHash
-        );
-        address signer = ECDSAUpgradeable.recover(messageHash, signature);
-        if (signer != seasons[season].verifySigner) {
-            revert InvalidSignature();
-        }
-
         seasons[season].stoped = true;
 
         emit SeasonStoped(season, block.timestamp);
@@ -122,7 +113,7 @@ contract PiggyBank is SafeOwnableUpgradeable, UUPSUpgradeable, IPiggyBank {
         uint256 season,
         bytes32 stopedHash,
         address verifySigner
-    ) external override onlySigner {
+    ) external override onlyOwner {
         if (seasons[season].startTime == 0) {
             revert InvalidSeason();
         }
@@ -134,20 +125,6 @@ contract PiggyBank is SafeOwnableUpgradeable, UUPSUpgradeable, IPiggyBank {
         seasons[season].verifySigner = verifySigner;
 
         emit SetStopedHash(season, stopedHash, verifySigner);
-    }
-
-    function updateSigners(
-        address[] calldata toAdd,
-        address[] calldata toRemove
-    ) external onlyOwner {
-        for (uint256 i = 0; i < toAdd.length; i++) {
-            signers[toAdd[i]] = true;
-            emit SignerUpdate(toAdd[i], true);
-        }
-        for (uint256 i = 0; i < toRemove.length; i++) {
-            delete signers[toRemove[i]];
-            emit SignerUpdate(toRemove[i], false);
-        }
     }
 
     function _toNextRound(
@@ -186,16 +163,20 @@ contract PiggyBank is SafeOwnableUpgradeable, UUPSUpgradeable, IPiggyBank {
         return isEnd;
     }
 
+    function verifyStopHash(
+        uint256 season,
+        bytes calldata signature
+    ) public view returns (bool) {
+        bytes32 messageHash = ECDSAUpgradeable.toEthSignedMessageHash(
+            seasons[season].stopedHash
+        );
+        address signer = ECDSAUpgradeable.recover(messageHash, signature);
+        return signer == seasons[season].verifySigner;
+    }
+
     modifier onlyPortal() {
         if (msg.sender != portal) {
             revert CallerNotPortal();
-        }
-        _;
-    }
-
-    modifier onlySigner() {
-        if (!signers[msg.sender]) {
-            revert InvaliedSigner();
         }
         _;
     }
