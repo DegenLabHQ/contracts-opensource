@@ -10,7 +10,8 @@
     "compile": "hardhat compile",
     "test": "hardhat test",
     "deploy": "hardhat deploy --no-compile",
-    "verify": "hardhat run ./verify.ts"
+    "verify": "hardhat run ./verify.ts",
+    "tenderly:verify": "hardhat tenderly:verify"
   },
   "author": "Devan Non <devanon@chainstride.capital>",
   "license": "Apache-2.0",
