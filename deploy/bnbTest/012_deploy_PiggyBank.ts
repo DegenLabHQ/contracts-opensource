@@ -5,7 +5,7 @@ const func: DeployFunction = async function ({
   deployments,
   getNamedAccounts,
 }) {
-  const { deploy, get } = deployments;
+  const { deploy, get, execute } = deployments;
   const { deployer, owner } = await getNamedAccounts();
 
   const portal = await get("Portal");
@@ -25,6 +25,14 @@ const func: DeployFunction = async function ({
     log: true,
     deterministicDeployment: formatBytes32String("DegenReborn_Test"),
   });
+
+  const piggyBank = await get("PiggyBank");
+  await execute(
+    "RebornPortal",
+    { from: owner, log: true },
+    "setPiggyBank",
+    piggyBank.address
+  );
 };
 
 func.tags = ["PiggyBank"];
