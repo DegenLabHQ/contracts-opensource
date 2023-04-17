@@ -1,4 +1,4 @@
-import { formatBytes32String } from "ethers/lib/utils";
+import { formatBytes32String, parseEther } from "ethers/lib/utils";
 import { DeployFunction } from "hardhat-deploy/types";
 
 const func: DeployFunction = async function ({
@@ -8,7 +8,7 @@ const func: DeployFunction = async function ({
   const { deploy, get, execute } = deployments;
   const { deployer, owner } = await getNamedAccounts();
 
-  const portal = await get("Portal");
+  const portal = await get("RebornPortal");
 
   await deploy("PiggyBank", {
     from: deployer,
@@ -38,7 +38,13 @@ const func: DeployFunction = async function ({
     "RebornPortal",
     { from: owner, log: true },
     "setPiggyBankFee",
-    200
+    800
+  );
+
+  await execute(
+    "RebornPortal",
+    { from: owner, log: true, value: parseEther("1") },
+    "initializeSeason"
   );
 };
 
