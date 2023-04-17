@@ -651,17 +651,24 @@ contract RebornPortal is
         }
 
         // reward referrers
-        uint256 referAmount = _sendRewardToRefs(msg.sender, rebornFee);
+        uint256 referNativeAmount = _sendRewardToRefs(msg.sender, rebornFee);
+
+        // 
+        uint256 netNativeAmount;
+        unchecked {
+            netNativeAmount = nativeFee - referNativeAmount;
+        }
+
+        uint256 piggyBankAmount = (netNativeAmount * piggyBankFee) /
+            PERCENTAGE_BASE;
 
         // x% to piggyBank
-        piggyBank.deposit{value: (nativeFee * piggyBankFee) / PERCENTAGE_BASE}(
-            _season,
-            msg.sender
-        );
+        piggyBank.deposit{value: piggyBankAmount}(_season, msg.sender);
 
         unchecked {
+            netNativeAmount -= piggyBankAmount;
             // rest native token to to jackpot
-            _seasonData[_season]._jackpot += nativeFee - referAmount;
+            _seasonData[_season]._jackpot += netNativeAmount;
         }
 
         rebornToken.transferFrom(msg.sender, burnPool, rebornFee);
