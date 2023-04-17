@@ -6,7 +6,7 @@ interface IPiggyBank {
         uint256 totalAmount;
         bytes32 stopedHash;
         address verifySigner; // Used for verification the next time stop is called
-        uint64 startTime;
+        uint32 startTime;
         bool stoped;
     }
 
@@ -24,7 +24,8 @@ interface IPiggyBank {
         uint256 season,
         address account,
         uint256 roundIndex,
-        uint256 amount
+        uint256 amount,
+        uint256 roundTotalAmount
     );
     event SeasonStoped(uint256 season, uint256 stopTime);
     event SignerUpdate(address indexed signer, bool valid);

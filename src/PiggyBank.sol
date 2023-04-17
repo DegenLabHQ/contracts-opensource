@@ -25,6 +25,8 @@ contract PiggyBank is SafeOwnableUpgradeable, UUPSUpgradeable, IPiggyBank {
     // mapping(account => mappiing(season=> mapping(roundIndex => userInfo)))
     mapping(address => mapping(uint256 => mapping(uint256 => uint256))) userInfo;
 
+    uint256[46] internal _gap;
+
     function initialize(
         address owner_,
         address portal_,
@@ -76,13 +78,19 @@ contract PiggyBank is SafeOwnableUpgradeable, UUPSUpgradeable, IPiggyBank {
             roundInfo.totalAmount += msg.value;
             userInfo[account][season][roundInfo.currentIndex] += msg.value;
 
-            emit Deposit(season, account, roundInfo.currentIndex, msg.value);
+            emit Deposit(
+                season,
+                account,
+                roundInfo.currentIndex,
+                msg.value,
+                roundInfo.totalAmount
+            );
         }
     }
 
     function newSeason(uint256 season, uint256 startTime) external onlyPortal {
         if (seasons[season].startTime == 0) {
-            seasons[season].startTime = uint64(startTime);
+            seasons[season].startTime = uint32(startTime);
         }
 
         emit NewSeason(season, startTime);
@@ -130,23 +138,45 @@ contract PiggyBank is SafeOwnableUpgradeable, UUPSUpgradeable, IPiggyBank {
     function _toNextRound(
         address account,
         uint256 season,
-        uint256 newRoundInitAmount
+        uint256 nextRoundInitAmount
     ) internal {
         // update rounds
         RoundInfo storage roundInfo = rounds[season];
         roundInfo.currentIndex++;
         roundInfo.target = (roundInfo.target * multiple) / 100;
-        roundInfo.totalAmount = newRoundInitAmount;
 
-        // update userInfo
-        userInfo[account][season][roundInfo.currentIndex] = newRoundInitAmount;
+        if (nextRoundInitAmount > roundInfo.target) {
+            // update userInfo
+            userInfo[account][season][roundInfo.currentIndex] = roundInfo
+                .target;
+            emit Deposit(
+                season,
+                account,
+                roundInfo.currentIndex,
+                roundInfo.target,
+                roundInfo.target
+            );
 
-        emit Deposit(
-            season,
-            account,
-            roundInfo.currentIndex,
-            newRoundInitAmount
-        );
+            _toNextRound(
+                account,
+                season,
+                nextRoundInitAmount - roundInfo.target
+            );
+        } else {
+            roundInfo.totalAmount = nextRoundInitAmount;
+
+            userInfo[account][season][
+                roundInfo.currentIndex
+            ] = nextRoundInitAmount;
+
+            emit Deposit(
+                season,
+                account,
+                roundInfo.currentIndex,
+                nextRoundInitAmount,
+                nextRoundInitAmount
+            );
+        }
     }
 
     function checkIsSeasonEnd(uint256 season) public view returns (bool) {
