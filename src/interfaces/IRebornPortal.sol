@@ -165,8 +165,6 @@ interface IRebornDefination {
     error BetaStoped();
 
     error DirectionError();
-
-    error SeasonStoped();
 }
 
 interface IRebornPortal is IRebornDefination {
