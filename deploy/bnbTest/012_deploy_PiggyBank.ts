@@ -33,6 +33,13 @@ const func: DeployFunction = async function ({
     "setPiggyBank",
     piggyBank.address
   );
+
+  await execute(
+    "RebornPortal",
+    { from: owner, log: true },
+    "setPiggyBankFee",
+    200
+  );
 };
 
 func.tags = ["PiggyBank"];
