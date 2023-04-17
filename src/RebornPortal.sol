@@ -495,7 +495,7 @@ contract RebornPortal is
     function setPiggyBankFee(uint16 piggyBankFee_) external onlyOwner {
         piggyBankFee = piggyBankFee_;
 
-        emit SetPiggyBankFee(piggyBankFee_);
+        emit SetNewPiggyBankFee(piggyBankFee_);
     }
 
     /**
