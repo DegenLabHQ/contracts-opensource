@@ -383,6 +383,7 @@ contract RebornPortal is
      */
     function forging(
         uint256 tokenId,
+        uint256 toLevel,
         PermitParams calldata permitParams
     ) external {
         _permit(
@@ -392,27 +393,34 @@ contract RebornPortal is
             permitParams.s,
             permitParams.v
         );
-        _forging(tokenId);
+        _forging(tokenId, toLevel);
     }
 
-    function forging(uint256 tokenId) external {
-        _forging(tokenId);
+    function forging(uint256 tokenId, uint256 toLevel) external {
+        _forging(tokenId, toLevel);
     }
 
-    function _forging(uint256 tokenId) internal {
-        uint256 level = _characterProperties[tokenId].level;
-        uint256 requiredAmount = _forgeRequiredMaterials[level];
-        if (requiredAmount == 0) {
+    function _forging(uint256 tokenId, uint256 toLevel) internal {
+        uint256 currentLevel = _characterProperties[tokenId].level;
+        if (currentLevel >= toLevel) {
             revert CommonError.InvalidParams();
+        }
+        uint256 requiredAmount;
+        for (uint256 i = currentLevel; i < toLevel; i++) {
+            uint256 thisLevelAmount = _forgeRequiredMaterials[i];
+
+            if (thisLevelAmount == 0) {
+                revert CommonError.InvalidParams();
+            }
+
+            unchecked {
+                requiredAmount += thisLevelAmount;
+            }
         }
 
         rebornToken.transferFrom(msg.sender, burnPool, requiredAmount);
 
-        unchecked {
-            level += 1;
-        }
-
-        emit ForgedTo(level);
+        emit ForgedTo(toLevel);
     }
 
     function setForgingRequiredAmount(
