@@ -26,36 +26,36 @@ const func: DeployFunction = async function ({
     deterministicDeployment: formatBytes32String("DegenReborn_Test"),
   });
 
-  const piggyBank = await get("PiggyBank");
-  await execute(
-    "RebornPortal",
-    { from: owner, log: true },
-    "setPiggyBank",
-    piggyBank.address
-  );
+  // const piggyBank = await get("PiggyBank");
+  // await execute(
+  //   "RebornPortal",
+  //   { from: owner, log: true },
+  //   "setPiggyBank",
+  //   piggyBank.address
+  // );
 
-  await execute(
-    "RebornPortal",
-    { from: owner, log: true },
-    "setPiggyBankFee",
-    800
-  );
+  // await execute(
+  //   "RebornPortal",
+  //   { from: owner, log: true },
+  //   "setPiggyBankFee",
+  //   800
+  // );
 
-  await execute("PiggyBank", { from: owner, log: true }, "setMultiple", 200);
-  await execute(
-    "PiggyBank",
-    { from: owner, log: true },
-    "setMinTimeLong",
-    7 * 24 * 3600
-  );
+  // await execute("PiggyBank", { from: owner, log: true }, "setMultiple", 200);
+  // await execute(
+  //   "PiggyBank",
+  //   { from: owner, log: true },
+  //   "setMinTimeLong",
+  //   7 * 24 * 3600
+  // );
 
-  await execute(
-    "RebornPortal",
-    { from: owner, log: true, value: parseEther("1") },
-    "initializeSeason",
-    parseEther("0.1"),
-    parseEther("1")
-  );
+  // await execute(
+  //   "RebornPortal",
+  //   { from: owner, log: true, value: parseEther("1") },
+  //   "initializeSeason",
+  //   parseEther("0.1"),
+  //   parseEther("1")
+  // );
 };
 
 func.tags = ["PiggyBank"];

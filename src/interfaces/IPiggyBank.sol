@@ -51,6 +51,7 @@ interface IPiggyBankDefination {
     error SeasonOver();
     error InvalidSeason();
     error AlreadyClaimed();
+    error SeasonNotOver();
 }
 
 interface IPiggyBank is IPiggyBankDefination {

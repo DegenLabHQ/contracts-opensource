@@ -122,6 +122,10 @@ contract PiggyBank is SafeOwnableUpgradeable, UUPSUpgradeable, IPiggyBank {
     }
 
     function claimReward(uint256 season) external {
+        if (!checkIsSeasonEnd(season)) {
+            revert SeasonNotOver();
+        }
+
         SeasonInfo memory seasonInfo = seasons[season];
         RoundInfo memory roundInfo = rounds[season];
         UserInfo storage userInfo = users[msg.sender][season][
@@ -180,6 +184,7 @@ contract PiggyBank is SafeOwnableUpgradeable, UUPSUpgradeable, IPiggyBank {
         // update rounds
         RoundInfo storage roundInfo = rounds[season];
         roundInfo.currentIndex++;
+        roundInfo.startTime = uint32(block.timestamp);
         roundInfo.target += (roundInfo.target * multiple) / PERCENTAGE_BASE;
 
         if (nextRoundInitAmount > roundInfo.target) {
