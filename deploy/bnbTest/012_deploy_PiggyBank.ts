@@ -41,6 +41,14 @@ const func: DeployFunction = async function ({
     800
   );
 
+  await execute("PiggyBank", { from: owner, log: true }, "setMultiple", 200);
+  await execute(
+    "PiggyBank",
+    { from: owner, log: true },
+    "setMinTimeLong",
+    7 * 24 * 3600
+  );
+
   await execute(
     "RebornPortal",
     { from: owner, log: true, value: parseEther("1") },

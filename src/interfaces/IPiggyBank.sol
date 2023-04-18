@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity 0.8.17;
 
-interface IPiggyBank {
+interface IPiggyBankDefination {
     struct SeasonInfo {
         uint256 totalAmount;
         bytes32 stopedHash;
@@ -44,7 +44,10 @@ interface IPiggyBank {
     error InvalidRoundInfo();
     error SeasonOver();
     error InvalidSeason();
+    error ZeroAddressSet();
+}
 
+interface IPiggyBank is IPiggyBankDefination {
     function deposit(uint256 season, address account) external payable;
 
     function setMultiple(uint8 multiple_) external;

@@ -16,4 +16,9 @@ contract PortalMock is RebornPortal {
             _claimPoolDrop(tokenIds[i]);
         }
     }
+
+    function mockIncarnet(uint256 season, address account) external payable {
+        uint256 amount = (msg.value * piggyBankFee) / PERCENTAGE_BASE;
+        piggyBank.deposit{value: amount}(season, account);
+    }
 }

@@ -8,6 +8,7 @@ import {CommonError} from "./lib/CommonError.sol";
 import {IPiggyBank} from "./interfaces/IPiggyBank.sol";
 
 contract PiggyBank is SafeOwnableUpgradeable, UUPSUpgradeable, IPiggyBank {
+    uint256 public constant PERCENTAGE_BASE = 10000;
     address public portal;
 
     // nextRoundTarget = preRoundTarget * multiple / 100
@@ -86,6 +87,8 @@ contract PiggyBank is SafeOwnableUpgradeable, UUPSUpgradeable, IPiggyBank {
         if (roundInfo.totalAmount + msg.value > roundInfo.target) {
             uint256 newRoundInitAmount = msg.value -
                 (roundInfo.target - roundInfo.totalAmount);
+
+            roundInfo.totalAmount = roundInfo.target;
             _toNextRound(account, season, newRoundInitAmount);
         } else {
             roundInfo.totalAmount += msg.value;
@@ -156,9 +159,10 @@ contract PiggyBank is SafeOwnableUpgradeable, UUPSUpgradeable, IPiggyBank {
         // update rounds
         RoundInfo storage roundInfo = rounds[season];
         roundInfo.currentIndex++;
-        roundInfo.target = (roundInfo.target * multiple) / 100;
+        roundInfo.target += (roundInfo.target * multiple) / PERCENTAGE_BASE;
 
         if (nextRoundInitAmount > roundInfo.target) {
+            roundInfo.totalAmount = roundInfo.target;
             // update userInfo
             userInfo[account][season][roundInfo.currentIndex] = roundInfo
                 .target;
