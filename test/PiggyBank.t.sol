@@ -65,6 +65,8 @@ contract PiggyBankTest is Test, IPiggyBankDefination {
 
     function testClaimReward() public {
         testDeposit();
+        vm.prank(owner);
+        portal.mockStop(0);
 
         vm.expectEmit(true, true, true, true);
         emit ClaimedReward(0, user1, 1686976744186046511);
