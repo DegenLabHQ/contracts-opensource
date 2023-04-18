@@ -83,12 +83,21 @@ library TestUtils {
         uint256 signerPrivateKey,
         address contractAddr,
         address user,
+        uint256 soupPrice,
+        uint256 incarnateCounter,
         uint256 tokenId
     ) public view returns (uint256 deadline, bytes32 r, bytes32 s, uint8 v) {
         deadline = block.timestamp + 100;
 
         bytes32 structHash = keccak256(
-            abi.encode(PortalLib._CHARACTER_TYPEHASH, user, tokenId, deadline)
+            abi.encode(
+                PortalLib._SOUPPARAMS_TYPEHASH,
+                user,
+                soupPrice,
+                incarnateCounter,
+                tokenId,
+                deadline
+            )
         );
 
         bytes32 domainSeparator = keccak256(

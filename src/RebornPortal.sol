@@ -80,7 +80,7 @@ contract RebornPortal is
     function incarnate(
         InnateParams calldata innate,
         address referrer,
-        CharParams calldata charParams
+        SoupParams calldata soupParams
     )
         external
         payable
@@ -90,10 +90,7 @@ contract RebornPortal is
         nonReentrant
     {
         _refer(referrer);
-
-        _useChar(charParams);
-
-        _incarnate(innate, charParams.charTokenId);
+        _incarnate(innate, soupParams);
     }
 
     /**
@@ -102,7 +99,7 @@ contract RebornPortal is
     function incarnate(
         InnateParams calldata innate,
         address referrer,
-        CharParams calldata charParams,
+        SoupParams calldata soupParams,
         PermitParams calldata permitParams
     )
         external
@@ -121,9 +118,7 @@ contract RebornPortal is
             permitParams.v
         );
 
-        _useChar(charParams);
-
-        _incarnate(innate, charParams.charTokenId);
+        _incarnate(innate, soupParams);
     }
 
     /**
@@ -645,9 +640,11 @@ contract RebornPortal is
      */
     function _incarnate(
         InnateParams calldata innate,
-        uint256 charTokenId
+        SoupParams calldata soupParams
     ) internal {
-        uint256 nativeFee = innate.soupPrice +
+        _useSoupParam(soupParams, getIncarnateCount(_season, msg.sender));
+
+        uint256 nativeFee = soupParams.soupPrice +
             innate.talentNativePrice +
             innate.propertyNativePrice;
 
@@ -688,12 +685,12 @@ contract RebornPortal is
 
         emit Incarnate(
             msg.sender,
-            charTokenId,
+            soupParams.charTokenId,
             innate.talentNativePrice,
             innate.talentRebornPrice,
             innate.propertyNativePrice,
             innate.propertyRebornPrice,
-            innate.soupPrice
+            soupParams.soupPrice
         );
     }
 

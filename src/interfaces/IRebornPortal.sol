@@ -11,10 +11,10 @@ interface IRebornDefination {
         uint256 talentRebornPrice;
         uint256 propertyNativePrice;
         uint256 propertyRebornPrice;
-        uint256 soupPrice;
     }
 
-    struct CharParams {
+    struct SoupParams {
+        uint256 soupPrice;
         uint256 charTokenId;
         uint256 deadline;
         bytes32 r;
@@ -184,13 +184,13 @@ interface IRebornPortal is IRebornDefination {
     function incarnate(
         InnateParams calldata innate,
         address referrer,
-        CharParams calldata charParams
+        SoupParams calldata charParams
     ) external payable;
 
     function incarnate(
         InnateParams calldata innate,
         address referrer,
-        CharParams calldata charParams,
+        SoupParams calldata charParams,
         PermitParams calldata permitParams
     ) external payable;
 
