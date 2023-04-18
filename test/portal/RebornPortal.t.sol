@@ -9,13 +9,13 @@ contract RebornPortalCommonTest is RebornPortalBaseTest {
             0.1 ether,
             10 ether,
             0.2 ether,
-            20 ether,
-            SOUP_PRICE
+            20 ether
         );
 
-        CharParams memory charParams = CharParams(
+        SoupParams memory soupParams = SoupParams(
+            0.1 ether,
             0,
-            0,
+            block.timestamp + 100,
             bytes32(0),
             bytes32(0),
             uint8(0)
@@ -27,7 +27,7 @@ contract RebornPortalCommonTest is RebornPortalBaseTest {
         portal.incarnate{value: 0.1 ether}(
             innateParams,
             address(0),
-            charParams
+            soupParams
         );
 
         deal(address(rbt), _user, 1 << 128);
@@ -48,7 +48,7 @@ contract RebornPortalCommonTest is RebornPortalBaseTest {
         portal.incarnate{value: 0.3 ether + SOUP_PRICE}(
             innateParams,
             address(0),
-            charParams
+            soupParams
         );
         vm.stopPrank();
     }
@@ -58,8 +58,7 @@ contract RebornPortalCommonTest is RebornPortalBaseTest {
             0.1 ether,
             10 ether,
             0.2 ether,
-            20 ether,
-            SOUP_PRICE
+            20 ether
         );
 
         // set default property
@@ -72,9 +71,16 @@ contract RebornPortalCommonTest is RebornPortalBaseTest {
             bytes32 r,
             bytes32 s,
             uint8 v
-        ) = mockSignCharOwnership(_user, tokenId);
+        ) = mockSignCharOwnership(_user, SOUP_PRICE, 1, tokenId);
 
-        CharParams memory charParams = CharParams(tokenId, deadline, r, s, v);
+        SoupParams memory soupParams = SoupParams(
+            SOUP_PRICE,
+            tokenId,
+            deadline,
+            r,
+            s,
+            v
+        );
 
         vm.expectRevert(InsufficientAmount.selector);
 
@@ -82,7 +88,7 @@ contract RebornPortalCommonTest is RebornPortalBaseTest {
         portal.incarnate{value: 0.1 ether}(
             innateParams,
             address(0),
-            charParams
+            soupParams
         );
 
         deal(address(rbt), _user, 1 << 128);
@@ -103,7 +109,7 @@ contract RebornPortalCommonTest is RebornPortalBaseTest {
         portal.incarnate{value: 0.3 ether + SOUP_PRICE}(
             innateParams,
             address(0),
-            charParams
+            soupParams
         );
         vm.stopPrank();
     }

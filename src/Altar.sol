@@ -16,25 +16,30 @@ abstract contract Altar is EIP712Upgradeable, RebornPortalStorage, AccessBase {
         __EIP712_init_unchained("Altar", "1");
     }
 
-    function _useChar(CharParams calldata charparams) internal {
-        if (charparams.charTokenId == 0) {
-            return;
+    function _useSoupParam(
+        SoupParams calldata soupParams,
+        uint256 nonce
+    ) internal {
+        _checkSig(soupParams, nonce);
+
+        if (soupParams.charTokenId != 0) {
+            PortalLib._comsumeAP(soupParams.charTokenId, _characterProperties);
         }
-        _checkChar(charparams);
-        PortalLib._comsumeAP(charparams.charTokenId, _characterProperties);
     }
 
-    function _checkChar(CharParams calldata charparams) internal view {
-        if (block.timestamp >= charparams.deadline) {
+    function _checkSig(SoupParams calldata soupParams,uint256 nonce) internal view {
+        if (block.timestamp >= soupParams.deadline) {
             revert CommonError.SignatureExpired();
         }
 
         bytes32 structHash = keccak256(
             abi.encode(
-                PortalLib._CHARACTER_TYPEHASH,
+                PortalLib._SOUPPARAMS_TYPEHASH,
                 msg.sender,
-                charparams.charTokenId,
-                charparams.deadline
+                soupParams.soupPrice,
+                nonce,
+                soupParams.charTokenId,
+                soupParams.deadline
             )
         );
 
@@ -42,10 +47,11 @@ abstract contract Altar is EIP712Upgradeable, RebornPortalStorage, AccessBase {
 
         address signer = ECDSAUpgradeable.recover(
             hash,
-            charparams.v,
-            charparams.r,
-            charparams.s
+            soupParams.v,
+            soupParams.r,
+            soupParams.s
         );
+
         if (!signers[signer]) {
             revert CommonError.NotSigner();
         }

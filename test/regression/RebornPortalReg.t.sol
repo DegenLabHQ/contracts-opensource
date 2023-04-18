@@ -44,26 +44,26 @@ contract RebornPortalReg is Test, IRebornDefination {
         // portal.performUpkeep(abi.encode(1, 0));
     }
 
-    function testSimulateIncarnateWithChar() public {
-        vm.rollFork(28870846);
-        mockUpgradeToDevVersion();
+    // function testSimulateIncarnateWithChar() public {
+    //     vm.rollFork(28870846);
+    //     mockUpgradeToDevVersion();
 
-        InnateParams memory innateParams = InnateParams(
-            13910000000000000,
-            417300000000000000000000,
-            10000000000000000,
-            26670000000000000,
-            800100000000000000000000
-        );
-        CharParams memory charParams = CharParams(
-            714,
-            1681303348,
-            0x9427e6840d26c8fc80476ef0f8e7df104feb7deba98fffa4b7b559f9738f5058,
-            0x67c6bfa90acba928129d7750e44d5d5e15d65aa906e72049d82b900b3b31d7eb,
-            28
-        );
+    //     InnateParams memory innateParams = InnateParams(
+    //         13910000000000000,
+    //         417300000000000000000000,
+    //         10000000000000000,
+    //         26670000000000000,
+    //         800100000000000000000000
+    //     );
+    //      memory charParams = CharParams(
+    //         714,
+    //         1681303348,
+    //         0x9427e6840d26c8fc80476ef0f8e7df104feb7deba98fffa4b7b559f9738f5058,
+    //         0x67c6bfa90acba928129d7750e44d5d5e15d65aa906e72049d82b900b3b31d7eb,
+    //         28
+    //     );
 
-        vm.prank(0x850Fe27f63de12b601C0203b62d7995462D1D1Bc);
-        portal.incarnate(innateParams, address(0), charParams);
-    }
+    //     vm.prank(0x850Fe27f63de12b601C0203b62d7995462D1D1Bc);
+    //     portal.incarnate(innateParams, address(0), charParams);
+    // }
 }

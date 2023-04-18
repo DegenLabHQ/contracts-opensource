@@ -144,12 +144,16 @@ contract RebornPortalBaseTest is Test, IRebornDefination, EventDefination {
 
     function mockSignCharOwnership(
         address user,
+        uint256 soupPrice,
+        uint256 incarnateCounter,
         uint256 tokenId
     ) public view returns (uint256 deadline, bytes32 r, bytes32 s, uint8 v) {
         (deadline, r, s, v) = TestUtils.signCharOwnership(
             11,
             address(portal),
             user,
+            soupPrice,
+            incarnateCounter,
             tokenId
         );
     }
