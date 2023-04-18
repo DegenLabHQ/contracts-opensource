@@ -5,6 +5,7 @@ import "@nomiclabs/hardhat-ethers";
 import "@nomiclabs/hardhat-etherscan";
 import "@typechain/hardhat";
 import "hardhat-deploy";
+import "hardhat-deploy-tenderly";
 import "hardhat-preprocessor";
 import "hardhat-contract-sizer";
 import "hardhat-gas-reporter";
