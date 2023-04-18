@@ -429,7 +429,7 @@ contract RebornPortal is
         PiggyBank(address(piggyBank)).initializeSeason{value: msg.value}(
             0,
             uint32(block.timestamp),
-            IPiggyBank.RoundInfo(1 ether, 0.1 ether, 0, block.timestamp)
+            IPiggyBank.RoundInfo(0.1 ether, 1 ether, 0, block.timestamp)
         );
     }
 
@@ -662,7 +662,7 @@ contract RebornPortal is
         // reward referrers
         uint256 referNativeAmount = _sendRewardToRefs(msg.sender, rebornFee);
 
-        // 
+        //
         uint256 netNativeAmount;
         unchecked {
             netNativeAmount = nativeFee - referNativeAmount;
