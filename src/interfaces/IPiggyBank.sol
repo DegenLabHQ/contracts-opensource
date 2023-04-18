@@ -44,7 +44,6 @@ interface IPiggyBankDefination {
     error InvalidRoundInfo();
     error SeasonOver();
     error InvalidSeason();
-    error ZeroAddressSet();
 }
 
 interface IPiggyBank is IPiggyBankDefination {
