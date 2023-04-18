@@ -24,8 +24,8 @@ contract PiggyBank is SafeOwnableUpgradeable, UUPSUpgradeable, IPiggyBank {
     mapping(uint256 => RoundInfo) internal rounds;
 
     // mapping(account => mappiing(season=> mapping(roundIndex => userInfo)))
-    mapping(address => mapping(uint256 => mapping(uint256 => uint256)))
-        internal userInfo;
+    mapping(address => mapping(uint256 => mapping(uint256 => UserInfo)))
+        internal users;
 
     uint256[44] internal _gap;
 
@@ -92,7 +92,7 @@ contract PiggyBank is SafeOwnableUpgradeable, UUPSUpgradeable, IPiggyBank {
             _toNextRound(account, season, newRoundInitAmount);
         } else {
             roundInfo.totalAmount += msg.value;
-            userInfo[account][season][roundInfo.currentIndex] += msg.value;
+            users[account][season][roundInfo.currentIndex].amount += msg.value;
 
             emit Deposit(
                 season,
@@ -119,6 +119,27 @@ contract PiggyBank is SafeOwnableUpgradeable, UUPSUpgradeable, IPiggyBank {
         seasons[season].stoped = true;
 
         emit SeasonStoped(season, block.timestamp);
+    }
+
+    function claimReward(uint256 season) external {
+        SeasonInfo memory seasonInfo = seasons[season];
+        RoundInfo memory roundInfo = rounds[season];
+        UserInfo storage userInfo = users[msg.sender][season][
+            roundInfo.currentIndex
+        ];
+
+        if (userInfo.claimedAmount > 0) {
+            revert AlreadyClaimed();
+        }
+
+        uint256 userReward = (seasonInfo.totalAmount * userInfo.amount) /
+            roundInfo.totalAmount;
+
+        userInfo.claimedAmount = userReward;
+
+        payable(msg.sender).transfer(userReward);
+
+        emit ClaimedReward(season, msg.sender, userReward);
     }
 
     function setMultiple(uint8 multiple_) external override onlyOwner {
@@ -164,7 +185,7 @@ contract PiggyBank is SafeOwnableUpgradeable, UUPSUpgradeable, IPiggyBank {
         if (nextRoundInitAmount > roundInfo.target) {
             roundInfo.totalAmount = roundInfo.target;
             // update userInfo
-            userInfo[account][season][roundInfo.currentIndex] = roundInfo
+            users[account][season][roundInfo.currentIndex].amount = roundInfo
                 .target;
             emit Deposit(
                 season,
@@ -182,9 +203,8 @@ contract PiggyBank is SafeOwnableUpgradeable, UUPSUpgradeable, IPiggyBank {
         } else {
             roundInfo.totalAmount = nextRoundInitAmount;
 
-            userInfo[account][season][
-                roundInfo.currentIndex
-            ] = nextRoundInitAmount;
+            users[account][season][roundInfo.currentIndex]
+                .amount = nextRoundInitAmount;
 
             emit Deposit(
                 season,
@@ -226,8 +246,8 @@ contract PiggyBank is SafeOwnableUpgradeable, UUPSUpgradeable, IPiggyBank {
         address account,
         uint256 season,
         uint256 roundIndex
-    ) external view returns (uint256) {
-        return userInfo[account][season][roundIndex];
+    ) external view returns (UserInfo memory) {
+        return users[account][season][roundIndex];
     }
 
     function verifyStopHash(
