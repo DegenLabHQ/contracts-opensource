@@ -12,7 +12,7 @@ library PortalLib {
 
     bytes32 public constant _SOUPPARAMS_TYPEHASH =
         keccak256(
-            "AuthenticateSoupArg(address user, uint256 soupPrice, uint256 incarnateCounter,uint256 tokenId,uint256 deadline)"
+            "AuthenticateSoupArg(address user,uint256 soupPrice,uint256 incarnateCounter,uint256 tokenId,uint256 deadline)"
         );
 
     uint256 public constant ONE_HUNDRED = 100;
