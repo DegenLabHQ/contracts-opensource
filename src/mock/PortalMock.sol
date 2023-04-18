@@ -21,4 +21,8 @@ contract PortalMock is RebornPortal {
         uint256 amount = (msg.value * piggyBankFee) / PERCENTAGE_BASE;
         piggyBank.deposit{value: amount}(season, account);
     }
+
+    function mockStop(uint256 season) external {
+        piggyBank.stop(season);
+    }
 }

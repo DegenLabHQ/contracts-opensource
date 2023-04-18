@@ -13,8 +13,13 @@ interface IPiggyBankDefination {
     struct RoundInfo {
         uint256 totalAmount;
         uint256 target;
-        uint256 currentIndex;
-        uint256 startTime;
+        uint32 currentIndex;
+        uint32 startTime;
+    }
+
+    struct UserInfo {
+        uint256 amount;
+        uint256 claimedAmount;
     }
 
     event InitializeSeason(
@@ -39,11 +44,14 @@ interface IPiggyBankDefination {
         bytes32 stopedHash,
         address verifySigner
     );
+    event ClaimedReward(uint256 season, address account, uint256 amount);
 
     error CallerNotPortal();
     error InvalidRoundInfo();
     error SeasonOver();
     error InvalidSeason();
+    error AlreadyClaimed();
+    error SeasonNotOver();
 }
 
 interface IPiggyBank is IPiggyBankDefination {
