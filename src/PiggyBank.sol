@@ -17,13 +17,14 @@ contract PiggyBank is SafeOwnableUpgradeable, UUPSUpgradeable, IPiggyBank {
     uint64 public minTimeLong;
 
     // Mapping from season to seasonInfo
-    mapping(uint256 => SeasonInfo) seasons;
+    mapping(uint256 => SeasonInfo) internal seasons;
 
     // Mapping from round index to RoundInfo
-    mapping(uint256 => RoundInfo) rounds;
+    mapping(uint256 => RoundInfo) internal rounds;
 
     // mapping(account => mappiing(season=> mapping(roundIndex => userInfo)))
-    mapping(address => mapping(uint256 => mapping(uint256 => uint256))) userInfo;
+    mapping(address => mapping(uint256 => mapping(uint256 => uint256)))
+        internal userInfo;
 
     uint256[44] internal _gap;
 
@@ -40,12 +41,21 @@ contract PiggyBank is SafeOwnableUpgradeable, UUPSUpgradeable, IPiggyBank {
     function initializeSeason(
         uint256 season,
         uint32 seasonStartTime,
-        RoundInfo memory roundInfo
+        uint256 totalAmount,
+        uint256 initRoundTarget
     ) external payable onlyPortal {
         // initialize season roundInfo
-        if (roundInfo.totalAmount != msg.value) {
+        if (totalAmount != msg.value || initRoundTarget < totalAmount) {
             revert InvalidRoundInfo();
         }
+
+        RoundInfo memory roundInfo = RoundInfo({
+            totalAmount: totalAmount,
+            target: initRoundTarget,
+            currentIndex: 0,
+            startTime: seasonStartTime
+        });
+
         seasons[season].totalAmount = msg.value;
         seasons[season].startTime = seasonStartTime;
         rounds[season] = roundInfo;
@@ -194,6 +204,26 @@ contract PiggyBank is SafeOwnableUpgradeable, UUPSUpgradeable, IPiggyBank {
             isEnd = true;
         }
         return isEnd;
+    }
+
+    function getSeasonInfo(
+        uint256 season
+    ) external view returns (SeasonInfo memory) {
+        return seasons[season];
+    }
+
+    function getRoundInfo(
+        uint256 season
+    ) external view returns (RoundInfo memory) {
+        return rounds[season];
+    }
+
+    function getUserInfo(
+        address account,
+        uint256 season,
+        uint256 roundIndex
+    ) external view returns (uint256) {
+        return userInfo[account][season][roundIndex];
     }
 
     function verifyStopHash(
