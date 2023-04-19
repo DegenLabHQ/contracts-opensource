@@ -66,7 +66,6 @@ contract RebornPortal is
         __ReentrancyGuard_init();
         __Pausable_init();
         __VRFConsumerBaseV2_init(vrfCoordinator_);
-        __Altar_init_unchained();
     }
 
     // solhint-disable-next-line no-empty-blocks

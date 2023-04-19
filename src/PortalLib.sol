@@ -15,6 +15,11 @@ library PortalLib {
             "AuthenticateSoupArg(address user,uint256 soupPrice,uint256 incarnateCounter,uint256 tokenId,uint256 deadline)"
         );
 
+    bytes32 public constant _TYPE_HASH =
+        keccak256(
+            "EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)"
+        );
+
     uint256 public constant ONE_HUNDRED = 100;
 
     struct CharacterParams {
