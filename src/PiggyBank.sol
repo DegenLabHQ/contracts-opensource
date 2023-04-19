@@ -70,7 +70,8 @@ contract PiggyBank is SafeOwnableUpgradeable, UUPSUpgradeable, IPiggyBank {
 
     function deposit(
         uint256 season,
-        address account
+        address account,
+        uint256 income
     ) external payable override onlyPortal {
         bool isEnd = checkIsSeasonEnd(season);
         if (isEnd) {
@@ -84,21 +85,24 @@ contract PiggyBank is SafeOwnableUpgradeable, UUPSUpgradeable, IPiggyBank {
 
         // update round info
         RoundInfo storage roundInfo = rounds[season];
-        if (roundInfo.totalAmount + msg.value > roundInfo.target) {
-            uint256 newRoundInitAmount = msg.value -
+        if (roundInfo.totalAmount + income > roundInfo.target) {
+            uint256 newRoundInitAmount = income -
                 (roundInfo.target - roundInfo.totalAmount);
 
             roundInfo.totalAmount = roundInfo.target;
+            users[account][season][roundInfo.currentIndex].amount += (roundInfo
+                .target - roundInfo.totalAmount);
+
             _toNextRound(account, season, newRoundInitAmount);
         } else {
-            roundInfo.totalAmount += msg.value;
-            users[account][season][roundInfo.currentIndex].amount += msg.value;
+            roundInfo.totalAmount += income;
+            users[account][season][roundInfo.currentIndex].amount += income;
 
             emit Deposit(
                 season,
                 account,
                 roundInfo.currentIndex,
-                msg.value,
+                income,
                 roundInfo.totalAmount
             );
         }
@@ -192,13 +196,6 @@ contract PiggyBank is SafeOwnableUpgradeable, UUPSUpgradeable, IPiggyBank {
             // update userInfo
             users[account][season][roundInfo.currentIndex].amount = roundInfo
                 .target;
-            emit Deposit(
-                season,
-                account,
-                roundInfo.currentIndex,
-                roundInfo.target,
-                roundInfo.target
-            );
 
             _toNextRound(
                 account,

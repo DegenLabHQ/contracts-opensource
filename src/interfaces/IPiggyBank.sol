@@ -55,7 +55,11 @@ interface IPiggyBankDefination {
 }
 
 interface IPiggyBank is IPiggyBankDefination {
-    function deposit(uint256 season, address account) external payable;
+    function deposit(
+        uint256 season,
+        address account,
+        uint256 income
+    ) external payable;
 
     function setMultiple(uint8 multiple_) external;
 
