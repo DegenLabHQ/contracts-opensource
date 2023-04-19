@@ -661,7 +661,10 @@ contract RebornPortal is
         }
 
         // reward referrers
-        uint256 referNativeAmount = _sendRewardToRefs(msg.sender, rebornFee);
+        uint256 referNativeAmount = _sendNativeRewardToRefs(
+            msg.sender,
+            nativeFee
+        );
 
         //
         uint256 netNativeAmount;
@@ -872,12 +875,17 @@ contract RebornPortal is
     /**
      * @dev send NativeToken to referrers
      */
-    function _sendRewardToRefs(
+    function _sendNativeRewardToRefs(
         address account,
         uint256 amount
     ) internal returns (uint256) {
         return
-            PortalLib._sendRewardToRefs(referrals, rewardFees, account, amount);
+            PortalLib._sendNativeRewardToRefs(
+                referrals,
+                rewardFees,
+                account,
+                amount
+            );
     }
 
     /**
