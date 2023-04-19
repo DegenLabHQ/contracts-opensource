@@ -27,8 +27,8 @@ library PortalLib {
     struct CharacterProperty {
         uint8 currentAP;
         uint8 maxAP;
-        uint40 restoreTimePerAP; // Time Needed to Restore One Action Point
-        uint40 lastTimeAPUpdate;
+        uint32 restoreTimePerAP; // Time Needed to Restore One Action Point
+        uint32 lastTimeAPUpdate;
         uint8 level;
     }
 
@@ -50,34 +50,33 @@ library PortalLib {
         uint256 accRebornPerShare;
         uint256 accNativePerShare;
         uint256 coindayCumulant;
-        uint256 coindayUpdateLastTime;
-        uint256 totalForwardTribute;
-        uint256 totalReverseTribute;
+        uint32 coindayUpdateLastTime;
+        uint112 totalForwardTribute;
+        uint112 totalReverseTribute;
     }
 
+    //
+    // We do some fancy math here. Basically, any point in time, the amount
+    // entitled to a user but is pending to be distributed is:
+    //
+    //   pending reward = (Amount * pool.accPerShare) - user.rewardDebt
+    //
+    // Whenever a user infuse or switchPool. Here's what happens:
+    //   1. The pool's `accPerShare` (and `lastRewardBlock`) gets updated.
+    //   2. User receives the pending reward sent to his/her address.
+    //   3. User's `amount` gets updated.
+    //   4. User's `rewardDebt` gets updated.
     struct Portfolio {
         uint256 accumulativeAmount;
-        uint256 rebornRewardDebt;
-        uint256 nativeRewardDebt;
-        //
-        // We do some fancy math here. Basically, any point in time, the amount
-        // entitled to a user but is pending to be distributed is:
-        //
-        //   pending reward = (Amount * pool.accPerShare) - user.rewardDebt
-        //
-        // Whenever a user infuse or switchPool. Here's what happens:
-        //   1. The pool's `accPerShare` (and `lastRewardBlock`) gets updated.
-        //   2. User receives the pending reward sent to his/her address.
-        //   3. User's `amount` gets updated.
-        //   4. User's `rewardDebt` gets updated.
-
+        uint128 rebornRewardDebt;
+        uint128 nativeRewardDebt;
         /// @dev reward for holding the NFT when the NFT is selected
-        uint256 pendingOwnerRebornReward;
-        uint256 pendingOwnerNativeReward;
+        uint128 pendingOwnerRebornReward;
+        uint128 pendingOwnerNativeReward;
         uint256 coindayCumulant;
-        uint256 coindayUpdateLastTime;
-        uint256 totalForwardTribute;
-        uint256 totalReverseTribute;
+        uint32 coindayUpdateLastTime;
+        uint112 totalForwardTribute;
+        uint112 totalReverseTribute;
     }
 
     struct AirdropConf {
@@ -150,9 +149,9 @@ library PortalLib {
             portfolio.pendingOwnerRebornReward;
 
         // set current amount as debt
-        portfolio.rebornRewardDebt =
-            (userCoinday * pool.accRebornPerShare) /
-            PERSHARE_BASE;
+        portfolio.rebornRewardDebt = uint128(
+            (userCoinday * pool.accRebornPerShare) / PERSHARE_BASE
+        );
 
         // clean up reward as owner
         portfolio.pendingOwnerRebornReward = 0;
@@ -195,9 +194,9 @@ library PortalLib {
             portfolio.pendingOwnerNativeReward;
 
         // set current amount as debt
-        portfolio.nativeRewardDebt =
-            (userCoinday * pool.accNativePerShare) /
-            PERSHARE_BASE;
+        portfolio.nativeRewardDebt = uint128(
+            (userCoinday * pool.accNativePerShare) / PERSHARE_BASE
+        );
 
         // clean up reward as owner
         portfolio.pendingOwnerNativeReward = 0;
@@ -216,14 +215,16 @@ library PortalLib {
     ) public {
         unchecked {
             // flatten native reward
-            portfolio.nativeRewardDebt =
+            portfolio.nativeRewardDebt = uint128(
                 (portfolio.coindayCumulant * pool.accNativePerShare) /
-                PERSHARE_BASE;
+                    PERSHARE_BASE
+            );
 
             // flatten reborn reward
-            portfolio.rebornRewardDebt =
+            portfolio.rebornRewardDebt = uint128(
                 (portfolio.coindayCumulant * pool.accRebornPerShare) /
-                PERSHARE_BASE;
+                    PERSHARE_BASE
+            );
         }
     }
 
@@ -334,7 +335,9 @@ library PortalLib {
 
                 // 20% to owner
 
-                portfolio.pendingOwnerNativeReward += (dropAmount * 1) / 5;
+                portfolio.pendingOwnerNativeReward += uint128(
+                    (dropAmount * 1) / 5
+                );
             }
 
             emit DropNative(tokenId, dropAmount);
@@ -379,7 +382,9 @@ library PortalLib {
                     (5 * poolCoinday);
 
                 // 20% to owner
-                portfolio.pendingOwnerNativeReward += (dropAmount * 1) / 5;
+                portfolio.pendingOwnerNativeReward += uint128(
+                    (dropAmount * 1) / 5
+                );
             }
 
             emit DropNative(tokenId, dropAmount);
@@ -422,7 +427,9 @@ library PortalLib {
                 tokenId
             ];
             unchecked {
-                portfolio.pendingOwnerRebornReward += (dropAmount * 1) / 5;
+                portfolio.pendingOwnerRebornReward += uint128(
+                    (dropAmount * 1) / 5
+                );
             }
 
             emit DropReborn(tokenId, dropAmount);
@@ -465,7 +472,9 @@ library PortalLib {
             ];
 
             unchecked {
-                portfolio.pendingOwnerRebornReward += (dropAmount * 1) / 5;
+                portfolio.pendingOwnerRebornReward += uint128(
+                    (dropAmount * 1) / 5
+                );
             }
 
             emit DropReborn(tokenId, dropAmount);
@@ -693,13 +702,13 @@ library PortalLib {
                 ((block.timestamp - portfolio.coindayUpdateLastTime) *
                     portfolio.accumulativeAmount) /
                 1 days;
-            portfolio.coindayUpdateLastTime = block.timestamp;
+            portfolio.coindayUpdateLastTime = uint32(block.timestamp);
 
             pool.coindayCumulant +=
                 ((block.timestamp - pool.coindayUpdateLastTime) *
                     pool.totalAmount) /
                 1 days;
-            pool.coindayUpdateLastTime = block.timestamp;
+            pool.coindayUpdateLastTime = uint32(block.timestamp);
         }
     }
 
@@ -758,11 +767,11 @@ library PortalLib {
         }
 
         if (tributeDirection == IRebornDefination.TributeDirection.Forward) {
-            pool.totalForwardTribute += amount;
-            portfolio.totalForwardTribute += amount;
+            pool.totalForwardTribute += uint112(amount);
+            portfolio.totalForwardTribute += uint112(amount);
         } else {
-            pool.totalReverseTribute += amount;
-            portfolio.totalReverseTribute += amount;
+            pool.totalReverseTribute += uint112(amount);
+            portfolio.totalReverseTribute += uint112(amount);
         }
         totalPoolTribute = _getTotalTributeOfPool(pool);
     }
@@ -792,14 +801,14 @@ library PortalLib {
         _flattenRewardDebt(pool, portfolio);
 
         if (portfolio.totalForwardTribute > portfolio.totalReverseTribute) {
-            portfolio.totalReverseTribute += amount;
-            pool.totalReverseTribute += amount;
+            portfolio.totalReverseTribute += uint112(amount);
+            pool.totalReverseTribute += uint112(amount);
             tributeDirection = IRebornDefination.TributeDirection.Reverse;
         } else if (
             portfolio.totalForwardTribute < portfolio.totalReverseTribute
         ) {
-            portfolio.totalForwardTribute += amount;
-            pool.totalForwardTribute += amount;
+            portfolio.totalForwardTribute += uint112(amount);
+            pool.totalForwardTribute += uint112(amount);
             tributeDirection = IRebornDefination.TributeDirection.Forward;
         }
 
@@ -844,7 +853,7 @@ library PortalLib {
         // restore AP and decrement
         charProperty.currentAP = uint8(_calculateCurrentAP(charProperty) - 1);
 
-        charProperty.lastTimeAPUpdate = uint40(block.timestamp);
+        charProperty.lastTimeAPUpdate = uint32(block.timestamp);
         // AP decrement
     }
 
@@ -865,7 +874,7 @@ library PortalLib {
                 storage charProperty = _characterProperties[tokenId];
 
             charProperty.maxAP = uint8(charParam.maxAP);
-            charProperty.restoreTimePerAP = uint40(charParam.restoreTimePerAP);
+            charProperty.restoreTimePerAP = uint32(charParam.restoreTimePerAP);
 
             // TODO: to check, restore all AP immediately
             charProperty.currentAP = uint8(charParam.maxAP);
