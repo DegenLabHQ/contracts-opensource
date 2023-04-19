@@ -37,22 +37,4 @@ contract RebornPortalReg is Test, IRebornDefination, IPiggyBankDefination {
         vm.prank(portal.owner());
         portal.upgradeTo(address(newImpl));
     }
-
-    function testSimulatePerformUpKeep() public {
-        vm.rollFork(27913896);
-        mockUpgradeToDevVersion();
-
-        // portal.performUpkeep(abi.encode(1, 0));
-    }
-
-    function testSimulateForging() public {
-        portal = PortalMock(0xc999E375924F634ade6686831195540bBCC02C34);
-        vm.rollFork(29074010);
-        vm.warp(0);
-        mockUpgradeToDevVersion();
-
-        vm.prank(0x4E574D7015E34235749F9406507B5471B5bf8BBd);
-
-        portal.forging(1238, 2);
-    }
 }

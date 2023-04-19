@@ -56,7 +56,7 @@ contract RebornPortalBaseTest is Test, IRebornDefination, EventDefination {
         // deploy piggy bank
         piggyBank = deployPiggyBank();
 
-        deal(owner,UINT256_MAX);
+        deal(owner, UINT256_MAX);
         // set piggy bank
         vm.startPrank(owner);
         portal.setPiggyBank(IPiggyBank(address(piggyBank)));
