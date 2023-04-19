@@ -26,6 +26,8 @@ import {FastArray} from "src/lib/FastArray.sol";
 import {IPiggyBank} from "./interfaces/IPiggyBank.sol";
 import {PiggyBank} from "src/PiggyBank.sol";
 
+import "forge-std/console.sol";
+
 contract RebornPortal is
     IRebornPortal,
     SafeOwnableUpgradeable,

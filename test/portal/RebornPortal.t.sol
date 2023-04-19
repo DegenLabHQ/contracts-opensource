@@ -12,13 +12,25 @@ contract RebornPortalCommonTest is RebornPortalBaseTest {
             20 ether
         );
 
+        uint256 incarnateCount = portal.getIncarnateCount(
+            portal.getSeason(),
+            _user
+        );
+
+        (
+            uint256 deadline,
+            bytes32 r,
+            bytes32 s,
+            uint8 v
+        ) = mockSignCharOwnership(_user, SOUP_PRICE, incarnateCount + 1, 0);
+
         SoupParams memory soupParams = SoupParams(
-            0.1 ether,
+            SOUP_PRICE,
             0,
-            block.timestamp + 100,
-            bytes32(0),
-            bytes32(0),
-            uint8(0)
+            deadline,
+            r,
+            s,
+            v
         );
 
         vm.expectRevert(InsufficientAmount.selector);
@@ -29,8 +41,6 @@ contract RebornPortalCommonTest is RebornPortalBaseTest {
             address(0),
             soupParams
         );
-
-        deal(address(rbt), _user, 1 << 128);
 
         vm.expectEmit(true, true, true, true);
         emit Incarnate(
@@ -43,6 +53,7 @@ contract RebornPortalCommonTest is RebornPortalBaseTest {
             SOUP_PRICE
         );
 
+        deal(address(rbt), _user, 1 << 128);
         vm.startPrank(_user);
         rbt.approve(address(portal), UINT256_MAX);
         portal.incarnate{value: 0.3 ether + SOUP_PRICE}(

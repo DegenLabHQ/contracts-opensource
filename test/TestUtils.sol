@@ -79,7 +79,7 @@ library TestUtils {
         (v, r, s) = vm.sign(private_key, hash);
     }
 
-    function signCharOwnership(
+    function signAuthenticateSoup(
         uint256 signerPrivateKey,
         address contractAddr,
         address user,
