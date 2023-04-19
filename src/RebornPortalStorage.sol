@@ -11,8 +11,6 @@ import {FastArray} from "src/lib/FastArray.sol";
 import {IPiggyBank} from "./interfaces/IPiggyBank.sol";
 
 contract RebornPortalStorage is IRebornDefination {
-    uint256 public constant PERCENTAGE_BASE = 10000;
-
     //########### Link Contract Address ########## //
     RBT public rebornToken;
     RewardVault public vault;

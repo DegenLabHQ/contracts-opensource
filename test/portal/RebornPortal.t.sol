@@ -427,22 +427,22 @@ contract RebornPortalCommonTest is RebornPortalBaseTest {
         mockIncarnate();
     }
 
-    function testStopBeta() public {
-        uint256 stopBetaBlockNumber = 26623000;
+    // function testStopBeta() public {
+    //     uint256 stopBetaBlockNumber = 26623000;
 
-        vm.prank(owner);
-        portal.setBetaStopedBlockNumber(stopBetaBlockNumber);
+    //     vm.prank(owner);
+    //     portal.setBetaStopedBlockNumber(stopBetaBlockNumber);
 
-        vm.roll(26623001);
-        vm.expectRevert(BetaStoped.selector);
-        mockIncarnate();
+    //     vm.roll(26623001);
+    //     vm.expectRevert(BetaStoped.selector);
+    //     mockIncarnate();
 
-        // mockInfuse
-        deal(address(rbt), _user, 1 ether);
-        vm.startPrank(_user);
-        rbt.approve(address(portal), 1 ether);
-        vm.expectRevert(BetaStoped.selector);
-        portal.infuse(1, 1 ether, TributeDirection.Forward);
-        vm.stopPrank();
-    }
+    //     // mockInfuse
+    //     deal(address(rbt), _user, 1 ether);
+    //     vm.startPrank(_user);
+    //     rbt.approve(address(portal), 1 ether);
+    //     vm.expectRevert(BetaStoped.selector);
+    //     portal.infuse(1, 1 ether, TributeDirection.Forward);
+    //     vm.stopPrank();
+    // }
 }

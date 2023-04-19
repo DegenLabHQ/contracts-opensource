@@ -145,7 +145,7 @@ contract RebornPortal is
             seed,
             user,
             uint16(age),
-            ++rounds[user],
+            uint16(++rounds[user]),
             0,
             uint128(cost),
             uint128(reward),
@@ -662,7 +662,7 @@ contract RebornPortal is
         }
 
         uint256 piggyBankAmount = (netNativeAmount * piggyBankFee) /
-            PERCENTAGE_BASE;
+            PortalLib.PERCENTAGE_BASE;
 
         // x% to piggyBank
         piggyBank.deposit{value: piggyBankAmount}(
@@ -796,7 +796,7 @@ contract RebornPortal is
 
     function _requestDropReborn() internal onlyDropOn {
         // update last drop timestamp to specific hour
-        _dropConf._rebornDropLastUpdate = uint40(
+        _dropConf._rebornDropLastUpdate = uint32(
             PortalLib._toLastHour(block.timestamp)
         );
 
@@ -816,7 +816,7 @@ contract RebornPortal is
 
     function _requestDropNative() internal onlyDropOn {
         // update last drop timestamp to specific hour
-        _dropConf._nativeDropLastUpdate = uint40(
+        _dropConf._nativeDropLastUpdate = uint32(
             PortalLib._toLastHour(block.timestamp)
         );
 

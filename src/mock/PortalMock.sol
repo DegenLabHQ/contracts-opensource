@@ -22,7 +22,7 @@ contract PortalMock is RebornPortal {
         address account,
         uint256 amount
     ) external payable {
-        uint256 value = (msg.value * piggyBankFee) / PERCENTAGE_BASE;
+        uint256 value = (msg.value * piggyBankFee) / PortalLib.PERCENTAGE_BASE;
         piggyBank.deposit{value: value}(season, account, amount);
     }
 

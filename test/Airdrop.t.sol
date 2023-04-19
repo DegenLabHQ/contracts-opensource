@@ -16,12 +16,13 @@ contract AirdropTest is RebornPortalBaseTest {
                 1,
                 1 hours,
                 3 hours,
-                uint40(block.timestamp),
-                uint40(block.timestamp),
+                uint32(block.timestamp),
+                uint32(block.timestamp),
                 20,
                 10,
                 800,
-                400
+                400,
+                0
             )
         );
     }
