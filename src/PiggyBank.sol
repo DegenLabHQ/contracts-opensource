@@ -90,8 +90,17 @@ contract PiggyBank is SafeOwnableUpgradeable, UUPSUpgradeable, IPiggyBank {
                 (roundInfo.target - roundInfo.totalAmount);
 
             roundInfo.totalAmount = roundInfo.target;
-            users[account][season][roundInfo.currentIndex].amount += (roundInfo
-                .target - roundInfo.totalAmount);
+            uint256 remainingAmount = roundInfo.target - roundInfo.totalAmount;
+            users[account][season][roundInfo.currentIndex]
+                .amount += remainingAmount;
+
+            emit Deposit(
+                season,
+                account,
+                roundInfo.currentIndex,
+                remainingAmount,
+                roundInfo.totalAmount
+            );
 
             _toNextRound(account, season, newRoundInitAmount);
         } else {
@@ -196,6 +205,14 @@ contract PiggyBank is SafeOwnableUpgradeable, UUPSUpgradeable, IPiggyBank {
             // update userInfo
             users[account][season][roundInfo.currentIndex].amount = roundInfo
                 .target;
+
+            emit Deposit(
+                season,
+                account,
+                roundInfo.currentIndex,
+                roundInfo.target,
+                roundInfo.totalAmount
+            );
 
             _toNextRound(
                 account,
