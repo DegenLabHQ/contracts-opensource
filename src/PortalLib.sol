@@ -49,8 +49,6 @@ library PortalLib {
         uint256 totalAmount;
         uint256 accRebornPerShare;
         uint256 accNativePerShare;
-        uint256 epoch;
-        uint256 lastUpdated;
         uint256 coindayCumulant;
         uint256 coindayUpdateLastTime;
         uint256 totalForwardTribute;
@@ -84,14 +82,15 @@ library PortalLib {
 
     struct AirdropConf {
         uint8 _dropOn; //                  ---
-        uint40 _rebornDropInterval; //        |
-        uint40 _nativeDropInterval; //        |
-        uint40 _rebornDropLastUpdate; //      |
-        uint40 _nativeDropLastUpdate; //      |
+        uint32 _rebornDropInterval; //        |
+        uint32 _nativeDropInterval; //        |
+        uint32 _rebornDropLastUpdate; //      |
+        uint32 _nativeDropLastUpdate; //      |
         uint16 _nativeTopDropRatio; //        |
         uint16 _nativeRaffleDropRatio; //   |
-        uint16 _rebornTopEthAmount; // |
+        uint40 _rebornTopEthAmount; // |
         uint40 _rebornRaffleEthAmount; //    ---
+        uint8 _placeholder;
     }
 
     struct VrfConf {

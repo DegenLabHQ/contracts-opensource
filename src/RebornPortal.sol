@@ -483,17 +483,6 @@ contract RebornPortal is
         burnPool = burnPool_;
     }
 
-    /**
-     * @dev set stop timestamp
-     */
-    function setBetaStopedBlockNumber(
-        uint256 stopBetaBlockNumber
-    ) external onlyOwner {
-        _stopBetaBlockNumber = stopBetaBlockNumber;
-
-        emit NewStopBetaBlockNumberConfig(stopBetaBlockNumber);
-    }
-
     function setPiggyBank(IPiggyBank piggyBank_) external onlyOwner {
         piggyBank = piggyBank_;
 
