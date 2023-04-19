@@ -21,7 +21,12 @@ const func: DeployFunction = async function ({
   const vault = await get("RewardVault");
 
   // set vault for portal
-  await execute("RebornPortal", { from: owner }, "setVault", vault.address);
+  await execute(
+    "RebornPortal",
+    { from: owner, log: true },
+    "setVault",
+    vault.address
+  );
 };
 func.tags = ["Vault"];
 
