@@ -676,7 +676,11 @@ contract RebornPortal is
             PERCENTAGE_BASE;
 
         // x% to piggyBank
-        piggyBank.deposit{value: piggyBankAmount}(_season, msg.sender);
+        piggyBank.deposit{value: piggyBankAmount}(
+            _season,
+            msg.sender,
+            nativeFee
+        );
 
         unchecked {
             netNativeAmount -= piggyBankAmount;
