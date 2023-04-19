@@ -81,6 +81,19 @@ const func: DeployFunction = async function ({
     "setIncarnationLimit",
     1000
   );
+
+  await execute(
+    "RebornPortal",
+    { from: owner, log: true },
+    "setForgingRequiredAmount",
+    [1, 2, 3, 4],
+    [
+      parseEther(Number(50_000_000).toString()),
+      parseEther(Number(100_000_000).toString()),
+      parseEther(Number(200_000_000).toString()),
+      parseEther(Number(500_000_000).toString()),
+    ]
+  );
 };
 func.tags = ["Portal"];
 
