@@ -132,7 +132,6 @@ interface IRebornDefination {
     );
 
     event Drop(uint256[] tokenIds);
-    event NewStopBetaBlockNumberConfig(uint256 stopBetaBlockNumber);
 
     /// @dev event about the vault address is set
     event VaultSet(address rewardVault);

@@ -11,11 +11,7 @@ import {AccessBase} from "src/base/AccessBase.sol";
 /**
  * @title Altar of heros
  */
-abstract contract Altar is EIP712Upgradeable, RebornPortalStorage, AccessBase {
-    function __Altar_init_unchained() internal onlyInitializing {
-        __EIP712_init_unchained("Altar", "1");
-    }
-
+abstract contract Altar is AccessBase {
     function _useSoupParam(
         SoupParams calldata soupParams,
         uint256 nonce
@@ -27,7 +23,39 @@ abstract contract Altar is EIP712Upgradeable, RebornPortalStorage, AccessBase {
         }
     }
 
-    function _checkSig(SoupParams calldata soupParams,uint256 nonce) internal view {
+    /**
+     * @dev Returns the domain separator for the current chain.
+     */
+    function _domainSeparatorV4() internal view returns (bytes32) {
+        return
+            _buildDomainSeparator(
+                PortalLib._TYPE_HASH,
+                keccak256("Altar"),
+                keccak256("1")
+            );
+    }
+
+    function _buildDomainSeparator(
+        bytes32 typeHash,
+        bytes32 nameHash,
+        bytes32 versionHash
+    ) private view returns (bytes32) {
+        return
+            keccak256(
+                abi.encode(
+                    typeHash,
+                    nameHash,
+                    versionHash,
+                    block.chainid,
+                    address(this)
+                )
+            );
+    }
+
+    function _checkSig(
+        SoupParams calldata soupParams,
+        uint256 nonce
+    ) internal view {
         if (block.timestamp >= soupParams.deadline) {
             revert CommonError.SignatureExpired();
         }
@@ -43,7 +71,10 @@ abstract contract Altar is EIP712Upgradeable, RebornPortalStorage, AccessBase {
             )
         );
 
-        bytes32 hash = _hashTypedDataV4(structHash);
+        bytes32 hash = ECDSAUpgradeable.toTypedDataHash(
+            _domainSeparatorV4(),
+            structHash
+        );
 
         address signer = ECDSAUpgradeable.recover(
             hash,

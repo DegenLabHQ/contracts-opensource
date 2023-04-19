@@ -11,64 +11,53 @@ import {FastArray} from "src/lib/FastArray.sol";
 import {IPiggyBank} from "./interfaces/IPiggyBank.sol";
 
 contract RebornPortalStorage is IRebornDefination {
-    uint256 public constant PERCENTAGE_BASE = 10000;
+    //########### Link Contract Address ########## //
+    RBT public rebornToken;
+    RewardVault public vault;
+    address public burnPool;
+    IPiggyBank internal piggyBank;
+
     uint256 internal _season;
 
-    RBT public rebornToken;
-
+    //#### Access #####//
     mapping(address => bool) public signers;
 
-    mapping(address => uint32) internal rounds;
-
+    //#### Incarnation ######//
     uint256 internal idx;
-
+    mapping(address => uint256) internal rounds;
     mapping(uint256 => LifeDetail) internal details;
-
-    mapping(uint256 => SeasonData) internal _seasonData;
-
-    mapping(address => address) internal referrals;
-    PortalLib.ReferrerRewardFees public rewardFees;
-
-    RewardVault public vault;
-
     BitMapsUpgradeable.BitMap internal _seeds;
-
-    // airdrop config
-    PortalLib.AirdropConf internal _dropConf;
-
-    address public burnPool;
-
-    PortalLib.VrfConf internal _vrfConf;
-
-    // requestId =>
-    mapping(uint256 => RequestStatus) internal _vrfRequests;
-
-    FastArray.Data internal _pendingDrops;
-
-    // extra reward to parent referrer
-    uint256 internal _extraReward;
-
-    // uesless var for backward compatibility
-    bool internal _g;
-
     // season => user address => count
     mapping(uint256 => mapping(address => uint256)) internal _incarnateCounts;
-
     // max incarnation count
     uint256 internal _incarnateCountLimit;
 
-    uint256 internal _stopBetaBlockNumber;
+    //##### Tribute ###### //
+    mapping(uint256 => SeasonData) internal _seasonData;
 
+    //#### Refer #######//
+    mapping(address => address) internal referrals;
+    PortalLib.ReferrerRewardFees public rewardFees;
+    // extra reward to parent referrer
+    uint256 internal _extraReward;
+
+    //#### airdrop config #####//
+    PortalLib.AirdropConf internal _dropConf;
+    PortalLib.VrfConf internal _vrfConf;
+    // requestId => request status
+    mapping(uint256 => RequestStatus) internal _vrfRequests;
+    FastArray.Data internal _pendingDrops;
+
+    //########### NFT ############//
     // tokenId => character property
     mapping(uint256 => PortalLib.CharacterProperty)
         internal _characterProperties;
-
-    // tokenId => token required
+    // tokenId => token amount required
     mapping(uint256 => uint256) internal _forgeRequiredMaterials;
 
-    IPiggyBank internal piggyBank;
+    //######### Piggy Bank #########//
     // X% to piggyBank piggyBankFee / 10000
-    uint16 internal piggyBankFee;
+    uint256 internal piggyBankFee;
 
     /// @dev gap for potential variable
     uint256[26] private _gap;
