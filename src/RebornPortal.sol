@@ -726,8 +726,10 @@ contract RebornPortal is
         RequestStatus storage rs = _vrfRequests[requestId];
         rs.executed = true;
 
+        uint256 r = rs.randomWords;
         for (uint256 i = 0; i < 10; i++) {
-            selectedTokenIds[i] = topTenToHundreds[rs.randomWords[i] % 90];
+            selectedTokenIds[i] = topTenToHundreds[r % 90];
+            r = uint256(keccak256(abi.encode(r)));
         }
 
         PortalLib._directDropRebornToRaffleTokenIds(
@@ -777,8 +779,10 @@ contract RebornPortal is
         RequestStatus storage rs = _vrfRequests[requestId];
         rs.executed = true;
 
+        uint256 r = rs.randomWords;
         for (uint256 i = 0; i < 10; ) {
-            selectedTokenIds[i] = topTenToHundreds[rs.randomWords[i] % 90];
+            selectedTokenIds[i] = topTenToHundreds[r % 90];
+            r = uint256(keccak256(abi.encode(r)));
             unchecked {
                 i++;
             }
@@ -840,7 +844,7 @@ contract RebornPortal is
         if (
             !_vrfRequests[requestId].fulfilled && _vrfRequests[requestId].exists
         ) {
-            _vrfRequests[requestId].randomWords = randomWords;
+            _vrfRequests[requestId].randomWords = randomWords[0];
             _vrfRequests[requestId].fulfilled = true;
 
             _pendingDrops.insert(requestId);
