@@ -1044,13 +1044,13 @@ contract RebornPortal is
     }
 
     function _checkIncarnationCount() internal {
-        unchecked {
-            _incarnateCounts[_season][msg.sender] += 1;
-        }
-
         uint256 currentIncarnateCount = getIncarnateCount(_season, msg.sender);
         if (currentIncarnateCount >= _incarnateCountLimit) {
             revert IncarnationExceedLimit();
+        }
+
+        unchecked {
+            _incarnateCounts[_season][msg.sender] = currentIncarnateCount + 1;
         }
     }
 
