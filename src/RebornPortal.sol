@@ -143,12 +143,12 @@ contract RebornPortal is
         details[tokenId] = LifeDetail(
             seed,
             user,
+            uint96(reward),
+            uint96(cost),
             uint16(age),
             uint16(++rounds[user]),
+            uint64(score),
             0,
-            uint128(cost),
-            uint128(reward),
-            score,
             creatorName
         );
         // mint erc721
@@ -501,7 +501,7 @@ contract RebornPortal is
         LifeDetail storage detail = details[tokenId];
         uint256 oldScore = detail.score;
 
-        detail.score = score;
+        detail.score = uint64(score);
 
         // if it's top one hundred make this tokenId exit rank
         _exitRank(tokenId, oldScore);
