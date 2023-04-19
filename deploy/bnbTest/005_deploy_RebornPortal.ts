@@ -65,21 +65,21 @@ const func: DeployFunction = async function ({
     "setReferrerRewardFee",
     1800,
     200,
-    0
+    1
   );
 
-  await execute(
-    "RebornPortal",
-    { from: owner, log: true },
-    "setExtraReward",
-    parseEther("8")
-  );
+  // await execute(
+  //   "RebornPortal",
+  //   { from: owner, log: true },
+  //   "setExtraReward",
+  //   parseEther("8")
+  // );
 
   await execute(
     "RebornPortal",
     { from: owner, log: true },
     "setIncarnationLimit",
-    1000
+    100
   );
 };
 func.tags = ["Portal"];
