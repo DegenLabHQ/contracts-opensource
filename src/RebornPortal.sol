@@ -417,7 +417,7 @@ contract RebornPortal is
 
         rebornToken.transferFrom(msg.sender, burnPool, requiredAmount);
 
-        emit ForgedTo(tokenId, toLevel);
+        emit ForgedTo(tokenId, toLevel, requiredAmount);
     }
 
     function initializeSeason(
