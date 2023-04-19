@@ -568,7 +568,7 @@ library PortalLib {
     /**
      * @dev send NativeToken to referrers
      */
-    function _sendRewardToRefs(
+    function _sendNativeRewardToRefs(
         mapping(address => address) storage referrals,
         ReferrerRewardFees storage rewardFees,
         address account,
