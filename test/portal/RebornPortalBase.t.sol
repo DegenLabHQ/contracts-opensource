@@ -115,6 +115,7 @@ contract RebornPortalBaseTest is Test, IRebornDefination, EventDefination {
             r,
             r,
             r,
+            r,
             "@DegenReborn"
         );
     }
@@ -129,6 +130,7 @@ contract RebornPortalBaseTest is Test, IRebornDefination, EventDefination {
             _user,
             r,
             0,
+            r,
             r,
             r,
             r,
