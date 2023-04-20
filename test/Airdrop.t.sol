@@ -14,6 +14,8 @@ contract AirdropTest is RebornPortalBaseTest {
         portal.setDropConf(
             PortalLib.AirdropConf(
                 1,
+                false,
+                false,
                 1 hours,
                 3 hours,
                 uint32(block.timestamp),
@@ -83,11 +85,7 @@ contract AirdropTest is RebornPortalBaseTest {
         vm.stopPrank();
     }
 
-    function testUpKeepProgressSmoothly() public {
-        _mockIncarnate();
-        mockEngravesAndInfuses(120);
-
-        setDropConf();
+    function mockAirdrop() public {
         // set timestamp
         vm.warp(block.timestamp + 1 days);
 
@@ -142,6 +140,49 @@ contract AirdropTest is RebornPortalBaseTest {
         // after all perform, upKeep should be false
         (up, perfromData) = portal.checkUpkeep(new bytes(0));
         assertEq(up, false);
+    }
+
+    function testUpKeepProgressSmoothly() public {
+        _mockIncarnate();
+        mockEngravesAndInfuses(120);
+
+        setDropConf();
+        mockAirdrop();
+    }
+
+    function testClaimDropOne(address user) public {
+        // only EOA and not precompile address
+        vm.assume(user.code.length == 0 && uint160(user) > 20);
+        // give native token to portal
+        deal(address(portal), 1 << 128);
+        setDropConf();
+
+        uint256 tokenId = 1;
+        // mock infuse
+        uint256 amount = 10 ether;
+        mockInfuse(user, tokenId, amount);
+
+        // mock incarnate
+        _mockIncarnate();
+        // engrave
+        mockEngravesIncre(1);
+        // airdrop
+        mockAirdrop();
+
+        // deal some reborn token to reward vault
+        deal(address(rbt), address(portal.vault()), UINT256_MAX);
+
+        // should claim amount match
+        uint256[] memory ds = new uint256[](1);
+        ds[0] = tokenId;
+
+        vm.expectEmit(true, true, true, true);
+        emit PortalLib.ClaimRebornDrop(1, 640 ether);
+        vm.prank(user);
+
+        portal.claimDrops(ds);
+
+        vm.stopPrank();
     }
 
     function testDropFuzz(address[] memory users) public {

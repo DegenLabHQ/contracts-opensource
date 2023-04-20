@@ -178,6 +178,8 @@ interface IRebornDefination {
     error BetaStoped();
 
     error DirectionError();
+
+    error DropLocked();
 }
 
 interface IRebornPortal is IRebornDefination {

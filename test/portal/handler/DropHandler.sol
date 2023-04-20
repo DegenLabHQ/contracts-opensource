@@ -125,6 +125,8 @@ contract DropHandler is Test, IRebornDefination {
         _portal.setDropConf(
             PortalLib.AirdropConf(
                 1,
+                false,
+                false,
                 1 hours,
                 3 hours,
                 uint32(block.timestamp),

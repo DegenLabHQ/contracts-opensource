@@ -86,8 +86,10 @@ library PortalLib {
 
     struct AirdropConf {
         uint8 _dropOn; //                  ---
-        uint32 _rebornDropInterval; //        |
-        uint32 _nativeDropInterval; //        |
+        bool _lockRequestDropReborn;
+        bool _lockRequestDropNative;
+        uint24 _rebornDropInterval; //        |
+        uint24 _nativeDropInterval; //        |
         uint32 _rebornDropLastUpdate; //      |
         uint32 _nativeDropLastUpdate; //      |
         uint16 _nativeTopDropRatio; //        |
@@ -431,6 +433,7 @@ library PortalLib {
             Portfolio storage portfolio = _seasonData.portfolios[owner][
                 tokenId
             ];
+
             unchecked {
                 portfolio.pendingOwnerRebornReward += uint128(
                     (dropAmount * 1) / 5
