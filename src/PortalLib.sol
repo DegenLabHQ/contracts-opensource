@@ -4,6 +4,7 @@ import {IRebornDefination} from "src/interfaces/IRebornPortal.sol";
 import {IERC721} from "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import {RewardVault} from "src/RewardVault.sol";
 import {CommonError} from "src/lib/CommonError.sol";
+import {ECDSAUpgradeable} from "src/oz/contracts-upgradeable/utils/cryptography/ECDSAUpgradeable.sol";
 
 library PortalLib {
     uint256 public constant PERSHARE_BASE = 10e18;
@@ -852,7 +853,7 @@ library PortalLib {
     function _comsumeAP(
         uint256 tokenId,
         mapping(uint256 => CharacterProperty) storage _characterProperties
-    ) external {
+    ) public {
         CharacterProperty storage charProperty = _characterProperties[tokenId];
 
         // restore AP and decrement
@@ -907,5 +908,99 @@ library PortalLib {
             referrals[msg.sender] = referrer;
             emit Refer(msg.sender, referrer);
         }
+    }
+
+    function _useSoupParam(
+        IRebornDefination.SoupParams calldata soupParams,
+        uint256 nonce,
+        mapping(uint256 => PortalLib.CharacterProperty)
+            storage _characterProperties,
+        mapping(address => bool) storage signers
+    ) internal {
+        _checkSig(soupParams, nonce, signers);
+
+        if (soupParams.charTokenId != 0) {
+            _comsumeAP(soupParams.charTokenId, _characterProperties);
+        }
+    }
+
+    /**
+     * @dev Returns the domain separator for the current chain.
+     */
+    function _domainSeparatorV4() internal view returns (bytes32) {
+        return
+            _buildDomainSeparator(
+                PortalLib._TYPE_HASH,
+                keccak256("Altar"),
+                keccak256("1")
+            );
+    }
+
+    function _buildDomainSeparator(
+        bytes32 typeHash,
+        bytes32 nameHash,
+        bytes32 versionHash
+    ) private view returns (bytes32) {
+        return
+            keccak256(
+                abi.encode(
+                    typeHash,
+                    nameHash,
+                    versionHash,
+                    block.chainid,
+                    address(this)
+                )
+            );
+    }
+
+    function _checkSig(
+        IRebornDefination.SoupParams calldata soupParams,
+        uint256 nonce,
+        mapping(address => bool) storage signers
+    ) internal view {
+        if (block.timestamp >= soupParams.deadline) {
+            revert CommonError.SignatureExpired();
+        }
+
+        bytes32 structHash = keccak256(
+            abi.encode(
+                PortalLib._SOUPPARAMS_TYPEHASH,
+                msg.sender,
+                soupParams.soupPrice,
+                nonce,
+                soupParams.charTokenId,
+                soupParams.deadline
+            )
+        );
+
+        bytes32 hash = ECDSAUpgradeable.toTypedDataHash(
+            _domainSeparatorV4(),
+            structHash
+        );
+
+        address signer = ECDSAUpgradeable.recover(
+            hash,
+            soupParams.v,
+            soupParams.r,
+            soupParams.s
+        );
+
+        if (!signers[signer]) {
+            revert CommonError.NotSigner();
+        }
+    }
+
+    function readCharProperty(
+        uint256 tokenId,
+        mapping(uint256 => PortalLib.CharacterProperty)
+            storage _characterProperties
+    ) public view returns (PortalLib.CharacterProperty memory) {
+        PortalLib.CharacterProperty memory charProperty = _characterProperties[
+            tokenId
+        ];
+
+        charProperty.currentAP = uint8(_calculateCurrentAP(charProperty));
+
+        return charProperty;
     }
 }

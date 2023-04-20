@@ -16,7 +16,6 @@ import {RebornPortalStorage} from "src/RebornPortalStorage.sol";
 import {RBT} from "src/RBT.sol";
 import {RewardVault} from "src/RewardVault.sol";
 import {RankUpgradeable} from "src/RankUpgradeable.sol";
-import {Altar} from "src/Altar.sol";
 import {Renderer} from "src/lib/Renderer.sol";
 import {CommonError} from "src/lib/CommonError.sol";
 
@@ -36,8 +35,7 @@ contract RebornPortal is
     PausableUpgradeable,
     AutomationCompatible,
     RankUpgradeable,
-    VRFConsumerBaseV2Upgradeable,
-    Altar
+    VRFConsumerBaseV2Upgradeable
 {
     using BitMapsUpgradeable for BitMapsUpgradeable.BitMap;
     using FastArray for FastArray.Data;
@@ -307,6 +305,13 @@ contract RebornPortal is
 
     function unPause() external onlyOwner {
         _unpause();
+    }
+
+    function setCharProperty(
+        uint256[] calldata tokenIds,
+        PortalLib.CharacterParams[] calldata charParams
+    ) external onlySigner {
+        PortalLib.setCharProperty(tokenIds, charParams, _characterProperties);
     }
 
     /**
@@ -630,7 +635,12 @@ contract RebornPortal is
         InnateParams calldata innate,
         SoupParams calldata soupParams
     ) internal {
-        _useSoupParam(soupParams, getIncarnateCount(_season, msg.sender));
+        PortalLib._useSoupParam(
+            soupParams,
+            getIncarnateCount(_season, msg.sender),
+            _characterProperties,
+            signers
+        );
 
         uint256 nativeFee = soupParams.soupPrice +
             innate.talentNativePrice +
@@ -1025,6 +1035,20 @@ contract RebornPortal is
         return _seasonData[_season]._jackpot;
     }
 
+    function readCharProperty(
+        uint256 tokenId
+    ) public view returns (PortalLib.CharacterProperty memory) {
+        PortalLib.CharacterProperty memory charProperty = _characterProperties[
+            tokenId
+        ];
+
+        charProperty.currentAP = uint8(
+            PortalLib._calculateCurrentAP(charProperty)
+        );
+
+        return charProperty;
+    }
+
     function _checkDropOn() internal view {
         if (_dropConf._dropOn == 0) {
             revert DropOff();
@@ -1040,6 +1064,20 @@ contract RebornPortal is
         unchecked {
             _incarnateCounts[_season][msg.sender] = currentIncarnateCount + 1;
         }
+    }
+
+    /**
+     * @dev check signer implementation
+     */
+    function _checkSigner() internal view {
+        if (!signers[msg.sender]) {
+            revert CommonError.NotSigner();
+        }
+    }
+
+    modifier onlySigner() {
+        _checkSigner();
+        _;
     }
 
     /**
