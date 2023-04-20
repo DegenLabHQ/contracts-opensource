@@ -147,7 +147,7 @@ contract RebornPortalCommonTest is RebornPortalBaseTest {
         emit Engrave(seed, _user, 1, score, reward);
 
         vm.prank(_signer);
-        portal.engrave(seed, _user, reward, score, age, 1, "@ElonMusk");
+        portal.engrave(seed, _user, reward, 0, score, age, 1, "@ElonMusk");
     }
 
     // for test engrave gas
@@ -223,11 +223,21 @@ contract RebornPortalCommonTest is RebornPortalBaseTest {
         deal(address(rbt), address(portal.vault()), 2 * 1 ether);
 
         vm.startPrank(_signer);
-        portal.engrave(bytes32("0x1"), _user, 100, 10, 10, 10, "vitalik.eth");
+        portal.engrave(
+            bytes32("0x1"),
+            _user,
+            100,
+            0,
+            10,
+            10,
+            10,
+            "vitalik.eth"
+        );
         portal.engrave(
             bytes32("0x2"),
             _user,
             100,
+            0,
             10,
             10,
             10,

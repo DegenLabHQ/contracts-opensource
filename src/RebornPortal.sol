@@ -124,7 +124,8 @@ contract RebornPortal is
     function engrave(
         bytes32 seed,
         address user,
-        uint256 reward,
+        uint256 lifeReward,
+        uint256 boostReward,
         uint256 score,
         uint256 age,
         uint256 cost,
@@ -135,13 +136,19 @@ contract RebornPortal is
         }
         _seeds.set(uint256(seed));
 
-        // tokenId auto increment
-        uint256 tokenId = ++idx + (block.chainid * 1e18);
+        uint256 tokenId;
+        uint256 totalReward;
+        unchecked {
+            // tokenId auto increment
+            tokenId = ++idx + (block.chainid * 1e18);
+
+            totalReward = lifeReward + boostReward;
+        }
 
         details[tokenId] = LifeDetail(
             seed,
             user,
-            uint96(reward),
+            uint96(totalReward),
             uint96(cost),
             uint16(age),
             uint16(++rounds[user]),
@@ -152,7 +159,7 @@ contract RebornPortal is
         // mint erc721
         _safeMint(user, tokenId);
         // send $REBORN reward
-        vault.reward(user, reward);
+        vault.reward(user, totalReward);
 
         // let tokenId enter the score rank
         _enterScoreRank(tokenId, score);
@@ -162,11 +169,11 @@ contract RebornPortal is
             rewardFees,
             vault,
             user,
-            reward,
+            lifeReward,
             _extraReward
         );
 
-        emit Engrave(seed, user, tokenId, score, reward);
+        emit Engrave(seed, user, tokenId, score, totalReward);
     }
 
     /**
