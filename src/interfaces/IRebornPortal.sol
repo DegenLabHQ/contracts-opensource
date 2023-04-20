@@ -75,7 +75,7 @@ interface IRebornDefination {
         bool exists; // whether a requestId exists
         bool executed; // whether the airdrop is executed
         AirdropVrfType t;
-        uint256[] randomWords;
+        uint256 randomWords; // we only need one random word. keccak256 to generate more
     }
 
     enum BaptiseType {
@@ -178,6 +178,8 @@ interface IRebornDefination {
     error BetaStoped();
 
     error DirectionError();
+
+    error DropLocked();
 }
 
 interface IRebornPortal is IRebornDefination {

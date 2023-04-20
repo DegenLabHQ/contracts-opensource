@@ -15,9 +15,12 @@ import {IERC20Upgradeable} from "@oz/contracts-upgradeable/token/ERC20/IERC20Upg
 import {BurnPool} from "src/BurnPool.sol";
 import {VRFCoordinatorV2Mock} from "src/mock/VRFCoordinatorV2Mock.sol";
 
+import "src/mock/PiggyBankMock.sol";
+
 contract RebornPortalBaseTest is Test, IRebornDefination, EventDefination {
     uint256 public constant SOUP_PRICE = 0.01 * 1 ether;
     PortalMock portal;
+    PiggyBankMock piggyBank;
     RBT rbt;
     BurnPool burnPool;
     address owner = vm.addr(2);
@@ -50,6 +53,18 @@ contract RebornPortalBaseTest is Test, IRebornDefination, EventDefination {
         portal.setIncarnationLimit(type(uint256).max);
         vm.stopPrank();
 
+        // deploy piggy bank
+        piggyBank = deployPiggyBank();
+
+        deal(owner, UINT256_MAX);
+        // set piggy bank
+        vm.startPrank(owner);
+        portal.setPiggyBank(IPiggyBank(address(piggyBank)));
+        portal.setPiggyBankFee(800);
+        // intialize piggybank
+        portal.initializeSeason{value: 0.1 ether}(0.1 ether, 1 ether);
+        vm.stopPrank();
+
         // deploy burn pool
         burnPool = new BurnPool(address(portal), address(rbt));
         vm.prank(owner);
@@ -80,6 +95,11 @@ contract RebornPortalBaseTest is Test, IRebornDefination, EventDefination {
             "RIP",
             _vrfCoordinator
         );
+    }
+
+    function deployPiggyBank() public returns (PiggyBankMock piggyBank_) {
+        piggyBank_ = new PiggyBankMock();
+        piggyBank_.initialize(owner, address(portal));
     }
 
     function mockEngraveFromLowToHigh() public returns (uint256 r) {
@@ -148,7 +168,7 @@ contract RebornPortalBaseTest is Test, IRebornDefination, EventDefination {
         uint256 incarnateCounter,
         uint256 tokenId
     ) public view returns (uint256 deadline, bytes32 r, bytes32 s, uint8 v) {
-        (deadline, r, s, v) = TestUtils.signCharOwnership(
+        (deadline, r, s, v) = TestUtils.signAuthenticateSoup(
             11,
             address(portal),
             user,

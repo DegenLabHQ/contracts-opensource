@@ -55,6 +55,8 @@ library PortalLib {
         uint256 totalAmount;
         uint256 accRebornPerShare;
         uint256 accNativePerShare;
+        uint128 droppedRebornTotal;
+        uint128 droppedNativeTotal;
         uint256 coindayCumulant;
         uint32 coindayUpdateLastTime;
         uint112 totalForwardTribute;
@@ -87,8 +89,10 @@ library PortalLib {
 
     struct AirdropConf {
         uint8 _dropOn; //                  ---
-        uint32 _rebornDropInterval; //        |
-        uint32 _nativeDropInterval; //        |
+        bool _lockRequestDropReborn;
+        bool _lockRequestDropNative;
+        uint24 _rebornDropInterval; //        |
+        uint24 _nativeDropInterval; //        |
         uint32 _rebornDropLastUpdate; //      |
         uint32 _nativeDropLastUpdate; //      |
         uint16 _nativeTopDropRatio; //        |
@@ -335,9 +339,10 @@ library PortalLib {
 
             unchecked {
                 // 80% to pool
-                pool.accNativePerShare +=
-                    (4 * dropAmount * PERSHARE_BASE) /
-                    (5 * poolCoinday);
+                pool.droppedNativeTotal += (4 * uint128(dropAmount)) / 5;
+                pool.accNativePerShare =
+                    (pool.droppedNativeTotal * PERSHARE_BASE) /
+                    poolCoinday;
 
                 // 20% to owner
 
@@ -383,9 +388,10 @@ library PortalLib {
             uint256 poolCoinday = getPoolCoinday(tokenId, _seasonData);
             unchecked {
                 // 80% to pool
-                pool.accNativePerShare +=
-                    (4 * dropAmount * PERSHARE_BASE) /
-                    (5 * poolCoinday);
+                pool.droppedNativeTotal += (4 * uint128(dropAmount)) / 5;
+                pool.accNativePerShare =
+                    (pool.droppedNativeTotal * PERSHARE_BASE) /
+                    poolCoinday;
 
                 // 20% to owner
                 portfolio.pendingOwnerNativeReward += uint128(
@@ -422,9 +428,10 @@ library PortalLib {
 
             unchecked {
                 // 80% to pool
-                pool.accRebornPerShare +=
-                    (dropAmount * 4 * PortalLib.PERSHARE_BASE) /
-                    (5 * poolCoinday);
+                pool.droppedRebornTotal += (4 * uint128(dropAmount)) / 5;
+                pool.accRebornPerShare =
+                    (pool.droppedRebornTotal * PERSHARE_BASE) /
+                    poolCoinday;
             }
 
             // 20% to owner
@@ -432,6 +439,7 @@ library PortalLib {
             Portfolio storage portfolio = _seasonData.portfolios[owner][
                 tokenId
             ];
+
             unchecked {
                 portfolio.pendingOwnerRebornReward += uint128(
                     (dropAmount * 1) / 5
@@ -466,9 +474,10 @@ library PortalLib {
 
             unchecked {
                 // 80% to pool
-                pool.accRebornPerShare +=
-                    (dropAmount * 4 * PortalLib.PERSHARE_BASE) /
-                    (5 * poolCoinday);
+                pool.droppedRebornTotal += (4 * uint128(dropAmount)) / 5;
+                pool.accRebornPerShare =
+                    (pool.droppedRebornTotal * PERSHARE_BASE) /
+                    poolCoinday;
             }
 
             // 20% to owner

@@ -548,15 +548,19 @@ contract RebornPortal is
         if (_dropConf._dropOn == 1) {
             // first, check whether airdrop is ready and send vrf request
             if (
-                block.timestamp >
-                _dropConf._rebornDropLastUpdate + _dropConf._rebornDropInterval
+                PortalLib._toLastHour(block.timestamp) >
+                _dropConf._rebornDropLastUpdate +
+                    _dropConf._rebornDropInterval &&
+                !_dropConf._lockRequestDropReborn
             ) {
                 upkeepNeeded = true;
                 performData = abi.encode(1, 0);
                 return (upkeepNeeded, performData);
             } else if (
-                block.timestamp >
-                _dropConf._nativeDropLastUpdate + _dropConf._nativeDropInterval
+                PortalLib._toLastHour(block.timestamp) >
+                _dropConf._nativeDropLastUpdate +
+                    _dropConf._nativeDropInterval &&
+                !_dropConf._lockRequestDropNative
             ) {
                 upkeepNeeded = true;
                 performData = abi.encode(2, 0);
@@ -712,6 +716,10 @@ contract RebornPortal is
      * @dev raffle 10 from top 11 - top 100
      */
     function _fulfillDropReborn(uint256 requestId) internal onlyDropOn {
+        // update last drop timestamp, no back to specfic hour, for accurate coinday
+        _dropConf._rebornDropLastUpdate = uint32(block.timestamp);
+        _dropConf._lockRequestDropReborn = false;
+
         uint256[] memory topTens = _getTopNTokenId(10);
         uint256[] memory topTenToHundreds = _getFirstNTokenIdByOffSet(10, 90);
 
@@ -736,8 +744,10 @@ contract RebornPortal is
         RequestStatus storage rs = _vrfRequests[requestId];
         rs.executed = true;
 
+        uint256 r = rs.randomWords;
         for (uint256 i = 0; i < 10; i++) {
-            selectedTokenIds[i] = topTenToHundreds[rs.randomWords[i] % 90];
+            selectedTokenIds[i] = topTenToHundreds[r % 90];
+            r = uint256(keccak256(abi.encode(r)));
         }
 
         PortalLib._directDropRebornToRaffleTokenIds(
@@ -755,6 +765,10 @@ contract RebornPortal is
      * @dev raffle 10 from top 11 - top 100
      */
     function _fulfillDropNative(uint256 requestId) internal onlyDropOn {
+        // update last drop timestamp, no back to specfic hour, for accurate coinday
+        _dropConf._nativeDropLastUpdate = uint32(block.timestamp);
+        _dropConf._lockRequestDropNative = false;
+
         uint256[] memory topTens = _getTopNTokenId(10);
         uint256[] memory topTenToHundreds = _getFirstNTokenIdByOffSet(10, 90);
 
@@ -787,8 +801,10 @@ contract RebornPortal is
         RequestStatus storage rs = _vrfRequests[requestId];
         rs.executed = true;
 
+        uint256 r = rs.randomWords;
         for (uint256 i = 0; i < 10; ) {
-            selectedTokenIds[i] = topTenToHundreds[rs.randomWords[i] % 90];
+            selectedTokenIds[i] = topTenToHundreds[r % 90];
+            r = uint256(keccak256(abi.encode(r)));
             unchecked {
                 i++;
             }
@@ -804,11 +820,10 @@ contract RebornPortal is
     }
 
     function _requestDropReborn() internal onlyDropOn {
-        // update last drop timestamp to specific hour
-        _dropConf._rebornDropLastUpdate = uint32(
-            PortalLib._toLastHour(block.timestamp)
-        );
-
+        if (_dropConf._lockRequestDropReborn) {
+            revert DropLocked();
+        }
+        _dropConf._lockRequestDropReborn = true;
         // raffle
         uint256 requestId = VRFCoordinatorV2Interface(vrfCoordinator)
             .requestRandomWords(
@@ -824,10 +839,10 @@ contract RebornPortal is
     }
 
     function _requestDropNative() internal onlyDropOn {
-        // update last drop timestamp to specific hour
-        _dropConf._nativeDropLastUpdate = uint32(
-            PortalLib._toLastHour(block.timestamp)
-        );
+        if (_dropConf._lockRequestDropNative) {
+            revert DropLocked();
+        }
+        _dropConf._lockRequestDropNative = true;
 
         // raffle
         uint256 requestId = VRFCoordinatorV2Interface(vrfCoordinator)
@@ -850,7 +865,7 @@ contract RebornPortal is
         if (
             !_vrfRequests[requestId].fulfilled && _vrfRequests[requestId].exists
         ) {
-            _vrfRequests[requestId].randomWords = randomWords;
+            _vrfRequests[requestId].randomWords = randomWords[0];
             _vrfRequests[requestId].fulfilled = true;
 
             _pendingDrops.insert(requestId);

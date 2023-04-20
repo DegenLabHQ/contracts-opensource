@@ -14,10 +14,12 @@ contract AirdropTest is RebornPortalBaseTest {
         portal.setDropConf(
             PortalLib.AirdropConf(
                 1,
+                false,
+                false,
                 1 hours,
                 3 hours,
-                uint32(block.timestamp),
-                uint32(block.timestamp),
+                0,
+                0,
                 20,
                 10,
                 800,
@@ -40,29 +42,50 @@ contract AirdropTest is RebornPortalBaseTest {
 
         deal(user, 10000 ether);
 
-        vm.startPrank(user);
+        InnateParams memory innateParams = InnateParams(
+            75 ether,
+            10 ether,
+            25 ether,
+            20 ether
+        );
 
-        payable(address(portal)).call{value: 1000 ether}(
-            abi.encodeWithSignature(
-                "incarnate((uint256,uint256),address,uint256)",
-                0.1 ether,
-                0.5 ether,
-                address(1),
-                0.1 ether
-            )
+        uint256 incarnateCount = portal.getIncarnateCount(
+            portal.getSeason(),
+            user
+        );
+
+        (uint256 deadline, bytes32 r, bytes32 s, uint8 v) = TestUtils
+            .signAuthenticateSoup(
+                11,
+                address(portal),
+                user,
+                SOUP_PRICE,
+                incarnateCount + 1,
+                0
+            );
+
+        SoupParams memory soupParams = SoupParams(
+            SOUP_PRICE,
+            0,
+            deadline,
+            r,
+            s,
+            v
+        );
+
+        deal(address(rbt), user, 1 << 128);
+        vm.startPrank(user);
+        rbt.approve(address(portal), UINT256_MAX);
+        portal.incarnate{value: 100 ether + SOUP_PRICE}(
+            innateParams,
+            address(0),
+            soupParams
         );
 
         vm.stopPrank();
     }
 
-    function testUpKeepProgressSmoothly() public {
-        _mockIncarnate();
-        mockEngravesAndInfuses(120);
-
-        setDropConf();
-        // set timestamp
-        vm.warp(block.timestamp + 1 days);
-
+    function mockAirdrop() public {
         bool up;
         bytes memory perfromData;
 
@@ -114,6 +137,99 @@ contract AirdropTest is RebornPortalBaseTest {
         // after all perform, upKeep should be false
         (up, perfromData) = portal.checkUpkeep(new bytes(0));
         assertEq(up, false);
+    }
+
+    function testUpKeepProgressSmoothly() public {
+        _mockIncarnate();
+        mockEngravesAndInfuses(120);
+        setDropConf();
+        vm.warp(block.timestamp + 1 days - 1 hours);
+        mockAirdrop();
+    }
+
+    function testClaimDropOne(address user) public {
+        // only EOA and not precompile address
+        vm.assume(user.code.length == 0 && uint160(user) > 20);
+        // give native token to portal
+        deal(address(portal), 1 << 128);
+        setDropConf();
+
+        uint256 tokenId = 1;
+        // mock infuse
+        uint256 amount = 10 ether;
+        mockInfuse(user, tokenId, amount);
+
+        // mock incarnate
+        _mockIncarnate();
+        // engrave
+        mockEngravesIncre(1);
+        // time pass by, set timestamp
+        vm.warp(block.timestamp + 1 days);
+
+        // airdrop
+        mockAirdrop();
+
+        // deal some reborn token to reward vault
+        deal(address(rbt), address(portal.vault()), UINT256_MAX);
+
+        // should claim amount match
+        uint256[] memory ds = new uint256[](1);
+        ds[0] = tokenId;
+
+        vm.expectEmit(true, true, true, true);
+        if (portal.ownerOf(1) == user) {
+            emit PortalLib.ClaimRebornDrop(1, 800 ether);
+        } else {
+            emit PortalLib.ClaimRebornDrop(1, 640 ether);
+        }
+        vm.prank(user);
+        portal.claimDrops(ds);
+        vm.stopPrank();
+    }
+
+    function testClaimCrossTimeCorrect(address user) public {
+        // only EOA and not precompile address
+        vm.assume(user.code.length == 0 && uint160(user) > 20);
+        // give native token to portal
+        deal(address(portal), 1 << 128);
+        setDropConf();
+
+        uint256 tokenId = 1;
+        // mock infuse
+        uint256 amount = 10 ether;
+        mockInfuse(user, tokenId, amount);
+
+        // mock incarnate
+        _mockIncarnate();
+        // engrave
+        mockEngravesIncre(1);
+        // time pass by, set timestamp
+        vm.warp(block.timestamp + 1 days);
+
+        // airdrop
+        mockAirdrop();
+
+        // time pass by, set timestamp
+        vm.warp(block.timestamp + 4 days);
+        // airdrop again
+        mockAirdrop();
+
+        // deal some reborn token to reward vault
+        deal(address(rbt), address(portal.vault()), UINT256_MAX);
+
+        // should claim amount match
+        uint256[] memory ds = new uint256[](1);
+        ds[0] = tokenId;
+
+        vm.expectEmit(true, true, true, true);
+        if (portal.ownerOf(1) == user) {
+            emit PortalLib.ClaimRebornDrop(1, 1600 ether);
+        } else {
+            emit PortalLib.ClaimRebornDrop(1, 1280 ether);
+        }
+        vm.prank(user);
+        portal.claimDrops(ds);
+        vm.stopPrank();
     }
 
     function testDropFuzz(address[] memory users) public {
