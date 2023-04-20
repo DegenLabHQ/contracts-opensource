@@ -178,6 +178,7 @@ contract DropHandler is Test, IRebornDefination {
             i,
             i,
             i,
+            i,
             "@DegenReborn"
         );
     }

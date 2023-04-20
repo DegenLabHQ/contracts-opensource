@@ -31,7 +31,7 @@ library Renderer {
                                 details[tokenId].round,
                                 details[tokenId].age,
                                 details[tokenId].creatorName,
-                                details[tokenId].cost
+                                details[tokenId].nativeCost
                             )
                         )
                     ),
@@ -44,7 +44,7 @@ library Renderer {
                         details[tokenId].creator,
                         details[tokenId].creatorName,
                         details[tokenId].reward,
-                        details[tokenId].cost
+                        details[tokenId].nativeCost
                     ),
                     "}"
                 )

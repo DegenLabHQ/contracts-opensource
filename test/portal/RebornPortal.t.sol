@@ -147,7 +147,7 @@ contract RebornPortalCommonTest is RebornPortalBaseTest {
         emit Engrave(seed, _user, 1, score, reward);
 
         vm.prank(_signer);
-        portal.engrave(seed, _user, reward, 0, score, age, 1, "@ElonMusk");
+        portal.engrave(seed, _user, reward, 0, score, age, 1, 1, "@ElonMusk");
     }
 
     // for test engrave gas
@@ -231,6 +231,7 @@ contract RebornPortalCommonTest is RebornPortalBaseTest {
             10,
             10,
             10,
+            0,
             "vitalik.eth"
         );
         portal.engrave(
@@ -241,6 +242,7 @@ contract RebornPortalCommonTest is RebornPortalBaseTest {
             10,
             10,
             10,
+            0,
             "cyberconnect.cc"
         );
         vm.stopPrank();

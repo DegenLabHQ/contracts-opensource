@@ -128,7 +128,8 @@ contract RebornPortal is
         uint256 boostReward,
         uint256 score,
         uint256 age,
-        uint256 cost,
+        uint256 nativeCost,
+        uint256 rebornCost,
         string calldata creatorName
     ) external override onlySigner whenNotPaused {
         if (_seeds.get(uint256(seed))) {
@@ -149,11 +150,11 @@ contract RebornPortal is
             seed,
             user,
             uint96(totalReward),
-            uint96(cost),
+            uint96(rebornCost),
             uint16(age),
             uint16(++rounds[user]),
             uint64(score),
-            0,
+            uint48(nativeCost / 10 ** 12),
             creatorName
         );
         // mint erc721

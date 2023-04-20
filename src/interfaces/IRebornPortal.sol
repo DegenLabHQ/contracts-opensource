@@ -32,15 +32,15 @@ interface IRebornDefination {
 
     struct LifeDetail {
         bytes32 seed;
-        address creator;                    // ---
+        address creator; // ---
         // uint96 max 7*10^28  7*10^10 eth  //   |
-        uint96 reward;                      // ---
-        uint96 cost;                        // ---
-        uint16 age;                         //   |
-        uint32 round;                       //   |
+        uint96 reward; // ---
+        uint96 rebornCost; // ---
+        uint16 age; //   |
+        uint32 round; //   |
         // uint64 max 1.8*10^19             //   |
-        uint64 score;                       //   |
-        uint48 placeholder;                 // ---  
+        uint64 score; //   |
+        uint48 nativeCost; // only with dicimal of 10^6 // ---
         string creatorName;
     }
 
@@ -203,7 +203,8 @@ interface IRebornPortal is IRebornDefination {
      * @param lifeReward $REBORN user earns, decimal 10^18
      * @param boostReward $REBORN user earns with degen2009 boost
      * @param score life score
-     * @param cost user cost for this life
+     * @param rebornCost user cost reborn token for this life
+     * @param nativeCost user cost native token for this life
      */
     function engrave(
         bytes32 seed,
@@ -212,7 +213,8 @@ interface IRebornPortal is IRebornDefination {
         uint256 boostReward,
         uint256 score,
         uint256 age,
-        uint256 cost,
+        uint256 rebornCost,
+        uint256 nativeCost,
         string calldata creatorName
     ) external;
 
