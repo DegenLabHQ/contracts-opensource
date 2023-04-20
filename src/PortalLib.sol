@@ -134,7 +134,7 @@ library PortalLib {
         ];
 
         uint256 pendingTributeReborn;
-        (, uint256 userRebornCoinday) = getUserCoinday(
+        (, uint256 userRebornCoinday) = _computeUserCoindayOfAirdropTimestamp(
             tokenId,
             msg.sender,
             dropConf,
@@ -179,7 +179,7 @@ library PortalLib {
         ];
 
         uint256 pendingTributeNative;
-        (uint256 userNativeCoinday, ) = getUserCoinday(
+        (uint256 userNativeCoinday, ) = _computeUserCoindayOfAirdropTimestamp(
             tokenId,
             msg.sender,
             dropConf,
@@ -256,7 +256,12 @@ library PortalLib {
             (
                 uint256 userNativeCoinday,
                 uint256 userRebornCoinday
-            ) = getUserCoinday(tokenId, msg.sender, dropConf, _seasonData);
+            ) = _computeUserCoindayOfAirdropTimestamp(
+                    tokenId,
+                    msg.sender,
+                    dropConf,
+                    _seasonData
+                );
 
             pendingTributeNative =
                 (userNativeCoinday * pool.accNativePerShare) /
@@ -659,13 +664,13 @@ library PortalLib {
         );
     }
 
-    function getUserCoinday(
+    function _computeUserCoindayOfAirdropTimestamp(
         uint256 tokenId,
         address account,
         AirdropConf storage dropConf,
         IRebornDefination.SeasonData storage _seasonData
     )
-        public
+        internal
         view
         returns (uint256 userNativeCoinday, uint256 userRebornCoinday)
     {
