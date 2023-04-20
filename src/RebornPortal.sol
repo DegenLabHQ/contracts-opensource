@@ -697,13 +697,13 @@ contract RebornPortal is
     }
 
     /**
-     * @dev airdrop to top 100 tvl pool
+     * @dev airdrop to top 50 tvl pool
      * @dev directly drop to top 10
-     * @dev raffle 10 from top 11 - top 100
+     * @dev raffle 10 from top 11 - top 50
      */
     function _fulfillDropReborn(uint256 requestId) internal onlyDropOn {
         uint256[] memory topTens = _getTopNTokenId(10);
-        uint256[] memory topTenToHundreds = _getFirstNTokenIdByOffSet(10, 90);
+        uint256[] memory topTenToHundreds = _getFirstNTokenIdByOffSet(10, 50);
 
         uint256 dropTopAmount;
         uint256 dropRaffleAmount;
@@ -727,7 +727,7 @@ contract RebornPortal is
         rs.executed = true;
 
         for (uint256 i = 0; i < 10; i++) {
-            selectedTokenIds[i] = topTenToHundreds[rs.randomWords[i] % 90];
+            selectedTokenIds[i] = topTenToHundreds[rs.randomWords[i] % 40];
         }
 
         PortalLib._directDropRebornToRaffleTokenIds(
@@ -742,11 +742,11 @@ contract RebornPortal is
     /**
      * @dev airdrop to top 100 tvl pool
      * @dev directly drop to top 10
-     * @dev raffle 10 from top 11 - top 100
+     * @dev raffle 10 from top 11 - top 50
      */
     function _fulfillDropNative(uint256 requestId) internal onlyDropOn {
         uint256[] memory topTens = _getTopNTokenId(10);
-        uint256[] memory topTenToHundreds = _getFirstNTokenIdByOffSet(10, 90);
+        uint256[] memory topTenToHundreds = _getFirstNTokenIdByOffSet(10, 50);
 
         uint256 nativeTopAmount;
         uint256 nativeRaffleAmount;
@@ -778,7 +778,7 @@ contract RebornPortal is
         rs.executed = true;
 
         for (uint256 i = 0; i < 10; ) {
-            selectedTokenIds[i] = topTenToHundreds[rs.randomWords[i] % 90];
+            selectedTokenIds[i] = topTenToHundreds[rs.randomWords[i] % 40];
             unchecked {
                 i++;
             }
@@ -885,7 +885,12 @@ contract RebornPortal is
      */
     function _decreaseFromPool(uint256 tokenId, uint256 amount) internal {
         (uint256 totalTribute, TributeDirection tributeDirection) = PortalLib
-            ._decreaseFromPool(tokenId, amount, _seasonData[_season]);
+            ._decreaseFromPool(
+                tokenId,
+                amount,
+                _seasonData[_season],
+                _dropConf
+            );
 
         _enterTvlRank(tokenId, totalTribute);
 
@@ -924,7 +929,8 @@ contract RebornPortal is
             tokenId,
             amount,
             tributeDirection,
-            _seasonData[_season]
+            _seasonData[_season],
+            _dropConf
         );
 
         _enterTvlRank(tokenId, totalPoolTribute);

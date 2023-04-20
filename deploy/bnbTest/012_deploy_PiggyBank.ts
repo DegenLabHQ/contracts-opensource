@@ -38,7 +38,7 @@ const func: DeployFunction = async function ({
     "RebornPortal",
     { from: owner, log: true },
     "setPiggyBankFee",
-    800
+    1800
   );
 
   await execute("PiggyBank", { from: owner, log: true }, "setMultiple", 200);
