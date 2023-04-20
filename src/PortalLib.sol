@@ -154,9 +154,11 @@ library PortalLib {
             portfolio.pendingOwnerRebornReward;
 
         // set current amount as debt
-        portfolio.rebornRewardDebt = uint128(
-            (userRebornCoinday * pool.accRebornPerShare) / PERSHARE_BASE
-        );
+        if (userRebornCoinday > 0) {
+            portfolio.rebornRewardDebt = uint128(
+                (userRebornCoinday * pool.accRebornPerShare) / PERSHARE_BASE
+            );
+        }
 
         // clean up reward as owner
         portfolio.pendingOwnerRebornReward = 0;
@@ -199,9 +201,11 @@ library PortalLib {
             portfolio.pendingOwnerNativeReward;
 
         // set current amount as debt
-        portfolio.nativeRewardDebt = uint128(
-            (userNativeCoinday * pool.accNativePerShare) / PERSHARE_BASE
-        );
+        if (userNativeCoinday > 0) {
+            portfolio.nativeRewardDebt = uint128(
+                (userNativeCoinday * pool.accNativePerShare) / PERSHARE_BASE
+            );
+        }
 
         // clean up reward as owner
         portfolio.pendingOwnerNativeReward = 0;
