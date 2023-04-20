@@ -885,12 +885,7 @@ contract RebornPortal is
      */
     function _decreaseFromPool(uint256 tokenId, uint256 amount) internal {
         (uint256 totalTribute, TributeDirection tributeDirection) = PortalLib
-            ._decreaseFromPool(
-                tokenId,
-                amount,
-                _seasonData[_season],
-                _dropConf
-            );
+            ._decreaseFromPool(tokenId, amount, _seasonData[_season]);
 
         _enterTvlRank(tokenId, totalTribute);
 
@@ -929,8 +924,7 @@ contract RebornPortal is
             tokenId,
             amount,
             tributeDirection,
-            _seasonData[_season],
-            _dropConf
+            _seasonData[_season]
         );
 
         _enterTvlRank(tokenId, totalPoolTribute);

@@ -78,8 +78,6 @@ library PortalLib {
         /// @dev reward for holding the NFT when the NFT is selected
         uint128 pendingOwnerRebornReward;
         uint128 pendingOwnerNativeReward;
-        uint256 coindayCumulantOfNativeAridropTime;
-        uint256 coindayCumulantOfRebornAridropTime;
         uint256 coindayCumulant;
         uint32 coindayUpdateLastTime;
         uint112 totalForwardTribute;
@@ -680,28 +678,22 @@ library PortalLib {
                 portfolio.coindayUpdateLastTime < dropConf._nativeDropLastUpdate
             ) {
                 userNativeCoinday =
-                    portfolio.coindayCumulantOfNativeAridropTime +
+                    portfolio.coindayCumulant +
                     ((dropConf._nativeDropLastUpdate -
                         portfolio.coindayUpdateLastTime) *
                         portfolio.accumulativeAmount) /
                     1 days;
-            } else {
-                userNativeCoinday = portfolio
-                    .coindayCumulantOfNativeAridropTime;
             }
 
             if (
                 portfolio.coindayUpdateLastTime < dropConf._rebornDropLastUpdate
             ) {
                 userRebornCoinday =
-                    portfolio.coindayCumulantOfRebornAridropTime +
+                    portfolio.coindayCumulant +
                     ((dropConf._rebornDropLastUpdate -
                         portfolio.coindayUpdateLastTime) *
                         portfolio.accumulativeAmount) /
                     1 days;
-            } else {
-                userRebornCoinday = portfolio
-                    .coindayCumulantOfRebornAridropTime;
             }
         }
     }
@@ -738,33 +730,6 @@ library PortalLib {
         }
     }
 
-    function _cumulantCoindyOfLatestAirdropTime(
-        PortalLib.Portfolio storage portfolio,
-        AirdropConf storage dropConf
-    ) public {
-        unchecked {
-            if (
-                portfolio.coindayUpdateLastTime < dropConf._nativeDropLastUpdate
-            ) {
-                portfolio.coindayCumulantOfNativeAridropTime +=
-                    ((dropConf._nativeDropLastUpdate -
-                        portfolio.coindayUpdateLastTime) *
-                        portfolio.accumulativeAmount) /
-                    1 days;
-            }
-
-            if (
-                portfolio.coindayUpdateLastTime < dropConf._rebornDropLastUpdate
-            ) {
-                portfolio.coindayCumulantOfNativeAridropTime +=
-                    ((dropConf._rebornDropLastUpdate -
-                        portfolio.coindayUpdateLastTime) *
-                        portfolio.accumulativeAmount) /
-                    1 days;
-            }
-        }
-    }
-
     function getCoinday(
         uint256 tokenId,
         address account,
@@ -792,8 +757,7 @@ library PortalLib {
         uint256 tokenId,
         uint256 amount,
         IRebornDefination.TributeDirection tributeDirection,
-        IRebornDefination.SeasonData storage _seasonData,
-        AirdropConf storage dropConf
+        IRebornDefination.SeasonData storage _seasonData
     ) internal returns (uint256 totalPoolTribute) {
         Portfolio storage portfolio = _seasonData.portfolios[msg.sender][
             tokenId
@@ -802,7 +766,6 @@ library PortalLib {
 
         // update coinday
         _updateCoinday(portfolio, pool);
-        _cumulantCoindyOfLatestAirdropTime(portfolio, dropConf);
 
         unchecked {
             portfolio.accumulativeAmount += amount;
@@ -834,8 +797,7 @@ library PortalLib {
     function _decreaseFromPool(
         uint256 tokenId,
         uint256 amount,
-        IRebornDefination.SeasonData storage _seasonData,
-        AirdropConf storage dropConf
+        IRebornDefination.SeasonData storage _seasonData
     )
         internal
         returns (
@@ -849,7 +811,6 @@ library PortalLib {
         PortalLib.Pool storage pool = _seasonData.pools[tokenId];
 
         _updateCoinday(portfolio, pool);
-        _cumulantCoindyOfLatestAirdropTime(portfolio, dropConf);
 
         // don't need to check accumulativeAmount, as it would revert if accumulativeAmount is less
         portfolio.accumulativeAmount -= amount;
