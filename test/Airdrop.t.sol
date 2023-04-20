@@ -18,8 +18,8 @@ contract AirdropTest is RebornPortalBaseTest {
                 false,
                 1 hours,
                 3 hours,
-                uint32(block.timestamp),
-                uint32(block.timestamp),
+                0,
+                0,
                 20,
                 10,
                 800,
@@ -51,7 +51,7 @@ contract AirdropTest is RebornPortalBaseTest {
 
         uint256 incarnateCount = portal.getIncarnateCount(
             portal.getSeason(),
-            _user
+            user
         );
 
         (uint256 deadline, bytes32 r, bytes32 s, uint8 v) = TestUtils
@@ -86,9 +86,6 @@ contract AirdropTest is RebornPortalBaseTest {
     }
 
     function mockAirdrop() public {
-        // set timestamp
-        vm.warp(block.timestamp + 1 days);
-
         bool up;
         bytes memory perfromData;
 
@@ -145,8 +142,8 @@ contract AirdropTest is RebornPortalBaseTest {
     function testUpKeepProgressSmoothly() public {
         _mockIncarnate();
         mockEngravesAndInfuses(120);
-
         setDropConf();
+        vm.warp(block.timestamp + 1 days - 1 hours);
         mockAirdrop();
     }
 
@@ -166,6 +163,9 @@ contract AirdropTest is RebornPortalBaseTest {
         _mockIncarnate();
         // engrave
         mockEngravesIncre(1);
+        // time pass by, set timestamp
+        vm.warp(block.timestamp + 1 days);
+
         // airdrop
         mockAirdrop();
 
@@ -177,7 +177,11 @@ contract AirdropTest is RebornPortalBaseTest {
         ds[0] = tokenId;
 
         vm.expectEmit(true, true, true, true);
-        emit PortalLib.ClaimRebornDrop(1, 640 ether);
+        if (portal.ownerOf(1) == user) {
+            emit PortalLib.ClaimRebornDrop(1, 800 ether);
+        } else {
+            emit PortalLib.ClaimRebornDrop(1, 640 ether);
+        }
         vm.prank(user);
 
         portal.claimDrops(ds);
