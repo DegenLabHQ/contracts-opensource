@@ -14,7 +14,7 @@ library FastArray {
     /**
      * @notice please confirm no eq item exist before insert
      */
-    function insert(Data storage _fastArray, uint256 _value) external {
+    function insert(Data storage _fastArray, uint256 _value) public {
         _fastArray.array[_fastArray.length] = _value;
         _fastArray.indexMap[_value] = _fastArray.length;
         _fastArray.length += 1;
@@ -24,7 +24,7 @@ library FastArray {
      * @dev remove item from array,but not keep rest item sort
      * @notice Please confirm array is not empty && item is exist && index not out of bounds
      */
-    function remove(Data storage _fastArray, uint256 _value) external {
+    function remove(Data storage _fastArray, uint256 _value) public {
         uint256 index = _fastArray.indexMap[_value];
 
         uint256 oldIndex = _fastArray.length - 1;
@@ -40,7 +40,7 @@ library FastArray {
      * @dev remove item and keep rest item in sort
      * @notice Please confirm array is not empty && item is exist && index not out of bounds
      */
-    function removeKeepSort(Data storage _fastArray, uint256 _value) external {
+    function removeKeepSort(Data storage _fastArray, uint256 _value) public {
         uint256 index = _fastArray.indexMap[_value];
 
         uint256 tempLastItem = _fastArray.array[_fastArray.length - 1];

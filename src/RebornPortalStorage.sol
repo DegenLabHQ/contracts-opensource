@@ -20,7 +20,7 @@ contract RebornPortalStorage is IRebornDefination {
     uint256 internal _season;
 
     //#### Access #####//
-    mapping(address => bool) public signers;
+    mapping(address => bool) internal signers;
 
     //#### Incarnation ######//
     uint256 internal idx;
@@ -37,7 +37,7 @@ contract RebornPortalStorage is IRebornDefination {
 
     //#### Refer #######//
     mapping(address => address) internal referrals;
-    PortalLib.ReferrerRewardFees public rewardFees;
+    PortalLib.ReferrerRewardFees internal rewardFees;
 
     //#### airdrop config #####//
     PortalLib.AirdropConf internal _dropConf;
