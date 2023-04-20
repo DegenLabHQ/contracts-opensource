@@ -175,7 +175,7 @@ contract RebornPortal is
     function baptise(
         address user,
         uint256 amount,
-        BaptiseType baptiseType
+        uint256 baptiseType
     ) external override onlySigner whenNotPaused {
         vault.reward(user, amount);
 
