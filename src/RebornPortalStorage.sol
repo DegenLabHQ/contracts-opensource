@@ -38,8 +38,6 @@ contract RebornPortalStorage is IRebornDefination {
     //#### Refer #######//
     mapping(address => address) internal referrals;
     PortalLib.ReferrerRewardFees public rewardFees;
-    // extra reward to parent referrer
-    uint256 internal _extraReward;
 
     //#### airdrop config #####//
     PortalLib.AirdropConf internal _dropConf;
@@ -60,5 +58,5 @@ contract RebornPortalStorage is IRebornDefination {
     uint256 internal piggyBankFee;
 
     /// @dev gap for potential variable
-    uint256[26] private _gap;
+    uint256[27] private _gap;
 }

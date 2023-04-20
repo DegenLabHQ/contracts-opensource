@@ -140,8 +140,6 @@ interface IRebornDefination {
 
     event NewSeason(uint256);
 
-    event NewExtraReward(uint256 extraReward);
-
     event NewIncarnationLimit(uint256 limit);
 
     event ForgedTo(
