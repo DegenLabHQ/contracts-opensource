@@ -21,19 +21,15 @@ contract RebornPortalInvar is RebornPortalBaseTest, InvariantTest {
         uint256[] memory wholeTokenIds = _infuseHandler.getWholeStakedPools();
 
         for (uint256 i = 0; i < wholeTokenIds.length; i++) {
-            console.log(wholeTokenIds.length);
             uint256 tokenId = wholeTokenIds[i];
             uint256 totalAmount = portal.getPool(tokenId).totalAmount;
 
             address[] memory users = _infuseHandler.getPoolUsers(tokenId);
 
-            console.log(users.length);
-
             uint256 sumAmount;
 
             for (uint256 j = 0; j < users.length; j++) {
                 address user = users[j];
-                console.log(user);
                 sumAmount += portal
                     .getPortfolio(user, tokenId)
                     .accumulativeAmount;

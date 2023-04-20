@@ -40,16 +40,44 @@ contract AirdropTest is RebornPortalBaseTest {
 
         deal(user, 10000 ether);
 
-        vm.startPrank(user);
+        InnateParams memory innateParams = InnateParams(
+            75 ether,
+            10 ether,
+            25 ether,
+            20 ether
+        );
 
-        payable(address(portal)).call{value: 1000 ether}(
-            abi.encodeWithSignature(
-                "incarnate((uint256,uint256),address,uint256)",
-                0.1 ether,
-                0.5 ether,
-                address(1),
-                0.1 ether
-            )
+        uint256 incarnateCount = portal.getIncarnateCount(
+            portal.getSeason(),
+            _user
+        );
+
+        (uint256 deadline, bytes32 r, bytes32 s, uint8 v) = TestUtils
+            .signAuthenticateSoup(
+                11,
+                address(portal),
+                user,
+                SOUP_PRICE,
+                incarnateCount + 1,
+                0
+            );
+
+        SoupParams memory soupParams = SoupParams(
+            SOUP_PRICE,
+            0,
+            deadline,
+            r,
+            s,
+            v
+        );
+
+        deal(address(rbt), user, 1 << 128);
+        vm.startPrank(user);
+        rbt.approve(address(portal), UINT256_MAX);
+        portal.incarnate{value: 100 ether + SOUP_PRICE}(
+            innateParams,
+            address(0),
+            soupParams
         );
 
         vm.stopPrank();

@@ -427,18 +427,47 @@ contract RebornPortalCommonTest is RebornPortalBaseTest {
     }
 
     function mockIncarnate() public {
-        uint256 amount = 1 ether;
-        deal(_user, amount);
-        vm.prank(_user);
-        payable(address(portal)).call{value: amount}(
-            abi.encodeWithSignature(
-                "incarnate((uint256,uint256),address,uint256)",
-                0.1 ether,
-                0.5 ether,
-                address(1),
-                SOUP_PRICE
-            )
+        InnateParams memory innateParams = InnateParams(
+            0.1 ether,
+            10 ether,
+            0.2 ether,
+            20 ether
         );
+
+        uint256 incarnateCount = portal.getIncarnateCount(
+            portal.getSeason(),
+            _user
+        );
+
+        (uint256 deadline, bytes32 r, bytes32 s, uint8 v) = TestUtils
+            .signAuthenticateSoup(
+                11,
+                address(portal),
+                _user,
+                SOUP_PRICE,
+                incarnateCount + 1,
+                0
+            );
+
+        SoupParams memory soupParams = SoupParams(
+            SOUP_PRICE,
+            0,
+            deadline,
+            r,
+            s,
+            v
+        );
+
+        deal(address(rbt), _user, 1 << 128);
+        startHoax(_user);
+        rbt.approve(address(portal), UINT256_MAX);
+        portal.incarnate{value: 0.3 ether + SOUP_PRICE}(
+            innateParams,
+            address(0),
+            soupParams
+        );
+
+        vm.stopPrank();
     }
 
     function testIncarnateLimitZero() public {
@@ -450,12 +479,13 @@ contract RebornPortalCommonTest is RebornPortalBaseTest {
     }
 
     function testIncarnateLimitOne() public {
-        vm.prank(portal.owner());
         vm.expectEmit(true, true, true, true);
         emit NewIncarnationLimit(0);
 
-        portal.setIncarnationLimit(0);
+        vm.prank(portal.owner());
+        portal.setIncarnationLimit(1);
 
+        mockIncarnate();
         vm.expectRevert(IRebornDefination.IncarnationExceedLimit.selector);
         mockIncarnate();
     }
