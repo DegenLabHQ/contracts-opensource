@@ -757,7 +757,7 @@ contract RebornPortal is
     function _fulfillDropNative(uint256 requestId) internal onlyDropOn {
         // update last drop timestamp, no back to specfic hour, for accurate coinday
         _dropConf._nativeDropLastUpdate = uint32(block.timestamp);
-        _dropConf._lockRequestDropReborn = false;
+        _dropConf._lockRequestDropNative = false;
 
         uint256[] memory topTens = _getTopNTokenId(10);
         uint256[] memory topTenToHundreds = _getFirstNTokenIdByOffSet(10, 90);
