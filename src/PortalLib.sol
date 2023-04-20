@@ -54,8 +54,8 @@ library PortalLib {
         uint256 totalAmount;
         uint256 accRebornPerShare;
         uint256 accNativePerShare;
-        uint256 droppedRebornTotal;
-        uint256 droppedNativeTotal;
+        uint128 droppedRebornTotal;
+        uint128 droppedNativeTotal;
         uint256 coindayCumulant;
         uint32 coindayUpdateLastTime;
         uint112 totalForwardTribute;
@@ -338,7 +338,7 @@ library PortalLib {
 
             unchecked {
                 // 80% to pool
-                pool.droppedNativeTotal += (4 * dropAmount) / 5;
+                pool.droppedNativeTotal += (4 * uint128(dropAmount)) / 5;
                 pool.accNativePerShare =
                     (pool.droppedNativeTotal * PERSHARE_BASE) /
                     poolCoinday;
@@ -387,7 +387,7 @@ library PortalLib {
             uint256 poolCoinday = getPoolCoinday(tokenId, _seasonData);
             unchecked {
                 // 80% to pool
-                pool.droppedNativeTotal += (4 * dropAmount) / 5;
+                pool.droppedNativeTotal += (4 * uint128(dropAmount)) / 5;
                 pool.accNativePerShare =
                     (pool.droppedNativeTotal * PERSHARE_BASE) /
                     poolCoinday;
@@ -427,7 +427,7 @@ library PortalLib {
 
             unchecked {
                 // 80% to pool
-                pool.droppedRebornTotal += (4 * dropAmount) / 5;
+                pool.droppedRebornTotal += (4 * uint128(dropAmount)) / 5;
                 pool.accRebornPerShare =
                     (pool.droppedRebornTotal * PERSHARE_BASE) /
                     poolCoinday;
@@ -473,7 +473,7 @@ library PortalLib {
 
             unchecked {
                 // 80% to pool
-                pool.droppedRebornTotal += (4 * dropAmount) / 5;
+                pool.droppedRebornTotal += (4 * uint128(dropAmount)) / 5;
                 pool.accRebornPerShare =
                     (pool.droppedRebornTotal * PERSHARE_BASE) /
                     poolCoinday;
