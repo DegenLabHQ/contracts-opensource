@@ -8,9 +8,11 @@ import "src/RebornPortal.sol";
 import {IRebornDefination} from "src/interfaces/IRebornPortal.sol";
 import "src/mock/VRFCoordinatorV2Mock.sol";
 import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
+import {TestUtils} from "test/TestUtils.sol";
+import "src/mock/PortalMock.sol";
 
-contract DropHandler is Test {
-    RebornPortal internal _portal;
+contract DropHandler is Test, IRebornDefination {
+    PortalMock internal _portal;
     RBT internal _rbt;
     address internal _vrfCoordinator;
     uint256 public dropCount;
@@ -39,7 +41,7 @@ contract DropHandler is Test {
     }
 
     constructor(
-        RebornPortal portal_,
+        PortalMock portal_,
         RBT rbt_,
         address vrfCoordinator_,
         address signer_
@@ -70,16 +72,46 @@ contract DropHandler is Test {
 
         deal(_user, 10000 ether);
 
-        vm.startPrank(_user);
+        uint256 SOUP_PRICE = 0.1 ether;
 
-        payable(address(_portal)).call{value: 1000 ether}(
-            abi.encodeWithSignature(
-                "incarnate((uint256,uint256),address,uint256)",
-                800 ether,
-                100 ether,
-                address(1),
-                100 ether
-            )
+        InnateParams memory innateParams = InnateParams(
+            75 ether,
+            10 ether,
+            25 ether,
+            20 ether
+        );
+
+        uint256 incarnateCount = _portal.getIncarnateCount(
+            _portal.getSeason(),
+            _user
+        );
+
+        (uint256 deadline, bytes32 r, bytes32 s, uint8 v) = TestUtils
+            .signAuthenticateSoup(
+                11,
+                address(_portal),
+                _user,
+                SOUP_PRICE,
+                incarnateCount + 1,
+                0
+            );
+
+        SoupParams memory soupParams = SoupParams(
+            SOUP_PRICE,
+            0,
+            deadline,
+            r,
+            s,
+            v
+        );
+
+        deal(address(_rbt), _user, 1 << 128);
+        vm.startPrank(_user);
+        _rbt.approve(address(_portal), UINT256_MAX);
+        _portal.incarnate{value: 100 ether + SOUP_PRICE}(
+            innateParams,
+            address(0),
+            soupParams
         );
 
         vm.stopPrank();
@@ -93,6 +125,8 @@ contract DropHandler is Test {
         _portal.setDropConf(
             PortalLib.AirdropConf(
                 1,
+                false,
+                false,
                 1 hours,
                 3 hours,
                 uint32(block.timestamp),
@@ -140,6 +174,7 @@ contract DropHandler is Test {
             keccak256(abi.encode(i)),
             _user,
             i,
+            0,
             i,
             i,
             i,

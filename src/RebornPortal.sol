@@ -16,7 +16,6 @@ import {RebornPortalStorage} from "src/RebornPortalStorage.sol";
 import {RBT} from "src/RBT.sol";
 import {RewardVault} from "src/RewardVault.sol";
 import {RankUpgradeable} from "src/RankUpgradeable.sol";
-import {Altar} from "src/Altar.sol";
 import {Renderer} from "src/lib/Renderer.sol";
 import {CommonError} from "src/lib/CommonError.sol";
 
@@ -36,8 +35,7 @@ contract RebornPortal is
     PausableUpgradeable,
     AutomationCompatible,
     RankUpgradeable,
-    VRFConsumerBaseV2Upgradeable,
-    Altar
+    VRFConsumerBaseV2Upgradeable
 {
     using BitMapsUpgradeable for BitMapsUpgradeable.BitMap;
     using FastArray for FastArray.Data;
@@ -126,7 +124,8 @@ contract RebornPortal is
     function engrave(
         bytes32 seed,
         address user,
-        uint256 reward,
+        uint256 lifeReward,
+        uint256 boostReward,
         uint256 score,
         uint256 age,
         uint256 cost,
@@ -137,24 +136,30 @@ contract RebornPortal is
         }
         _seeds.set(uint256(seed));
 
-        // tokenId auto increment
-        uint256 tokenId = ++idx + (block.chainid * 1e18);
+        uint256 tokenId;
+        uint256 totalReward;
+        unchecked {
+            // tokenId auto increment
+            tokenId = ++idx + (block.chainid * 1e18);
+
+            totalReward = lifeReward + boostReward;
+        }
 
         details[tokenId] = LifeDetail(
             seed,
             user,
+            uint96(totalReward),
+            uint96(cost),
             uint16(age),
             uint16(++rounds[user]),
+            uint64(score),
             0,
-            uint128(cost),
-            uint128(reward),
-            score,
             creatorName
         );
         // mint erc721
         _safeMint(user, tokenId);
         // send $REBORN reward
-        vault.reward(user, reward);
+        vault.reward(user, totalReward);
 
         // let tokenId enter the score rank
         _enterScoreRank(tokenId, score);
@@ -164,11 +169,11 @@ contract RebornPortal is
             rewardFees,
             vault,
             user,
-            reward,
+            lifeReward,
             _extraReward
         );
 
-        emit Engrave(seed, user, tokenId, score, reward);
+        emit Engrave(seed, user, tokenId, score, totalReward);
     }
 
     /**
@@ -177,7 +182,7 @@ contract RebornPortal is
     function baptise(
         address user,
         uint256 amount,
-        BaptiseType baptiseType
+        uint256 baptiseType
     ) external override onlySigner whenNotPaused {
         vault.reward(user, amount);
 
@@ -307,6 +312,13 @@ contract RebornPortal is
 
     function unPause() external onlyOwner {
         _unpause();
+    }
+
+    function setCharProperty(
+        uint256[] calldata tokenIds,
+        PortalLib.CharacterParams[] calldata charParams
+    ) external onlySigner {
+        PortalLib.setCharProperty(tokenIds, charParams, _characterProperties);
     }
 
     /**
@@ -501,7 +513,7 @@ contract RebornPortal is
         LifeDetail storage detail = details[tokenId];
         uint256 oldScore = detail.score;
 
-        detail.score = score;
+        detail.score = uint64(score);
 
         // if it's top one hundred make this tokenId exit rank
         _exitRank(tokenId, oldScore);
@@ -543,15 +555,19 @@ contract RebornPortal is
         if (_dropConf._dropOn == 1) {
             // first, check whether airdrop is ready and send vrf request
             if (
-                block.timestamp >
-                _dropConf._rebornDropLastUpdate + _dropConf._rebornDropInterval
+                PortalLib._toLastHour(block.timestamp) >
+                _dropConf._rebornDropLastUpdate +
+                    _dropConf._rebornDropInterval &&
+                !_dropConf._lockRequestDropReborn
             ) {
                 upkeepNeeded = true;
                 performData = abi.encode(1, 0);
                 return (upkeepNeeded, performData);
             } else if (
-                block.timestamp >
-                _dropConf._nativeDropLastUpdate + _dropConf._nativeDropInterval
+                PortalLib._toLastHour(block.timestamp) >
+                _dropConf._nativeDropLastUpdate +
+                    _dropConf._nativeDropInterval &&
+                !_dropConf._lockRequestDropNative
             ) {
                 upkeepNeeded = true;
                 performData = abi.encode(2, 0);
@@ -630,7 +646,12 @@ contract RebornPortal is
         InnateParams calldata innate,
         SoupParams calldata soupParams
     ) internal {
-        _useSoupParam(soupParams, getIncarnateCount(_season, msg.sender));
+        PortalLib._useSoupParam(
+            soupParams,
+            getIncarnateCount(_season, msg.sender),
+            _characterProperties,
+            signers
+        );
 
         uint256 nativeFee = soupParams.soupPrice +
             innate.talentNativePrice +
@@ -702,6 +723,10 @@ contract RebornPortal is
      * @dev raffle 10 from top 11 - top 50
      */
     function _fulfillDropReborn(uint256 requestId) internal onlyDropOn {
+        // update last drop timestamp, no back to specfic hour, for accurate coinday
+        _dropConf._rebornDropLastUpdate = uint32(block.timestamp);
+        _dropConf._lockRequestDropReborn = false;
+
         uint256[] memory topTens = _getTopNTokenId(10);
         uint256[] memory topTenToHundreds = _getFirstNTokenIdByOffSet(10, 50);
 
@@ -726,8 +751,10 @@ contract RebornPortal is
         RequestStatus storage rs = _vrfRequests[requestId];
         rs.executed = true;
 
+        uint256 r = rs.randomWords;
         for (uint256 i = 0; i < 10; i++) {
-            selectedTokenIds[i] = topTenToHundreds[rs.randomWords[i] % 40];
+            selectedTokenIds[i] = topTenToHundreds[r % 40];
+            r = uint256(keccak256(abi.encode(r)));
         }
 
         PortalLib._directDropRebornToRaffleTokenIds(
@@ -745,6 +772,10 @@ contract RebornPortal is
      * @dev raffle 10 from top 11 - top 50
      */
     function _fulfillDropNative(uint256 requestId) internal onlyDropOn {
+        // update last drop timestamp, no back to specfic hour, for accurate coinday
+        _dropConf._nativeDropLastUpdate = uint32(block.timestamp);
+        _dropConf._lockRequestDropNative = false;
+
         uint256[] memory topTens = _getTopNTokenId(10);
         uint256[] memory topTenToHundreds = _getFirstNTokenIdByOffSet(10, 50);
 
@@ -777,8 +808,10 @@ contract RebornPortal is
         RequestStatus storage rs = _vrfRequests[requestId];
         rs.executed = true;
 
+        uint256 r = rs.randomWords;
         for (uint256 i = 0; i < 10; ) {
-            selectedTokenIds[i] = topTenToHundreds[rs.randomWords[i] % 40];
+            selectedTokenIds[i] = topTenToHundreds[r % 40];
+            r = uint256(keccak256(abi.encode(r)));
             unchecked {
                 i++;
             }
@@ -794,11 +827,10 @@ contract RebornPortal is
     }
 
     function _requestDropReborn() internal onlyDropOn {
-        // update last drop timestamp to specific hour
-        _dropConf._rebornDropLastUpdate = uint32(
-            PortalLib._toLastHour(block.timestamp)
-        );
-
+        if (_dropConf._lockRequestDropReborn) {
+            revert DropLocked();
+        }
+        _dropConf._lockRequestDropReborn = true;
         // raffle
         uint256 requestId = VRFCoordinatorV2Interface(vrfCoordinator)
             .requestRandomWords(
@@ -814,10 +846,10 @@ contract RebornPortal is
     }
 
     function _requestDropNative() internal onlyDropOn {
-        // update last drop timestamp to specific hour
-        _dropConf._nativeDropLastUpdate = uint32(
-            PortalLib._toLastHour(block.timestamp)
-        );
+        if (_dropConf._lockRequestDropNative) {
+            revert DropLocked();
+        }
+        _dropConf._lockRequestDropNative = true;
 
         // raffle
         uint256 requestId = VRFCoordinatorV2Interface(vrfCoordinator)
@@ -840,7 +872,7 @@ contract RebornPortal is
         if (
             !_vrfRequests[requestId].fulfilled && _vrfRequests[requestId].exists
         ) {
-            _vrfRequests[requestId].randomWords = randomWords;
+            _vrfRequests[requestId].randomWords = randomWords[0];
             _vrfRequests[requestId].fulfilled = true;
 
             _pendingDrops.insert(requestId);
@@ -1025,6 +1057,20 @@ contract RebornPortal is
         return _seasonData[_season]._jackpot;
     }
 
+    function readCharProperty(
+        uint256 tokenId
+    ) public view returns (PortalLib.CharacterProperty memory) {
+        PortalLib.CharacterProperty memory charProperty = _characterProperties[
+            tokenId
+        ];
+
+        charProperty.currentAP = uint8(
+            PortalLib._calculateCurrentAP(charProperty)
+        );
+
+        return charProperty;
+    }
+
     function _checkDropOn() internal view {
         if (_dropConf._dropOn == 0) {
             revert DropOff();
@@ -1040,6 +1086,20 @@ contract RebornPortal is
         unchecked {
             _incarnateCounts[_season][msg.sender] = currentIncarnateCount + 1;
         }
+    }
+
+    /**
+     * @dev check signer implementation
+     */
+    function _checkSigner() internal view {
+        if (!signers[msg.sender]) {
+            revert CommonError.NotSigner();
+        }
+    }
+
+    modifier onlySigner() {
+        _checkSigner();
+        _;
     }
 
     /**

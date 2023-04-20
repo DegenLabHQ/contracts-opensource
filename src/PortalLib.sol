@@ -4,6 +4,7 @@ import {IRebornDefination} from "src/interfaces/IRebornPortal.sol";
 import {IERC721} from "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import {RewardVault} from "src/RewardVault.sol";
 import {CommonError} from "src/lib/CommonError.sol";
+import {ECDSAUpgradeable} from "src/oz/contracts-upgradeable/utils/cryptography/ECDSAUpgradeable.sol";
 
 library PortalLib {
     uint256 public constant PERSHARE_BASE = 10e18;
@@ -32,7 +33,7 @@ library PortalLib {
     struct CharacterProperty {
         uint8 currentAP;
         uint8 maxAP;
-        uint32 restoreTimePerAP; // Time Needed to Restore One Action Point
+        uint24 restoreTimePerAP; // Time Needed to Restore One Action Point
         uint32 lastTimeAPUpdate;
         uint8 level;
     }
@@ -54,6 +55,8 @@ library PortalLib {
         uint256 totalAmount;
         uint256 accRebornPerShare;
         uint256 accNativePerShare;
+        uint128 droppedRebornTotal;
+        uint128 droppedNativeTotal;
         uint256 coindayCumulant;
         uint32 coindayUpdateLastTime;
         uint112 totalForwardTribute;
@@ -86,8 +89,10 @@ library PortalLib {
 
     struct AirdropConf {
         uint8 _dropOn; //                  ---
-        uint32 _rebornDropInterval; //        |
-        uint32 _nativeDropInterval; //        |
+        bool _lockRequestDropReborn;
+        bool _lockRequestDropNative;
+        uint24 _rebornDropInterval; //        |
+        uint24 _nativeDropInterval; //        |
         uint32 _rebornDropLastUpdate; //      |
         uint32 _nativeDropLastUpdate; //      |
         uint16 _nativeTopDropRatio; //        |
@@ -342,9 +347,10 @@ library PortalLib {
 
             unchecked {
                 // 80% to pool
-                pool.accNativePerShare +=
-                    (4 * dropAmount * PERSHARE_BASE) /
-                    (5 * poolCoinday);
+                pool.droppedNativeTotal += (4 * uint128(dropAmount)) / 5;
+                pool.accNativePerShare =
+                    (pool.droppedNativeTotal * PERSHARE_BASE) /
+                    poolCoinday;
 
                 // 20% to owner
 
@@ -390,9 +396,10 @@ library PortalLib {
             uint256 poolCoinday = getPoolCoinday(tokenId, _seasonData);
             unchecked {
                 // 80% to pool
-                pool.accNativePerShare +=
-                    (4 * dropAmount * PERSHARE_BASE) /
-                    (5 * poolCoinday);
+                pool.droppedNativeTotal += (4 * uint128(dropAmount)) / 5;
+                pool.accNativePerShare =
+                    (pool.droppedNativeTotal * PERSHARE_BASE) /
+                    poolCoinday;
 
                 // 20% to owner
                 portfolio.pendingOwnerNativeReward += uint128(
@@ -429,9 +436,10 @@ library PortalLib {
 
             unchecked {
                 // 80% to pool
-                pool.accRebornPerShare +=
-                    (dropAmount * 4 * PortalLib.PERSHARE_BASE) /
-                    (5 * poolCoinday);
+                pool.droppedRebornTotal += (4 * uint128(dropAmount)) / 5;
+                pool.accRebornPerShare =
+                    (pool.droppedRebornTotal * PERSHARE_BASE) /
+                    poolCoinday;
             }
 
             // 20% to owner
@@ -439,6 +447,7 @@ library PortalLib {
             Portfolio storage portfolio = _seasonData.portfolios[owner][
                 tokenId
             ];
+
             unchecked {
                 portfolio.pendingOwnerRebornReward += uint128(
                     (dropAmount * 1) / 5
@@ -473,9 +482,10 @@ library PortalLib {
 
             unchecked {
                 // 80% to pool
-                pool.accRebornPerShare +=
-                    (dropAmount * 4 * PortalLib.PERSHARE_BASE) /
-                    (5 * poolCoinday);
+                pool.droppedRebornTotal += (4 * uint128(dropAmount)) / 5;
+                pool.accRebornPerShare =
+                    (pool.droppedRebornTotal * PERSHARE_BASE) /
+                    poolCoinday;
             }
 
             // 20% to owner
@@ -880,7 +890,7 @@ library PortalLib {
     function _comsumeAP(
         uint256 tokenId,
         mapping(uint256 => CharacterProperty) storage _characterProperties
-    ) external {
+    ) public {
         CharacterProperty storage charProperty = _characterProperties[tokenId];
 
         // restore AP and decrement
@@ -907,7 +917,7 @@ library PortalLib {
                 storage charProperty = _characterProperties[tokenId];
 
             charProperty.maxAP = uint8(charParam.maxAP);
-            charProperty.restoreTimePerAP = uint32(charParam.restoreTimePerAP);
+            charProperty.restoreTimePerAP = uint24(charParam.restoreTimePerAP);
 
             // TODO: to check, restore all AP immediately
             charProperty.currentAP = uint8(charParam.maxAP);
@@ -935,5 +945,99 @@ library PortalLib {
             referrals[msg.sender] = referrer;
             emit Refer(msg.sender, referrer);
         }
+    }
+
+    function _useSoupParam(
+        IRebornDefination.SoupParams calldata soupParams,
+        uint256 nonce,
+        mapping(uint256 => PortalLib.CharacterProperty)
+            storage _characterProperties,
+        mapping(address => bool) storage signers
+    ) internal {
+        _checkSig(soupParams, nonce, signers);
+
+        if (soupParams.charTokenId != 0) {
+            _comsumeAP(soupParams.charTokenId, _characterProperties);
+        }
+    }
+
+    /**
+     * @dev Returns the domain separator for the current chain.
+     */
+    function _domainSeparatorV4() internal view returns (bytes32) {
+        return
+            _buildDomainSeparator(
+                PortalLib._TYPE_HASH,
+                keccak256("Altar"),
+                keccak256("1")
+            );
+    }
+
+    function _buildDomainSeparator(
+        bytes32 typeHash,
+        bytes32 nameHash,
+        bytes32 versionHash
+    ) private view returns (bytes32) {
+        return
+            keccak256(
+                abi.encode(
+                    typeHash,
+                    nameHash,
+                    versionHash,
+                    block.chainid,
+                    address(this)
+                )
+            );
+    }
+
+    function _checkSig(
+        IRebornDefination.SoupParams calldata soupParams,
+        uint256 nonce,
+        mapping(address => bool) storage signers
+    ) internal view {
+        if (block.timestamp >= soupParams.deadline) {
+            revert CommonError.SignatureExpired();
+        }
+
+        bytes32 structHash = keccak256(
+            abi.encode(
+                PortalLib._SOUPPARAMS_TYPEHASH,
+                msg.sender,
+                soupParams.soupPrice,
+                nonce,
+                soupParams.charTokenId,
+                soupParams.deadline
+            )
+        );
+
+        bytes32 hash = ECDSAUpgradeable.toTypedDataHash(
+            _domainSeparatorV4(),
+            structHash
+        );
+
+        address signer = ECDSAUpgradeable.recover(
+            hash,
+            soupParams.v,
+            soupParams.r,
+            soupParams.s
+        );
+
+        if (!signers[signer]) {
+            revert CommonError.NotSigner();
+        }
+    }
+
+    function readCharProperty(
+        uint256 tokenId,
+        mapping(uint256 => PortalLib.CharacterProperty)
+            storage _characterProperties
+    ) public view returns (PortalLib.CharacterProperty memory) {
+        PortalLib.CharacterProperty memory charProperty = _characterProperties[
+            tokenId
+        ];
+
+        charProperty.currentAP = uint8(_calculateCurrentAP(charProperty));
+
+        return charProperty;
     }
 }

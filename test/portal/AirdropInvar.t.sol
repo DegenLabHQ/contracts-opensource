@@ -27,8 +27,16 @@ contract AirdropInvar is RebornPortalBaseTest, InvariantTest {
         uint256 StakerAmount;
         // top 100 tokenId should be 101 - 200
         for (uint256 i = 0; i < 220; i++) {
+            console.log(
+                "tokenId: ",
+                i,
+                "amount: ",
+                (portal.getPool(i).coindayCumulant *
+                    portal.getPool(i).accRebornPerShare) /
+                    PortalLib.PERSHARE_BASE
+            );
             StakerAmount +=
-                (portal.getPool(i).totalAmount *
+                (portal.getPool(i).coindayCumulant *
                     portal.getPool(i).accRebornPerShare) /
                 PortalLib.PERSHARE_BASE;
         }

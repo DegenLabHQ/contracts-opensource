@@ -32,13 +32,15 @@ interface IRebornDefination {
 
     struct LifeDetail {
         bytes32 seed;
-        address creator;
-        uint16 age;
-        uint32 round;
-        uint48 nothing;
-        uint128 cost;
-        uint128 reward;
-        uint256 score;
+        address creator;                    // ---
+        // uint96 max 7*10^28  7*10^10 eth  //   |
+        uint96 reward;                      // ---
+        uint96 cost;                        // ---
+        uint16 age;                         //   |
+        uint32 round;                       //   |
+        // uint64 max 1.8*10^19             //   |
+        uint64 score;                       //   |
+        uint48 placeholder;                 // ---  
         string creatorName;
     }
 
@@ -73,7 +75,7 @@ interface IRebornDefination {
         bool exists; // whether a requestId exists
         bool executed; // whether the airdrop is executed
         AirdropVrfType t;
-        uint256[] randomWords;
+        uint256 randomWords; // we only need one random word. keccak256 to generate more
     }
 
     enum BaptiseType {
@@ -112,7 +114,7 @@ interface IRebornDefination {
     event Baptise(
         address indexed user,
         uint256 amount,
-        BaptiseType indexed baptiseType
+        uint256 indexed baptiseType
     );
 
     event NewSoupPrice(uint256 price);
@@ -139,8 +141,6 @@ interface IRebornDefination {
     event NewSeason(uint256);
 
     event NewExtraReward(uint256 extraReward);
-
-    event BetaStageSet(bool);
 
     event NewIncarnationLimit(uint256 limit);
 
@@ -172,10 +172,9 @@ interface IRebornDefination {
     /// @dev revert when incarnation count exceed limit
     error IncarnationExceedLimit();
 
-    /// @dev revert user continue play game when beta stoped
-    error BetaStoped();
-
     error DirectionError();
+
+    error DropLocked();
 }
 
 interface IRebornPortal is IRebornDefination {
@@ -201,14 +200,16 @@ interface IRebornPortal is IRebornDefination {
      * @dev engrave the result on chain and reward
      * @param seed random seed in bytes32
      * @param user user address
-     * @param reward $REBORN user earns, decimal 10^18
+     * @param lifeReward $REBORN user earns, decimal 10^18
+     * @param boostReward $REBORN user earns with degen2009 boost
      * @param score life score
      * @param cost user cost for this life
      */
     function engrave(
         bytes32 seed,
         address user,
-        uint256 reward,
+        uint256 lifeReward,
+        uint256 boostReward,
         uint256 score,
         uint256 age,
         uint256 cost,
@@ -223,7 +224,7 @@ interface IRebornPortal is IRebornDefination {
     function baptise(
         address user,
         uint256 amount,
-        BaptiseType baptiseType
+        uint256 baptiseType
     ) external;
 
     /**
