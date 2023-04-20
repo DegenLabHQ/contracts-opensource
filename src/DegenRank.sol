@@ -17,13 +17,13 @@ library DegenRank {
             return;
         }
         // only when length is larger than 100, remove
-        if (SingleRanking.length(_seasonData._scoreRank) >= 100) {
+        if (SingleRanking.length(_seasonData._scoreRank) >= 50) {
             // get the min value and compare, if new value is not larger, nothing happen
             if (value <= _seasonData._minScore) {
                 return;
             }
             // remove the smallest in the score rank
-            uint256 tokenIdWithMinmalScore = _seasonData._scoreRank.get(99, 1)[
+            uint256 tokenIdWithMinmalScore = _seasonData._scoreRank.get(49, 1)[
                 0
             ];
             _seasonData._scoreRank.remove(
@@ -40,7 +40,7 @@ library DegenRank {
             );
 
             // set min value
-            _seasonData._minScore = _seasonData._scoreRank.getNthValue(99);
+            _seasonData._minScore = _seasonData._scoreRank.getNthValue(49);
         }
 
         // add to score rank
