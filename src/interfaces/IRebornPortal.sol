@@ -114,7 +114,7 @@ interface IRebornDefination {
     event Baptise(
         address indexed user,
         uint256 amount,
-        BaptiseType indexed baptiseType
+        uint256 indexed baptiseType
     );
 
     event NewSoupPrice(uint256 price);
@@ -141,8 +141,6 @@ interface IRebornDefination {
     event NewSeason(uint256);
 
     event NewExtraReward(uint256 extraReward);
-
-    event BetaStageSet(bool);
 
     event NewIncarnationLimit(uint256 limit);
 
@@ -173,9 +171,6 @@ interface IRebornDefination {
 
     /// @dev revert when incarnation count exceed limit
     error IncarnationExceedLimit();
-
-    /// @dev revert user continue play game when beta stoped
-    error BetaStoped();
 
     error DirectionError();
 
@@ -227,7 +222,7 @@ interface IRebornPortal is IRebornDefination {
     function baptise(
         address user,
         uint256 amount,
-        BaptiseType baptiseType
+        uint256 baptiseType
     ) external;
 
     /**

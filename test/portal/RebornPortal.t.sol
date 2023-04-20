@@ -306,17 +306,21 @@ contract RebornPortalCommonTest is RebornPortalBaseTest {
         console.log(metadata);
     }
 
-    function testBaptise(address user, uint256 amount) public {
+    function testBaptise(
+        address user,
+        uint256 amount,
+        uint256 baptiseType
+    ) public {
         vm.assume(user != address(0));
         vm.assume(amount < rbt.cap() - rbt.totalSupply());
         deal(address(rbt), address(portal.vault()), amount);
 
         vm.expectEmit(true, true, true, true);
-        emit Baptise(user, amount, BaptiseType.TwitterShare);
+        emit Baptise(user, amount, baptiseType);
         emit Transfer(address(0), user, amount);
 
         vm.prank(_signer);
-        portal.baptise(user, amount, BaptiseType.TwitterShare);
+        portal.baptise(user, amount, baptiseType);
     }
 
     function testSeedRead(
