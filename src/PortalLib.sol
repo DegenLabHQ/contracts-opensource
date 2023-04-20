@@ -140,6 +140,9 @@ library PortalLib {
             dropConf,
             _seasonData
         );
+        if (userRebornCoinday == 0) {
+            return;
+        }
         // if no portfolio, no pending tribute reward
         if (portfolio.accumulativeAmount == 0) {
             pendingTributeReborn = 0;
@@ -187,6 +190,9 @@ library PortalLib {
             dropConf,
             _seasonData
         );
+        if (userNativeCoinday == 0) {
+            return;
+        }
         // if no portfolio, no pending tribute reward
         if (portfolio.accumulativeAmount == 0) {
             pendingTributeNative = 0;
@@ -201,11 +207,9 @@ library PortalLib {
             portfolio.pendingOwnerNativeReward;
 
         // set current amount as debt
-        if (userNativeCoinday > 0) {
-            portfolio.nativeRewardDebt = uint128(
-                (userNativeCoinday * pool.accNativePerShare) / PERSHARE_BASE
-            );
-        }
+        portfolio.nativeRewardDebt = uint128(
+            (userNativeCoinday * pool.accNativePerShare) / PERSHARE_BASE
+        );
 
         // clean up reward as owner
         portfolio.pendingOwnerNativeReward = 0;
@@ -267,15 +271,17 @@ library PortalLib {
                     _seasonData
                 );
 
-            pendingTributeNative =
-                (userNativeCoinday * pool.accNativePerShare) /
-                PERSHARE_BASE -
-                portfolio.nativeRewardDebt;
+            pendingTributeNative = userNativeCoinday > 0
+                ? (userNativeCoinday * pool.accNativePerShare) /
+                    PERSHARE_BASE -
+                    portfolio.nativeRewardDebt
+                : 0;
 
-            pendingTributeReborn =
-                (userRebornCoinday * pool.accRebornPerShare) /
-                PERSHARE_BASE -
-                portfolio.rebornRewardDebt;
+            pendingTributeReborn = userRebornCoinday > 0
+                ? (userRebornCoinday * pool.accRebornPerShare) /
+                    PERSHARE_BASE -
+                    portfolio.rebornRewardDebt
+                : 0;
         }
 
         pendingNative =
