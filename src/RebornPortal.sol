@@ -718,9 +718,9 @@ contract RebornPortal is
     }
 
     /**
-     * @dev airdrop to top 100 tvl pool
+     * @dev airdrop to top 50 tvl pool
      * @dev directly drop to top 10
-     * @dev raffle 10 from top 11 - top 100
+     * @dev raffle 10 from top 11 - top 50
      */
     function _fulfillDropReborn(uint256 requestId) internal onlyDropOn {
         // update last drop timestamp, no back to specfic hour, for accurate coinday
@@ -728,7 +728,7 @@ contract RebornPortal is
         _dropConf._lockRequestDropReborn = false;
 
         uint256[] memory topTens = _getTopNTokenId(10);
-        uint256[] memory topTenToHundreds = _getFirstNTokenIdByOffSet(10, 90);
+        uint256[] memory topTenToHundreds = _getFirstNTokenIdByOffSet(10, 50);
 
         uint256 dropTopAmount;
         uint256 dropRaffleAmount;
@@ -753,7 +753,7 @@ contract RebornPortal is
 
         uint256 r = rs.randomWords;
         for (uint256 i = 0; i < 10; i++) {
-            selectedTokenIds[i] = topTenToHundreds[r % 90];
+            selectedTokenIds[i] = topTenToHundreds[r % 40];
             r = uint256(keccak256(abi.encode(r)));
         }
 
@@ -769,7 +769,7 @@ contract RebornPortal is
     /**
      * @dev airdrop to top 100 tvl pool
      * @dev directly drop to top 10
-     * @dev raffle 10 from top 11 - top 100
+     * @dev raffle 10 from top 11 - top 50
      */
     function _fulfillDropNative(uint256 requestId) internal onlyDropOn {
         // update last drop timestamp, no back to specfic hour, for accurate coinday
@@ -777,7 +777,7 @@ contract RebornPortal is
         _dropConf._lockRequestDropNative = false;
 
         uint256[] memory topTens = _getTopNTokenId(10);
-        uint256[] memory topTenToHundreds = _getFirstNTokenIdByOffSet(10, 90);
+        uint256[] memory topTenToHundreds = _getFirstNTokenIdByOffSet(10, 50);
 
         uint256 nativeTopAmount;
         uint256 nativeRaffleAmount;
@@ -810,7 +810,7 @@ contract RebornPortal is
 
         uint256 r = rs.randomWords;
         for (uint256 i = 0; i < 10; ) {
-            selectedTokenIds[i] = topTenToHundreds[r % 90];
+            selectedTokenIds[i] = topTenToHundreds[r % 40];
             r = uint256(keccak256(abi.encode(r)));
             unchecked {
                 i++;
