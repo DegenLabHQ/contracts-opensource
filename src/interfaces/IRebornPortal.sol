@@ -205,14 +205,16 @@ interface IRebornPortal is IRebornDefination {
      * @dev engrave the result on chain and reward
      * @param seed random seed in bytes32
      * @param user user address
-     * @param reward $REBORN user earns, decimal 10^18
+     * @param lifeReward $REBORN user earns, decimal 10^18
+     * @param boostReward $REBORN user earns with degen2009 boost
      * @param score life score
      * @param cost user cost for this life
      */
     function engrave(
         bytes32 seed,
         address user,
-        uint256 reward,
+        uint256 lifeReward,
+        uint256 boostReward,
         uint256 score,
         uint256 age,
         uint256 cost,

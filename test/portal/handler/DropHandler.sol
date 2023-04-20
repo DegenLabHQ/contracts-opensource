@@ -174,6 +174,7 @@ contract DropHandler is Test, IRebornDefination {
             keccak256(abi.encode(i)),
             _user,
             i,
+            0,
             i,
             i,
             i,
