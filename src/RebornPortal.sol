@@ -170,8 +170,7 @@ contract RebornPortal is
             rewardFees,
             vault,
             user,
-            lifeReward,
-            _extraReward
+            lifeReward
         );
 
         emit Engrave(seed, user, tokenId, score, totalReward);
@@ -479,12 +478,6 @@ contract RebornPortal is
             refL2Fee,
             rewardType
         );
-    }
-
-    function setExtraReward(uint256 extraReward) external onlyOwner {
-        _extraReward = extraReward;
-
-        emit NewExtraReward(_extraReward);
     }
 
     // set burnPool address for pre burn $REBORN
@@ -1001,8 +994,7 @@ contract RebornPortal is
                 rewardFees,
                 account,
                 amount,
-                rewardType,
-                _extraReward
+                rewardType
             );
     }
 

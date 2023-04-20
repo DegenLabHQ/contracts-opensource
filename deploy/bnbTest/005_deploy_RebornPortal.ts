@@ -68,13 +68,6 @@ const func: DeployFunction = async function ({
     1
   );
 
-  // await execute(
-  //   "RebornPortal",
-  //   { from: owner, log: true },
-  //   "setExtraReward",
-  //   parseEther("8")
-  // );
-
   await execute(
     "RebornPortal",
     { from: owner, log: true },

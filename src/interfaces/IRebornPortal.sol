@@ -39,8 +39,8 @@ interface IRebornDefination {
         uint16 age; //   |
         uint32 round; //   |
         // uint64 max 1.8*10^19             //   |
-        uint64 score; //   |
-        uint48 nativeCost; // only with dicimal of 10^6 // ---
+        uint64 score;                       //   |
+        uint48 placeholder;                 // ---  
         string creatorName;
     }
 
@@ -139,8 +139,6 @@ interface IRebornDefination {
     event VaultSet(address rewardVault);
 
     event NewSeason(uint256);
-
-    event NewExtraReward(uint256 extraReward);
 
     event NewIncarnationLimit(uint256 limit);
 
