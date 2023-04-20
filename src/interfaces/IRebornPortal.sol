@@ -32,13 +32,15 @@ interface IRebornDefination {
 
     struct LifeDetail {
         bytes32 seed;
-        address creator;
-        uint16 age;
-        uint32 round;
-        uint48 nothing;
-        uint128 cost;
-        uint128 reward;
-        uint256 score;
+        address creator;                    // ---
+        // uint96 max 7*10^28  7*10^10 eth  //   |
+        uint96 reward;                      // ---
+        uint96 cost;                        // ---
+        uint16 age;                         //   |
+        uint32 round;                       //   |
+        // uint64 max 1.8*10^19             //   |
+        uint64 score;                       //   |
+        uint48 placeholder;                 // ---  
         string creatorName;
     }
 

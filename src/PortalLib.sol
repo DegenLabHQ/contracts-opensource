@@ -32,7 +32,7 @@ library PortalLib {
     struct CharacterProperty {
         uint8 currentAP;
         uint8 maxAP;
-        uint32 restoreTimePerAP; // Time Needed to Restore One Action Point
+        uint24 restoreTimePerAP; // Time Needed to Restore One Action Point
         uint32 lastTimeAPUpdate;
         uint8 level;
     }
@@ -879,7 +879,7 @@ library PortalLib {
                 storage charProperty = _characterProperties[tokenId];
 
             charProperty.maxAP = uint8(charParam.maxAP);
-            charProperty.restoreTimePerAP = uint32(charParam.restoreTimePerAP);
+            charProperty.restoreTimePerAP = uint24(charParam.restoreTimePerAP);
 
             // TODO: to check, restore all AP immediately
             charProperty.currentAP = uint8(charParam.maxAP);
