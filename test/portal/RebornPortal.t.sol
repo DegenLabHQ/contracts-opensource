@@ -74,15 +74,22 @@ contract RebornPortalCommonTest is RebornPortalBaseTest {
 
         // set default property
         mockSetOneTokenIdDefaultProperty(tokenId);
-        // time pass by to restore AP
-        vm.warp(block.timestamp + 86400);
 
+        uint256 incarnateCount = portal.getIncarnateCount(
+            portal.getSeason(),
+            _user
+        );
         (
             uint256 deadline,
             bytes32 r,
             bytes32 s,
             uint8 v
-        ) = mockSignCharOwnership(_user, SOUP_PRICE, 1, tokenId);
+        ) = mockSignCharOwnership(
+                _user,
+                SOUP_PRICE,
+                incarnateCount + 1,
+                tokenId
+            );
 
         SoupParams memory soupParams = SoupParams(
             SOUP_PRICE,
@@ -325,36 +332,46 @@ contract RebornPortalCommonTest is RebornPortalBaseTest {
         assertEq(portal.seedExists(bytes32(uint256(seed) - 1)), false);
     }
 
-    function testRewardReferrers() public {
+    function testRewardReferrers(uint256 amount) public {
+        vm.assume(amount > 0.4 ether);
+        vm.assume(amount < 100 ether);
+
         address ref1 = vm.addr(20);
         address ref2 = vm.addr(21);
 
         vm.prank(owner);
         portal.setReferrerRewardFee(800, 200, PortalLib.RewardType.NativeToken);
 
+        deal(address(rbt), ref1, 1 << 128);
+        console.log("ref1: ", ref1);
         // refer ref2->ref1
-        hoax(ref1);
+        startHoax(ref1);
+        rbt.approve(address(portal), UINT256_MAX);
         incarnateWithReferrer(
             ref1,
             ref2,
-            0.61 * 0.08 * 1e18,
+            (amount * 8) / 100,
             address(0),
             0,
-            0.61 ether
+            amount
         );
+        vm.stopPrank();
 
         // refer ref1->user
         vm.deal(ref1, 0);
         vm.deal(ref2, 0);
-        hoax(_user);
+        deal(address(rbt), _user, 1 << 128);
+        startHoax(_user);
+        rbt.approve(address(portal), UINT256_MAX);
         incarnateWithReferrer(
             _user,
             ref1,
-            0.61 * 0.08 * 1e18,
+            (amount * 8) / 100,
             ref2,
-            0.61 * 0.02 * 1e18,
-            0.61 * 1 ether
+            (amount * 2) / 100,
+            amount
         );
+        vm.stopPrank();
     }
 
     function incarnateWithReferrer(
@@ -363,7 +380,7 @@ contract RebornPortalCommonTest is RebornPortalBaseTest {
         uint256 ref1Reward,
         address ref2,
         uint256 ref2Reward,
-        uint256 amount
+        uint256 totalAmount
     ) public {
         vm.expectEmit(true, true, true, true);
         emit PortalLib.ReferReward(
@@ -374,15 +391,36 @@ contract RebornPortalCommonTest is RebornPortalBaseTest {
             ref2Reward,
             PortalLib.RewardType.NativeToken
         );
-        payable(address(portal)).call{value: amount}(
-            abi.encodeWithSignature(
-                "incarnate((uint256,uint256),address,uint256)",
-                0.1 ether,
-                0.5 ether,
-                ref1,
-                SOUP_PRICE
-            )
+
+        InnateParams memory innateParams = InnateParams(
+            0.1 ether,
+            10 ether,
+            totalAmount - 0.1 ether - SOUP_PRICE,
+            20 ether
         );
+
+        uint256 incarnateCount = portal.getIncarnateCount(
+            portal.getSeason(),
+            _user
+        );
+
+        (
+            uint256 deadline,
+            bytes32 r,
+            bytes32 s,
+            uint8 v
+        ) = mockSignCharOwnership(account, SOUP_PRICE, incarnateCount + 1, 0);
+
+        SoupParams memory soupParams = SoupParams(
+            SOUP_PRICE,
+            0,
+            deadline,
+            r,
+            s,
+            v
+        );
+
+        portal.incarnate{value: totalAmount}(innateParams, ref1, soupParams);
 
         assertEq(ref1.balance, ref1Reward);
         assertEq(ref2.balance, ref2Reward);
