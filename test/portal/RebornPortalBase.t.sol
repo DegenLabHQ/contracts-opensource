@@ -61,7 +61,7 @@ contract RebornPortalBaseTest is Test, IRebornDefination, EventDefination {
         portal.setPiggyBank(IPiggyBank(address(piggyBank)));
         portal.setPiggyBankFee(800);
         // intialize piggybank
-        portal.initializeSeason{value: 0.1 ether}(0.1 ether, 1 ether);
+        portal.initializeSeason{value: 0.1 ether}(1 ether);
         vm.stopPrank();
 
         // deploy burn pool

@@ -32,7 +32,7 @@ contract PiggyBankTest is Test, IPiggyBankDefination {
         vm.startPrank(owner);
         portal.setPiggyBank(piggyBank);
         portal.setPiggyBankFee(800);
-        portal.initializeSeason{value: 0.1 ether}(0.1 ether, 1 ether);
+        portal.initializeSeason{value: 0.1 ether}(1 ether);
 
         piggyBank.setMultiple(200);
 

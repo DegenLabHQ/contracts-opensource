@@ -51,9 +51,8 @@ const func: DeployFunction = async function ({
 
   await execute(
     "RebornPortal",
-    { from: owner, log: true, value: parseEther("0.1") },
+    { from: owner, log: true, value: parseEther("10") },
     "initializeSeason",
-    parseEther("0.1"),
     parseEther("1")
   );
 };
