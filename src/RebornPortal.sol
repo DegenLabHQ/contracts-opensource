@@ -76,7 +76,14 @@ contract RebornPortal is
         InnateParams calldata innate,
         address referrer,
         SoupParams calldata soupParams
-    ) external payable override checkIncarnationCount {
+    )
+        external
+        payable
+        override
+        whenNotPaused
+        nonReentrant
+        checkIncarnationCount
+    {
         _refer(referrer);
         _incarnate(innate, soupParams);
     }
@@ -89,7 +96,14 @@ contract RebornPortal is
         address referrer,
         SoupParams calldata soupParams,
         PermitParams calldata permitParams
-    ) external payable override checkIncarnationCount {
+    )
+        external
+        payable
+        override
+        whenNotPaused
+        nonReentrant
+        checkIncarnationCount
+    {
         _refer(referrer);
         _permit(
             permitParams.amount,
@@ -115,7 +129,7 @@ contract RebornPortal is
         uint256 nativeCost,
         uint256 rebornCost,
         string calldata creatorName
-    ) external override onlySigner {
+    ) external override whenNotPaused onlySigner {
         if (_seeds.get(uint256(seed))) {
             revert SameSeed();
         }
@@ -167,7 +181,7 @@ contract RebornPortal is
         address user,
         uint256 amount,
         uint256 baptiseType
-    ) external override onlySigner {
+    ) external override whenNotPaused onlySigner {
         vault.reward(user, amount);
 
         emit Baptise(user, amount, baptiseType);
@@ -180,7 +194,7 @@ contract RebornPortal is
         uint256 tokenId,
         uint256 amount,
         TributeDirection tributeDirection
-    ) external override {
+    ) external override whenNotPaused {
         _claimPoolDrop(tokenId);
         _infuse(tokenId, amount, tributeDirection);
     }
@@ -197,7 +211,7 @@ contract RebornPortal is
         bytes32 r,
         bytes32 s,
         uint8 v
-    ) external override {
+    ) external override whenNotPaused {
         _claimPoolDrop(tokenId);
         _permit(permitAmount, deadline, r, s, v);
         _infuse(tokenId, amount, tributeDirection);
@@ -211,7 +225,7 @@ contract RebornPortal is
         uint256 toTokenId,
         uint256 amount,
         TributeDirection tributeDirection
-    ) external override {
+    ) external override whenNotPaused {
         _claimPoolDrop(fromTokenId);
         _claimPoolDrop(toTokenId);
         _decreaseFromPool(fromTokenId, amount);
@@ -221,7 +235,9 @@ contract RebornPortal is
     /**
      * @inheritdoc IRebornPortal
      */
-    function claimNativeDrops(uint256[] calldata tokenIds) external override {
+    function claimNativeDrops(
+        uint256[] calldata tokenIds
+    ) external override whenNotPaused {
         for (uint256 i = 0; i < tokenIds.length; i++) {
             PortalLib._claimPoolNativeDrop(
                 tokenIds[i],
@@ -234,7 +250,9 @@ contract RebornPortal is
     /**
      * @inheritdoc IRebornPortal
      */
-    function claimRebornDrops(uint256[] calldata tokenIds) external override {
+    function claimRebornDrops(
+        uint256[] calldata tokenIds
+    ) external override whenNotPaused {
         for (uint256 i = 0; i < tokenIds.length; i++) {
             PortalLib._claimPoolRebornDrop(
                 tokenIds[i],
@@ -248,7 +266,9 @@ contract RebornPortal is
     /**
      * @dev Upkeep perform of chainlink automation
      */
-    function performUpkeep(bytes calldata performData) external override {
+    function performUpkeep(
+        bytes calldata performData
+    ) external override whenNotPaused {
         (uint256 t, uint256 id) = abi.decode(performData, (uint256, uint256));
 
         if (t == 1) {
@@ -854,7 +874,7 @@ contract RebornPortal is
     /**
      * @dev user claim a drop from a pool
      */
-    function _claimPoolDrop(uint256 tokenId) internal {
+    function _claimPoolDrop(uint256 tokenId) internal nonReentrant {
         PortalLib._claimPoolNativeDrop(
             tokenId,
             _dropConf,
