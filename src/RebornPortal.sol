@@ -721,6 +721,13 @@ contract RebornPortal is
         _dropConf._rebornDropLastUpdate = uint32(block.timestamp);
         _dropConf._lockRequestDropReborn = false;
 
+        RequestStatus storage rs = _vrfRequests[requestId];
+        rs.executed = true;
+
+        if (rs.t != AirdropVrfType.DropReborn) {
+            revert CommonError.InvalidParams();
+        }
+
         uint256[] memory topTens = _getTopNTokenId(10);
         uint256[] memory topTenToHundreds = _getFirstNTokenIdByOffSet(10, 50);
 
@@ -741,9 +748,6 @@ contract RebornPortal is
         );
 
         uint256[] memory selectedTokenIds = new uint256[](10);
-
-        RequestStatus storage rs = _vrfRequests[requestId];
-        rs.executed = true;
 
         uint256 r = rs.randomWords;
         for (uint256 i = 0; i < 10; i++) {
@@ -769,6 +773,12 @@ contract RebornPortal is
         // update last drop timestamp, no back to specfic hour, for accurate coinday
         _dropConf._nativeDropLastUpdate = uint32(block.timestamp);
         _dropConf._lockRequestDropNative = false;
+
+        RequestStatus storage rs = _vrfRequests[requestId];
+        rs.executed = true;
+        if (rs.t != AirdropVrfType.DropNative) {
+            revert CommonError.InvalidParams();
+        }
 
         uint256[] memory topTens = _getTopNTokenId(10);
         uint256[] memory topTenToHundreds = _getFirstNTokenIdByOffSet(10, 50);
@@ -798,9 +808,6 @@ contract RebornPortal is
         );
 
         uint256[] memory selectedTokenIds = new uint256[](10);
-
-        RequestStatus storage rs = _vrfRequests[requestId];
-        rs.executed = true;
 
         uint256 r = rs.randomWords;
         for (uint256 i = 0; i < 10; ) {
