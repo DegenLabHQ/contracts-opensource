@@ -28,7 +28,7 @@ contract RebornPortalReg is Test, IRebornDefination, IPiggyBankDefination {
         bnbTest = vm.createFork(bnbTestRpcUrl);
         bnbMain = vm.createFork(bnbMainRpcUrl);
         vm.selectFork(bnbTest);
-        portal = PortalMock(0x82724f06EA5cdeb574b84316c6d84A1362a41B61);
+        portal = PortalMock(0xd0165c63EF975625b1E60c275304c725919784e9);
     }
 
     function mockUpgradeToDevVersion() public {
@@ -36,5 +36,17 @@ contract RebornPortalReg is Test, IRebornDefination, IPiggyBankDefination {
         // mock upgrade to new one
         vm.prank(portal.owner());
         portal.upgradeTo(address(newImpl));
+    }
+
+    function testSimulateClaimDrop() public {
+        vm.rollFork(29132674);
+        mockUpgradeToDevVersion();
+
+        uint256[] memory tokenIds = new uint256[](1);
+        tokenIds[0] = 97000000000000000035;
+
+        vm.prank(0xfC50C0a67720489Db7a45097D7fE3cBEA673E441);
+
+        portal.claimDrops(tokenIds);
     }
 }
