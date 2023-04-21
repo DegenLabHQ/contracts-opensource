@@ -494,17 +494,8 @@ contract RebornPortal is
         emit SetNewPiggyBankFee(piggyBankFee_);
     }
 
-    /**
-     * @dev anticheat, downgrade score and remove from rank
-     */
-    function antiCheat(uint256 tokenId, uint256 score) external onlyOwner {
-        LifeDetail storage detail = details[tokenId];
-        uint256 oldScore = detail.score;
-
-        detail.score = uint64(score);
-
-        // if it's top one hundred make this tokenId exit rank
-        _exitRank(tokenId, oldScore);
+    function flattenUserDrop(uint256 tokenId, address user) external onlyOwner {
+        PortalLib._flattenRewardDebt(tokenId, user, _dropConf, _seasonData[_season]);
     }
 
     /**

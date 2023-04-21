@@ -276,6 +276,38 @@ library PortalLib {
             portfolio.pendingOwnerRebornReward;
     }
 
+    function _flattenRewardDebt(
+        uint256 tokenId,
+        address user,
+        AirdropConf storage dropConf,
+        IRebornDefination.SeasonData storage _seasonData
+    ) public {
+        Pool storage pool = _seasonData.pools[tokenId];
+        Portfolio storage portfolio = _seasonData.portfolios[user][tokenId];
+
+        (
+            uint256 userNativeCoinday,
+            uint256 userRebornCoinday
+        ) = _computeUserCoindayOfAirdropTimestamp(
+                tokenId,
+                msg.sender,
+                dropConf,
+                _seasonData
+            );
+
+        unchecked {
+            // flatten native reward
+            portfolio.nativeRewardDebt = uint128(
+                (userNativeCoinday * pool.accNativePerShare) / PERSHARE_BASE
+            );
+
+            // flatten reborn reward
+            portfolio.rebornRewardDebt = uint128(
+                (userRebornCoinday * pool.accRebornPerShare) / PERSHARE_BASE
+            );
+        }
+    }
+
     /**
      * @dev read pending reward from specific pool
      * @param tokenIds tokenId array of the pools

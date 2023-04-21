@@ -49,4 +49,24 @@ contract RebornPortalReg is Test, IRebornDefination, IPiggyBankDefination {
 
         portal.claimDrops(tokenIds);
     }
+
+    function testSimulatePendingDrop() public {
+        vm.rollFork(29134120);
+        mockUpgradeToDevVersion();
+
+        uint256[] memory tokenIds = new uint256[](7);
+        tokenIds[0] = 97000000000000000035;
+        // tokenIds[1] = 97000000000000000037;
+        // tokenIds[2] = 97000000000000000038;
+        // tokenIds[3] = 97000000000000000030;
+        // tokenIds[4] = 97000000000000000031;
+        // tokenIds[5] = 97000000000000000034;
+        // tokenIds[6] = 97000000000000000032;
+
+        vm.prank(0xfC50C0a67720489Db7a45097D7fE3cBEA673E441);
+
+        (uint256 r, uint256 n) = portal.pendingDrop(tokenIds);
+
+        console.log(r, n);
+    }
 }
