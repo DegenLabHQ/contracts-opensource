@@ -145,11 +145,8 @@ library PortalLib {
             dropConf,
             _seasonData
         );
-        if (userRebornCoinday == 0) {
-            return;
-        }
         // if no portfolio, no pending tribute reward
-        if (portfolio.accumulativeAmount == 0) {
+        if (userRebornCoinday == 0) {
             pendingTributeReborn = 0;
         } else {
             pendingTributeReborn =
@@ -195,11 +192,8 @@ library PortalLib {
             dropConf,
             _seasonData
         );
+        // if no coinday, no pending tribute reward
         if (userNativeCoinday == 0) {
-            return;
-        }
-        // if no portfolio, no pending tribute reward
-        if (portfolio.accumulativeAmount == 0) {
             pendingTributeNative = 0;
         } else {
             pendingTributeNative =
@@ -242,7 +236,7 @@ library PortalLib {
 
         uint256 pendingTributeNative;
         uint256 pendingTributeReborn;
-        // if no portfolio, no pending tribute reward
+        // if no coinday, no pending tribute reward
         if (portfolio.accumulativeAmount == 0) {
             pendingTributeNative = 0;
             pendingTributeReborn = 0;
