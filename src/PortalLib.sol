@@ -300,25 +300,25 @@ library PortalLib {
     ) external {
         for (uint256 i = 0; i < tokenIds.length; ) {
             uint256 tokenId = tokenIds[i];
-            // if tokenId is zero , return
+            // if tokenId is zero, return
+            // as there is no enough incarnation
             if (tokenId == 0) {
                 return;
             }
 
             Pool storage pool = _seasonData.pools[tokenId];
 
-            // if no one tribute, return
-            // as it's loof from high tvl to low tvl
-            if (pool.totalAmount == 0) {
-                return;
+            uint256 poolCoinday = getPoolCoinday(tokenId, _seasonData);
+
+            // if no coin day, cointue and jump to next one
+            if (poolCoinday == 0) {
+                continue;
             }
 
             address owner = IERC721(address(this)).ownerOf(tokenId);
             Portfolio storage portfolio = _seasonData.portfolios[owner][
                 tokenId
             ];
-
-            uint256 poolCoinday = getPoolCoinday(tokenId, _seasonData);
 
             unchecked {
                 // 80% to pool
@@ -350,17 +350,18 @@ library PortalLib {
     ) external {
         for (uint256 i = 0; i < tokenIds.length; i++) {
             uint256 tokenId = tokenIds[i];
-            // if tokenId is zero , return
+            // if it's empty, continue as it's raffle
             if (tokenId == 0) {
-                return;
+                continue;
             }
 
             Pool storage pool = _seasonData.pools[tokenId];
 
-            // if no one tribute, return
-            // as it's loof from high tvl to low tvl
-            if (pool.totalAmount == 0) {
-                return;
+            uint256 poolCoinday = getPoolCoinday(tokenId, _seasonData);
+
+            // if no coinday, continue and jump to next one
+            if (poolCoinday == 0) {
+                continue;
             }
 
             address owner = IERC721(address(this)).ownerOf(tokenId);
@@ -368,7 +369,6 @@ library PortalLib {
                 tokenId
             ];
 
-            uint256 poolCoinday = getPoolCoinday(tokenId, _seasonData);
             unchecked {
                 // 80% to pool
                 pool.droppedNativeTotal += (4 * uint128(dropAmount)) / 5;
@@ -401,13 +401,13 @@ library PortalLib {
             }
             Pool storage pool = _seasonData.pools[tokenId];
 
-            // if no one tribute, return
-            // as it's loof from high tvl to low tvl
-            if (pool.totalAmount == 0) {
-                return;
-            }
-
             uint256 poolCoinday = getPoolCoinday(tokenId, _seasonData);
+
+            // if no coinday, 
+            // continue and jump to next one
+            if (poolCoinday == 0) {
+                continue;
+            }
 
             unchecked {
                 // 80% to pool
@@ -442,18 +442,18 @@ library PortalLib {
             uint256 tokenId = tokenIds[i];
 
             // if tokenId is zero, continue
+            // as it's raffle
             if (tokenId == 0) {
-                return;
+                continue;
             }
             Pool storage pool = _seasonData.pools[tokenId];
 
-            // if no one tribute, continue
-            // as it's loof from high tvl to low tvl
-            if (pool.totalAmount == 0) {
-                return;
-            }
-
             uint256 poolCoinday = getPoolCoinday(tokenId, _seasonData);
+
+            // if no coinday, continue
+            if (poolCoinday == 0) {
+                continue;
+            }
 
             unchecked {
                 // 80% to pool
