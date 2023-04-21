@@ -227,25 +227,6 @@ library PortalLib {
         }
     }
 
-    function _flattenRewardDebt(
-        Pool storage pool,
-        Portfolio storage portfolio
-    ) public {
-        unchecked {
-            // flatten native reward
-            portfolio.nativeRewardDebt = uint128(
-                (portfolio.coindayCumulant * pool.accNativePerShare) /
-                    PERSHARE_BASE
-            );
-
-            // flatten reborn reward
-            portfolio.rebornRewardDebt = uint128(
-                (portfolio.coindayCumulant * pool.accRebornPerShare) /
-                    PERSHARE_BASE
-            );
-        }
-    }
-
     /**
      * @dev calculate drop from a pool
      */
@@ -791,8 +772,6 @@ library PortalLib {
             pool.totalAmount += amount;
         }
 
-        _flattenRewardDebt(pool, portfolio);
-
         if (
             (portfolio.totalForwardTribute > portfolio.totalReverseTribute &&
                 tributeDirection ==
@@ -834,8 +813,6 @@ library PortalLib {
         // don't need to check accumulativeAmount, as it would revert if accumulativeAmount is less
         portfolio.accumulativeAmount -= amount;
         pool.totalAmount -= amount;
-
-        _flattenRewardDebt(pool, portfolio);
 
         if (portfolio.totalForwardTribute > portfolio.totalReverseTribute) {
             portfolio.totalReverseTribute += uint112(amount);
