@@ -6,12 +6,12 @@ const func: DeployFunction = async function ({
   getNamedAccounts,
 }) {
   const { deploy, get, execute } = deployments;
-  const { deployer, owner } = await getNamedAccounts();
+  const { degen_deployer, owner } = await getNamedAccounts();
 
   const portal = await get("RebornPortal");
 
   await deploy("PiggyBank", {
-    from: deployer,
+    from: degen_deployer,
     proxy: {
       proxyContract: "ERC1967Proxy",
       proxyArgs: ["{implementation}", "{data}"],
