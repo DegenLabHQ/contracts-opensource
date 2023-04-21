@@ -5,15 +5,30 @@ const func: DeployFunction = async function ({
   deployments,
   getNamedAccounts,
 }) {
-  const { deploy } = deployments;
+  const { deploy, get } = deployments;
   const { degen_deployer } = await getNamedAccounts();
 
-  await deploy("RenderEngine", {
+  await deploy("RenderConstant", {
     from: degen_deployer,
     log: true,
-    deterministicDeployment: formatBytes32String("DegenReborn"),
+    deterministicDeployment: formatBytes32String("DegenReborn_Test"),
+  });
+  await deploy("RenderConstant2", {
+    from: degen_deployer,
+    log: true,
+    deterministicDeployment: formatBytes32String("DegenReborn_Test"),
+  });
+  await deploy("Renderer", {
+    from: degen_deployer,
+    log: true,
+    libraries: {
+      RenderConstant: (await get("RenderConstant")).address,
+      RenderConstant2: (await get("RenderConstant2")).address,
+    },
+
+    deterministicDeployment: formatBytes32String("DegenReborn_Test"),
   });
 };
-func.tags = ["RenderEngine"];
+func.tags = ["RenderEngineLib"];
 
 export default func;

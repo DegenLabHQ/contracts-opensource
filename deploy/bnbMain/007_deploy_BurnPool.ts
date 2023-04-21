@@ -5,23 +5,29 @@ const func: DeployFunction = async function ({
   deployments,
   getNamedAccounts,
 }) {
-  const { deploy, get } = deployments;
-  const { degen_deployer } = await getNamedAccounts();
+  const { deploy, get, execute } = deployments;
+  const { degen_deployer, owner } = await getNamedAccounts();
 
   const rbt = await get("RBT");
   const portal = await get("RebornPortal");
 
-  await deploy("RewardVault", {
+  await deploy("BurnPool", {
     from: degen_deployer,
     args: [portal.address, rbt.address],
     log: true,
     deterministicDeployment: formatBytes32String("DegenReborn"),
   });
 
-  // TODO: manually set vault
-  // const vault = await get("RewardVault");
-  // await execute("RebornPortal", { from: owner }, "setVault", vault.address);
-};
-func.tags = ["Vault"];
+  const burnPool = await get("BurnPool");
 
+  // set burn pool for portal
+  await execute(
+    "RebornPortal",
+    { from: degen_deployer, log: true },
+    "setBurnPool",
+    burnPool.address
+  );
+};
+
+func.tags = ["BurnPool"];
 export default func;
