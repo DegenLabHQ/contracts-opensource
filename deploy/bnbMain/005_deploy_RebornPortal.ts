@@ -47,6 +47,7 @@ const func: DeployFunction = async function ({
     "RebornPortal",
     { from: degen_deployer, log: true },
     "updateSigners",
+    // https://bscscan.com/address/0xe3b0DF60032E05E0f08559f8F4962368ba47339B
     ["0xe3b0DF60032E05E0f08559f8F4962368ba47339B"],
     []
   );
