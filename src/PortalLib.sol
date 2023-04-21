@@ -61,6 +61,9 @@ library PortalLib {
         uint32 coindayUpdateLastTime;
         uint112 totalForwardTribute;
         uint112 totalReverseTribute;
+        uint32 lastDropNativeTime;
+        uint32 lastDropRebornTime;
+        uint192 placeholder;
     }
 
     //
@@ -306,14 +309,14 @@ library PortalLib {
                 return;
             }
 
-            Pool storage pool = _seasonData.pools[tokenId];
-
             uint256 poolCoinday = getPoolCoinday(tokenId, _seasonData);
-
             // if no coin day, cointue and jump to next one
             if (poolCoinday == 0) {
                 continue;
             }
+
+            Pool storage pool = _seasonData.pools[tokenId];
+            pool.lastDropNativeTime = uint32(block.timestamp);
 
             address owner = IERC721(address(this)).ownerOf(tokenId);
             Portfolio storage portfolio = _seasonData.portfolios[owner][
@@ -355,14 +358,14 @@ library PortalLib {
                 continue;
             }
 
-            Pool storage pool = _seasonData.pools[tokenId];
-
             uint256 poolCoinday = getPoolCoinday(tokenId, _seasonData);
-
             // if no coinday, continue and jump to next one
             if (poolCoinday == 0) {
                 continue;
             }
+
+            Pool storage pool = _seasonData.pools[tokenId];
+            pool.lastDropNativeTime = uint32(block.timestamp);
 
             address owner = IERC721(address(this)).ownerOf(tokenId);
             Portfolio storage portfolio = _seasonData.portfolios[owner][
@@ -399,15 +402,16 @@ library PortalLib {
             if (tokenId == 0) {
                 return;
             }
-            Pool storage pool = _seasonData.pools[tokenId];
 
             uint256 poolCoinday = getPoolCoinday(tokenId, _seasonData);
-
-            // if no coinday, 
+            // if no coinday,
             // continue and jump to next one
             if (poolCoinday == 0) {
                 continue;
             }
+
+            Pool storage pool = _seasonData.pools[tokenId];
+            pool.lastDropRebornTime = uint32(block.timestamp);
 
             unchecked {
                 // 80% to pool
@@ -446,14 +450,14 @@ library PortalLib {
             if (tokenId == 0) {
                 continue;
             }
-            Pool storage pool = _seasonData.pools[tokenId];
-
             uint256 poolCoinday = getPoolCoinday(tokenId, _seasonData);
-
             // if no coinday, continue
             if (poolCoinday == 0) {
                 continue;
             }
+
+            Pool storage pool = _seasonData.pools[tokenId];
+            pool.lastDropRebornTime = uint32(block.timestamp);
 
             unchecked {
                 // 80% to pool
@@ -667,25 +671,34 @@ library PortalLib {
             tokenId
         ];
 
+        PortalLib.Pool storage pool = _seasonData.pools[tokenId];
+
+        uint256 lastNativeUpdate;
+        uint256 lastRebornUpdate;
+        if (pool.lastDropNativeTime == 0) {
+            lastNativeUpdate = dropConf._nativeDropLastUpdate;
+        } else {
+            lastNativeUpdate = pool.lastDropNativeTime;
+        }
+        if (pool.lastDropRebornTime == 0) {
+            lastRebornUpdate = dropConf._rebornDropLastUpdate;
+        } else {
+            lastRebornUpdate = pool.lastDropRebornTime;
+        }
+
         unchecked {
-            if (
-                portfolio.coindayUpdateLastTime < dropConf._nativeDropLastUpdate
-            ) {
+            if (portfolio.coindayUpdateLastTime < lastNativeUpdate) {
                 userNativeCoinday =
                     portfolio.coindayCumulant +
-                    ((dropConf._nativeDropLastUpdate -
-                        portfolio.coindayUpdateLastTime) *
+                    ((lastNativeUpdate - portfolio.coindayUpdateLastTime) *
                         portfolio.accumulativeAmount) /
                     1 days;
             }
 
-            if (
-                portfolio.coindayUpdateLastTime < dropConf._rebornDropLastUpdate
-            ) {
+            if (portfolio.coindayUpdateLastTime < lastRebornUpdate) {
                 userRebornCoinday =
                     portfolio.coindayCumulant +
-                    ((dropConf._rebornDropLastUpdate -
-                        portfolio.coindayUpdateLastTime) *
+                    ((lastRebornUpdate - portfolio.coindayUpdateLastTime) *
                         portfolio.accumulativeAmount) /
                     1 days;
             }
