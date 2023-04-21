@@ -8,14 +8,15 @@ import "src/lib/Renderer.sol";
 
 contract RendererTest is Test {
     function testRenderOne() public {
-        string memory minSvg = vm.readFile("resources/RIP.beta.min.svg");
+        string memory minSvg = vm.readFile("resources/RIP.prod.min.svg");
         string memory svg = Renderer.renderSvg(
             hex"965f12d657ee47de669b9b94edcc47bbab9b886943233e46c81af970d72b6641",
             2222222,
             9999,
             101,
             "Vitalik.eth",
-            10 ether + 12 ether / 100
+            10 ether + 12 ether / 100,
+            800_000 ether
         );
         assertEq(abi.encodePacked(minSvg), abi.encodePacked(svg));
     }

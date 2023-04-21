@@ -13,10 +13,19 @@ const func: DeployFunction = async function ({
     log: true,
     deterministicDeployment: formatBytes32String("DegenReborn_Test"),
   });
+  await deploy("RenderConstant2", {
+    from: deployer,
+    log: true,
+    deterministicDeployment: formatBytes32String("DegenReborn_Test"),
+  });
   await deploy("Renderer", {
     from: deployer,
     log: true,
-    libraries: { RenderConstant: (await get("RenderConstant")).address },
+    libraries: {
+      RenderConstant: (await get("RenderConstant")).address,
+      RenderConstant2: (await get("RenderConstant2")).address,
+    },
+
     deterministicDeployment: formatBytes32String("DegenReborn_Test"),
   });
 };

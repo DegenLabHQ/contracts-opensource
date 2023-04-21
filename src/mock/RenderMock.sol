@@ -10,7 +10,8 @@ contract RenderMock {
         uint256 round,
         uint256 age,
         string memory creatorName,
-        uint256 reward
+        uint256 nativeCost,
+        uint256 rebornCost
     ) public pure returns (string memory) {
         return
             Renderer.renderSvg(
@@ -19,7 +20,8 @@ contract RenderMock {
                 round,
                 age,
                 creatorName,
-                reward
+                nativeCost,
+                rebornCost
             );
     }
 }
