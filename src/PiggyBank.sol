@@ -42,14 +42,8 @@ contract PiggyBank is SafeOwnableUpgradeable, UUPSUpgradeable, IPiggyBank {
     function initializeSeason(
         uint256 season,
         uint32 seasonStartTime,
-        uint256 totalAmount,
         uint256 initRoundTarget
     ) external payable onlyPortal {
-        // initialize season roundInfo
-        if (totalAmount != msg.value || initRoundTarget < totalAmount) {
-            revert InvalidRoundInfo();
-        }
-
         RoundInfo memory roundInfo = RoundInfo({
             totalAmount: 0,
             target: initRoundTarget,
