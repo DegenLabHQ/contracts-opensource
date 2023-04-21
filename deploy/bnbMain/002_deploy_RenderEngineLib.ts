@@ -11,12 +11,12 @@ const func: DeployFunction = async function ({
   await deploy("RenderConstant", {
     from: degen_deployer,
     log: true,
-    deterministicDeployment: formatBytes32String("DegenReborn_Test"),
+    deterministicDeployment: formatBytes32String("DegenReborn"),
   });
   await deploy("RenderConstant2", {
     from: degen_deployer,
     log: true,
-    deterministicDeployment: formatBytes32String("DegenReborn_Test"),
+    deterministicDeployment: formatBytes32String("DegenReborn"),
   });
   await deploy("Renderer", {
     from: degen_deployer,
@@ -26,7 +26,7 @@ const func: DeployFunction = async function ({
       RenderConstant2: (await get("RenderConstant2")).address,
     },
 
-    deterministicDeployment: formatBytes32String("DegenReborn_Test"),
+    deterministicDeployment: formatBytes32String("DegenReborn"),
   });
 };
 func.tags = ["RenderEngineLib"];

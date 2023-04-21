@@ -11,12 +11,12 @@ const func: DeployFunction = async function ({
   await deploy("FastArray", {
     from: degen_deploy,
     log: true,
-    deterministicDeployment: formatBytes32String("DegenReborn_Test"),
+    deterministicDeployment: formatBytes32String("DegenReborn"),
   });
   await deploy("RankingRedBlackTree", {
     from: degen_deploy,
     log: true,
-    deterministicDeployment: formatBytes32String("DegenReborn_Test"),
+    deterministicDeployment: formatBytes32String("DegenReborn"),
   });
   await deploy("SingleRanking", {
     from: degen_deploy,
@@ -25,7 +25,7 @@ const func: DeployFunction = async function ({
       FastArray: (await get("FastArray")).address,
       RankingRedBlackTree: (await get("RankingRedBlackTree")).address,
     },
-    deterministicDeployment: formatBytes32String("DegenReborn_Test"),
+    deterministicDeployment: formatBytes32String("DegenReborn"),
   });
   await deploy("DegenRank", {
     from: degen_deploy,
@@ -35,7 +35,7 @@ const func: DeployFunction = async function ({
       RankingRedBlackTree: (await get("RankingRedBlackTree")).address,
     },
     log: true,
-    deterministicDeployment: formatBytes32String("DegenReborn_Test"),
+    deterministicDeployment: formatBytes32String("DegenReborn"),
   });
 };
 

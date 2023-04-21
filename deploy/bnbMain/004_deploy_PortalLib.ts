@@ -11,7 +11,7 @@ const func: DeployFunction = async function ({
   await deploy("PortalLib", {
     from: degen_deployer,
     log: true,
-    deterministicDeployment: formatBytes32String("DegenReborn_Test"),
+    deterministicDeployment: formatBytes32String("DegenReborn"),
   });
 };
 
