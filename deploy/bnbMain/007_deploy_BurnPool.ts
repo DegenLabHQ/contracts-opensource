@@ -6,7 +6,7 @@ const func: DeployFunction = async function ({
   getNamedAccounts,
 }) {
   const { deploy, get, execute } = deployments;
-  const { degen_deployer, owner } = await getNamedAccounts();
+  const { degen_deployer } = await getNamedAccounts();
 
   const rbt = await get("RBT");
   const portal = await get("RebornPortal");
