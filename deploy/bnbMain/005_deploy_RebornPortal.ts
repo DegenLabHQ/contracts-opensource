@@ -6,12 +6,12 @@ const func: DeployFunction = async function ({
   getNamedAccounts,
 }) {
   const { deploy, get, execute } = deployments;
-  const { deployer, owner } = await getNamedAccounts();
+  const { degen_deployer } = await getNamedAccounts();
 
   const rbt = await get("RBT");
 
   await deploy("RebornPortal", {
-    from: deployer,
+    from: degen_deployer,
     proxy: {
       proxyContract: "ERC1967Proxy",
       proxyArgs: ["{implementation}", "{data}"],
@@ -20,7 +20,7 @@ const func: DeployFunction = async function ({
           methodName: "initialize",
           args: [
             rbt.address,
-            owner,
+            degen_deployer,
             "Degen Tombstone",
             "RIP",
             // VRFCoordinatorV2 on bnb chain mainnet https://bscscan.com/address/0xc587d9053cd1118f25F645F9E08BB98c9712A4EE
@@ -45,7 +45,7 @@ const func: DeployFunction = async function ({
 
   await execute(
     "RebornPortal",
-    { from: owner, log: true },
+    { from: degen_deployer, log: true },
     "updateSigners",
     ["0xe3b0DF60032E05E0f08559f8F4962368ba47339B"],
     []
@@ -54,7 +54,7 @@ const func: DeployFunction = async function ({
   // set refer reward
   await execute(
     "RebornPortal",
-    { from: owner, log: true },
+    { from: degen_deployer, log: true },
     "setReferrerRewardFee",
     800,
     200,
@@ -63,7 +63,7 @@ const func: DeployFunction = async function ({
 
   await execute(
     "RebornPortal",
-    { from: owner, log: true },
+    { from: degen_deployer, log: true },
     "setReferrerRewardFee",
     1800,
     200,
@@ -72,14 +72,14 @@ const func: DeployFunction = async function ({
 
   await execute(
     "RebornPortal",
-    { from: owner, log: true },
+    { from: degen_deployer, log: true },
     "setIncarnationLimit",
     1000
   );
 
   await execute(
     "RebornPortal",
-    { from: owner, log: true },
+    { from: degen_deployer, log: true },
     "setForgingRequiredAmount",
     [1, 2, 3, 4],
     [
