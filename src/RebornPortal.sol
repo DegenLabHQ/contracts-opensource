@@ -18,10 +18,8 @@ import {RewardVault} from "src/RewardVault.sol";
 import {RankUpgradeable} from "src/RankUpgradeable.sol";
 import {Renderer} from "src/lib/Renderer.sol";
 import {CommonError} from "src/lib/CommonError.sol";
-
 import {PortalLib} from "src/PortalLib.sol";
 import {FastArray} from "src/lib/FastArray.sol";
-
 import {IPiggyBank} from "./interfaces/IPiggyBank.sol";
 import {PiggyBank} from "src/PiggyBank.sol";
 
@@ -82,9 +80,9 @@ contract RebornPortal is
         external
         payable
         override
-        checkIncarnationCount
         whenNotPaused
         nonReentrant
+        checkIncarnationCount
     {
         _refer(referrer);
         _incarnate(innate, soupParams);
@@ -102,9 +100,9 @@ contract RebornPortal is
         external
         payable
         override
-        checkIncarnationCount
         whenNotPaused
         nonReentrant
+        checkIncarnationCount
     {
         _refer(referrer);
         _permit(
@@ -131,7 +129,7 @@ contract RebornPortal is
         uint256 nativeCost,
         uint256 rebornCost,
         string calldata creatorName
-    ) external override onlySigner whenNotPaused {
+    ) external override whenNotPaused onlySigner {
         if (_seeds.get(uint256(seed))) {
             revert SameSeed();
         }
@@ -183,7 +181,7 @@ contract RebornPortal is
         address user,
         uint256 amount,
         uint256 baptiseType
-    ) external override onlySigner whenNotPaused {
+    ) external override whenNotPaused onlySigner {
         vault.reward(user, amount);
 
         emit Baptise(user, amount, baptiseType);
