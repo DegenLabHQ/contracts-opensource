@@ -31,7 +31,8 @@ library Renderer {
                                 details[tokenId].round,
                                 details[tokenId].age,
                                 details[tokenId].creatorName,
-                                details[tokenId].nativeCost
+                                details[tokenId].nativeCost,
+                                details[tokenId].rebornCost
                             )
                         )
                     ),
@@ -60,10 +61,16 @@ library Renderer {
         uint256 round,
         uint256 age,
         string memory creatorName,
-        uint256 cost
+        uint256 nativeCost,
+        uint256 rebornCost
     ) public pure returns (string memory) {
         string memory Part1 = _renderSvgPart1(seed, lifeScore, round, age);
-        string memory Part2 = _renderSvgPart2(creatorName, cost);
+        string memory Part2 = _renderSvgPart2(
+            creatorName,
+            nativeCost,
+            rebornCost
+        );
+
         return string(abi.encodePacked(Part1, Part2));
     }
 
@@ -152,7 +159,8 @@ library Renderer {
 
     function _renderSvgPart2(
         string memory creator,
-        uint256 cost
+        uint256 nativeCost,
+        uint256 degenCost
     ) internal pure returns (string memory) {
         return
             string(
@@ -160,8 +168,12 @@ library Renderer {
                     RenderConstant.P5(),
                     _compressUtf8(creator),
                     RenderConstant.P6(),
-                    _tranformWeiToDecimal2(cost),
-                    RenderConstant.P7()
+                    _tranformWeiToDecimal2(nativeCost),
+                    RenderConstant.P7(),
+                    // TODO: add k,m
+                    _tranformWeiToDecimal2(degenCost),
+                    RenderConstant.P8(),
+                    RenderConstant.P9()
                 )
             );
     }

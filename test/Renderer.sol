@@ -15,7 +15,8 @@ contract RendererTest is Test {
             9999,
             101,
             "Vitalik.eth",
-            10 ether + 12 ether / 100
+            10 ether + 12 ether / 100,
+            1_000_000 ether
         );
         assertEq(abi.encodePacked(minSvg), abi.encodePacked(svg));
     }
