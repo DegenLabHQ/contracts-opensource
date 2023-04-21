@@ -6,7 +6,7 @@ const func: DeployFunction = async function ({
   getNamedAccounts,
 }) {
   const { deploy, get, execute } = deployments;
-  const { degen_deployer, owner } = await getNamedAccounts();
+  const { degen_deployer } = await getNamedAccounts();
 
   const portal = await get("RebornPortal");
 
@@ -18,7 +18,7 @@ const func: DeployFunction = async function ({
       execute: {
         init: {
           methodName: "initialize",
-          args: [owner, portal.address],
+          args: [degen_deployer, portal.address],
         },
       },
     },
@@ -29,29 +29,34 @@ const func: DeployFunction = async function ({
   const piggyBank = await get("PiggyBank");
   await execute(
     "RebornPortal",
-    { from: owner, log: true },
+    { from: degen_deployer, log: true },
     "setPiggyBank",
     piggyBank.address
   );
 
   await execute(
     "RebornPortal",
-    { from: owner, log: true },
+    { from: degen_deployer, log: true },
     "setPiggyBankFee",
     1800
   );
 
-  await execute("PiggyBank", { from: owner, log: true }, "setMultiple", 200);
   await execute(
     "PiggyBank",
-    { from: owner, log: true },
+    { from: degen_deployer, log: true },
+    "setMultiple",
+    200
+  );
+  await execute(
+    "PiggyBank",
+    { from: degen_deployer, log: true },
     "setMinTimeLong",
     7 * 24 * 3600
   );
 
   await execute(
     "RebornPortal",
-    { from: owner, log: true, value: parseEther("10") },
+    { from: degen_deployer, log: true, value: parseEther("10") },
     "initializeSeason",
     parseEther("1")
   );
