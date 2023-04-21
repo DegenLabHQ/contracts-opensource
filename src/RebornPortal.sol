@@ -549,8 +549,8 @@ contract RebornPortal is
         if (_dropConf._dropOn == 1) {
             // first, check whether airdrop is ready and send vrf request
             if (
-                PortalLib._toLastHour(block.timestamp) >
-                _dropConf._rebornDropLastUpdate +
+                block.timestamp >
+                PortalLib._toLastHour(_dropConf._rebornDropLastUpdate) +
                     _dropConf._rebornDropInterval &&
                 !_dropConf._lockRequestDropReborn
             ) {
@@ -558,8 +558,8 @@ contract RebornPortal is
                 performData = abi.encode(1, 0);
                 return (upkeepNeeded, performData);
             } else if (
-                PortalLib._toLastHour(block.timestamp) >
-                _dropConf._nativeDropLastUpdate +
+                block.timestamp >
+                PortalLib._toLastHour(_dropConf._nativeDropLastUpdate) +
                     _dropConf._nativeDropInterval &&
                 !_dropConf._lockRequestDropNative
             ) {
