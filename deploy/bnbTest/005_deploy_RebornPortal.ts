@@ -31,6 +31,7 @@ const func: DeployFunction = async function ({
     },
     libraries: {
       RenderConstant: (await get("RenderConstant")).address,
+      RenderConstant2: (await get("RenderConstant2")).address,
       Renderer: (await get("Renderer")).address,
       FastArray: (await get("FastArray")).address,
       RankingRedBlackTree: (await get("RankingRedBlackTree")).address,
