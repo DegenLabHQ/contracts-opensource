@@ -6,20 +6,20 @@ const func: DeployFunction = async function ({
   getNamedAccounts,
 }) {
   const { deploy, get } = deployments;
-  const { degen_deploy } = await getNamedAccounts();
+  const { degen_deployer } = await getNamedAccounts();
 
   await deploy("FastArray", {
-    from: degen_deploy,
+    from: degen_deployer,
     log: true,
     deterministicDeployment: formatBytes32String("DegenReborn"),
   });
   await deploy("RankingRedBlackTree", {
-    from: degen_deploy,
+    from: degen_deployer,
     log: true,
     deterministicDeployment: formatBytes32String("DegenReborn"),
   });
   await deploy("SingleRanking", {
-    from: degen_deploy,
+    from: degen_deployer,
     log: true,
     libraries: {
       FastArray: (await get("FastArray")).address,
@@ -28,7 +28,7 @@ const func: DeployFunction = async function ({
     deterministicDeployment: formatBytes32String("DegenReborn"),
   });
   await deploy("DegenRank", {
-    from: degen_deploy,
+    from: degen_deployer,
     libraries: {
       SingleRanking: (await get("SingleRanking")).address,
       FastArray: (await get("FastArray")).address,
