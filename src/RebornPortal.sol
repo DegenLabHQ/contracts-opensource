@@ -495,7 +495,22 @@ contract RebornPortal is
     }
 
     function flattenUserDrop(uint256 tokenId, address user) external onlyOwner {
-        PortalLib._flattenRewardDebt(tokenId, user, _dropConf, _seasonData[_season]);
+        PortalLib._flattenRewardDebt(
+            tokenId,
+            user,
+            _dropConf,
+            _seasonData[_season]
+        );
+    }
+
+    function fixLastDropTime(
+        uint256 tokenId,
+        uint256 lastDropNativeTime,
+        uint256 lastDropRebornTime
+    ) external onlyOwner {
+        PortalLib.Pool storage pool = _seasonData[_season].pools[tokenId];
+        pool.lastDropNativeTime = uint32(lastDropNativeTime);
+        pool.lastDropRebornTime = uint32(lastDropRebornTime);
     }
 
     /**
