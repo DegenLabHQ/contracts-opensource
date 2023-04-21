@@ -36,6 +36,12 @@ jobs:
           BNB_SCAN_API_KEY: ${{ secrets.BNB_SCAN_API_KEY }}
           BNB_CHAIN_TEST_URL: ${{ secrets.BNB_CHAIN_TEST_URL }}
 
+      - name: verify on bnbMain
+        run: pnpm run verify --network bnbMain
+        env:
+          BNB_SCAN_API_KEY: ${{ secrets.BNB_SCAN_API_KEY }}
+          BNB_CHAIN_URL: ${{ secrets.BNB_CHAIN_URL }}
+
       - name: verify on goerli
         run: pnpm run verify --network goerli
         env:
