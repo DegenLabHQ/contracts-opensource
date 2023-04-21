@@ -51,7 +51,7 @@ contract PiggyBank is SafeOwnableUpgradeable, UUPSUpgradeable, IPiggyBank {
         }
 
         RoundInfo memory roundInfo = RoundInfo({
-            totalAmount: totalAmount,
+            totalAmount: 0,
             target: initRoundTarget,
             currentIndex: 0,
             startTime: seasonStartTime
@@ -89,8 +89,8 @@ contract PiggyBank is SafeOwnableUpgradeable, UUPSUpgradeable, IPiggyBank {
             uint256 newRoundInitAmount = income -
                 (roundInfo.target - roundInfo.totalAmount);
 
-            roundInfo.totalAmount = roundInfo.target;
             uint256 remainingAmount = roundInfo.target - roundInfo.totalAmount;
+            roundInfo.totalAmount = roundInfo.target;
             users[account][season][roundInfo.currentIndex]
                 .amount += remainingAmount;
 

@@ -44,20 +44,20 @@ contract PiggyBankTest is Test, IPiggyBankDefination {
         deal(user2, 100 ether);
         uint256 season = 0;
         vm.expectEmit(true, true, true, true);
-        emit Deposit(season, user1, 0, 0.1 ether, 0.2 ether);
+        emit Deposit(season, user1, 0, 0.1 ether, 0.1 ether);
         mockIncarnet(season, user1, 0.1 ether);
 
         vm.expectEmit(true, true, true, true);
-        emit Deposit(season, user2, 1, 0.2 ether, 0.2 ether);
+        emit Deposit(season, user2, 1, 0.1 ether, 0.1 ether);
         mockIncarnet(season, user2, 1 ether);
 
         vm.expectEmit(true, true, true, true);
-        emit Deposit(season, user1, 1, 0.2 ether, 0.4 ether);
-        mockIncarnet(season, user1, 0.2 ether);
+        emit Deposit(season, user1, 1, 0.1 ether, 0.2 ether);
+        mockIncarnet(season, user1, 0.1 ether);
 
         RoundInfo memory roundInfo = piggyBank.getRoundInfo(season);
         assertEq(roundInfo.currentIndex, 1);
-        assertEq(roundInfo.totalAmount, 0.4 ether);
+        assertEq(roundInfo.totalAmount, 0.2 ether);
         assertEq(roundInfo.target, 1.02 ether);
     }
 
@@ -67,12 +67,12 @@ contract PiggyBankTest is Test, IPiggyBankDefination {
         portal.mockStop(0);
 
         vm.expectEmit(true, true, true, true);
-        emit ClaimedReward(0, user1, 0.102 ether);
+        emit ClaimedReward(0, user1, 0.098 ether);
         vm.prank(user1);
         piggyBank.claimReward(0);
 
         vm.expectEmit(true, true, true, true);
-        emit ClaimedReward(0, user2, 0.102 ether);
+        emit ClaimedReward(0, user2, 0.098 ether);
         vm.prank(user2);
         piggyBank.claimReward(0);
     }
