@@ -3,6 +3,7 @@ pragma solidity 0.8.17;
 
 import "@openzeppelin/contracts/utils/Strings.sol";
 import {RenderConstant} from "src/lib/RenderConstant.sol";
+import {RenderConstant2} from "src/lib/RenderConstant2.sol";
 import {Base64} from "@openzeppelin/contracts/utils/Base64.sol";
 import {IRebornDefination} from "src/interfaces/IRebornPortal.sol";
 import {strings} from "src/lib/strings.sol";
@@ -170,10 +171,10 @@ library Renderer {
                     RenderConstant.P6(),
                     _tranformWeiToDecimal2(nativeCost),
                     RenderConstant.P7(),
-                    // TODO: add k,m
-                    _tranformWeiToDecimal2(degenCost),
+                    _transformUint256(degenCost / 1 ether),
                     RenderConstant.P8(),
-                    RenderConstant.P9()
+                    RenderConstant.P9(),
+                    RenderConstant2.P10()
                 )
             );
     }
