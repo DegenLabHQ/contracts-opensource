@@ -148,8 +148,9 @@ library PortalLib {
             dropConf,
             _seasonData
         );
-        // if no portfolio, no pending tribute reward
-        if (userRebornCoinday == 0) {
+        // if no coinday or tribute, no pending tribute reward
+        // no tribute include no coinday
+        if (portfolio.accumulativeAmount == 0) {
             pendingTributeReborn = 0;
         } else {
             uint256 cumulativeRebornReward = (userRebornCoinday *
@@ -163,17 +164,13 @@ library PortalLib {
             pendingTributeReborn =
                 cumulativeRebornReward -
                 portfolio.rebornRewardDebt;
+
+            // here, userRebornCoinday must larger than 0
+            portfolio.rebornRewardDebt = uint128(cumulativeRebornReward);
         }
 
         uint256 pendingReborn = pendingTributeReborn +
             portfolio.pendingOwnerRebornReward;
-
-        // set current amount as debt
-        if (userRebornCoinday > 0) {
-            portfolio.rebornRewardDebt = uint128(
-                (userRebornCoinday * pool.accRebornPerShare) / PERSHARE_BASE
-            );
-        }
 
         // clean up reward as owner
         portfolio.pendingOwnerRebornReward = 0;
@@ -203,8 +200,9 @@ library PortalLib {
             _seasonData
         );
 
-        // if no coinday, no pending tribute reward
-        if (userNativeCoinday == 0) {
+        // if no coinday/tribute, no pending tribute reward
+        // no tribute include no coinday
+        if (portfolio.accumulativeAmount == 0) {
             pendingTributeNative = 0;
         } else {
             uint256 cumulativeNativeReward = (userNativeCoinday *
@@ -218,15 +216,14 @@ library PortalLib {
             pendingTributeNative =
                 cumulativeNativeReward -
                 portfolio.nativeRewardDebt;
+
+            // set current amount as debt
+            // here, userNativeCoinday must larger than zero
+            portfolio.nativeRewardDebt = uint128(cumulativeNativeReward);
         }
 
         uint256 pendingNative = pendingTributeNative +
             portfolio.pendingOwnerNativeReward;
-
-        // set current amount as debt
-        portfolio.nativeRewardDebt = uint128(
-            (userNativeCoinday * pool.accNativePerShare) / PERSHARE_BASE
-        );
 
         // clean up reward as owner
         portfolio.pendingOwnerNativeReward = 0;
