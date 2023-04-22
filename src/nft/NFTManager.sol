@@ -24,6 +24,11 @@ contract NFTManager is
     uint256 public constant SUPPORT_MAX_MINT_COUNT = 2009;
     using BitMapsUpgradeable for BitMapsUpgradeable.BitMap;
 
+    /**
+     * @dev recieve native token
+     */
+    receive() external payable {}
+
     /**********************************************
      * write functions
      **********************************************/

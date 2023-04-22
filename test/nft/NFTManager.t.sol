@@ -178,6 +178,10 @@ contract NFTManagerTest is Test, IDegenNFTDefination, INFTManagerDefination {
         assertEq(a, (percent * price) / degenNFT.PERCENTAGE_BASE());
     }
 
+    function testShouldRecieveETH() public {
+        payable(address(nftManager)).transfer(30 ether);
+    }
+
     function _initialize() internal {
         degenNFT.initialize("Degen2009", "Degen2009", owner);
         nftManager.initialize(owner);

@@ -13,7 +13,9 @@ contract NFTManagerReg is Test, IDegenNFTDefination {
 
     function setUp() public {
         degenNFT = DegenNFT(0x060e571D900454c868E5D1D6e1a0c566A57224B0);
-        nftManager = NFTManager(0x3955641fE1A2367be6Db951910ac05FFcdE14bDf);
+        nftManager = NFTManager(
+            payable(0x3955641fE1A2367be6Db951910ac05FFcdE14bDf)
+        );
 
         mainnetFork = vm.createFork(vm.envString("ETH_CHAIN_URL"));
         vm.rollFork(mainnetFork, 16_988_305);
