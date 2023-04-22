@@ -152,9 +152,16 @@ library PortalLib {
         if (userRebornCoinday == 0) {
             pendingTributeReborn = 0;
         } else {
+            uint256 cumulativeRebornReward = (userRebornCoinday *
+                pool.accRebornPerShare) / PERSHARE_BASE;
+            // if cumulative reward is less than debt, return
+            // if no more aidrop, coinday update would always larget than airdrop update
+            // then no valid coiday for this pool
+            if (cumulativeRebornReward < portfolio.rebornRewardDebt) {
+                return;
+            }
             pendingTributeReborn =
-                (userRebornCoinday * pool.accRebornPerShare) /
-                PERSHARE_BASE -
+                cumulativeRebornReward -
                 portfolio.rebornRewardDebt;
         }
 
@@ -195,13 +202,21 @@ library PortalLib {
             dropConf,
             _seasonData
         );
+
         // if no coinday, no pending tribute reward
         if (userNativeCoinday == 0) {
             pendingTributeNative = 0;
         } else {
+            uint256 cumulativeNativeReward = (userNativeCoinday *
+                pool.accNativePerShare) / PERSHARE_BASE;
+            // if cumulative reward is less than debt, return
+            // if no more aidrop, coinday update would always larget than airdrop update
+            // then no valid coiday for this pool
+            if (cumulativeNativeReward < portfolio.nativeRewardDebt) {
+                return;
+            }
             pendingTributeNative =
-                (userNativeCoinday * pool.accNativePerShare) /
-                PERSHARE_BASE -
+                cumulativeNativeReward -
                 portfolio.nativeRewardDebt;
         }
 
