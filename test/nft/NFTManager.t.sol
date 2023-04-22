@@ -144,6 +144,25 @@ contract NFTManagerTest is Test, IDegenNFTDefination, INFTManagerDefination {
         nftManager.burn(1);
     }
 
+    function testNoConfiguredLevelFail() public {
+        testPublicMint();
+
+        vm.startPrank(signer);
+        uint256[] memory tokenIds = new uint256[](1);
+        tokenIds[0] = 1;
+        IDegenNFTDefination.Property[]
+            memory metadataList = new IDegenNFTDefination.Property[](1);
+        metadataList[0] = IDegenNFTDefination.Property(1, 2, 0);
+        nftManager.openMysteryBox(tokenIds, metadataList);
+        nftManager.setLevel(1, 5);
+
+        vm.stopPrank();
+
+        vm.prank(user);
+        vm.expectRevert(NoBurnConfSet.selector);
+        nftManager.burn(1);
+    }
+
     function testBatchMetadataUpdate() public {
         vm.expectEmit(true, true, true, true);
         emit BatchMetadataUpdate(0, type(uint256).max);

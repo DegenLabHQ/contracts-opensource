@@ -179,10 +179,14 @@ contract NFTManager is
         // refund fees
         BurnRefundConfig memory refundConfig = burnRefundConfigs[level];
 
-        // refund NativeToken
-        if (refundConfig.nativeToken > 0) {
-            payable(msg.sender).transfer(refundConfig.nativeToken);
+        // if no native token configuration
+        // revert
+        if (refundConfig.nativeToken == 0) {
+            revert NoBurnConfSet();
         }
+
+        // refund NativeToken
+        payable(msg.sender).transfer(refundConfig.nativeToken);
 
         emit BurnToken(
             msg.sender,
