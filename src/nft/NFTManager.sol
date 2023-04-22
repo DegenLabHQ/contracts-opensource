@@ -24,6 +24,11 @@ contract NFTManager is
     uint256 public constant SUPPORT_MAX_MINT_COUNT = 2009;
     using BitMapsUpgradeable for BitMapsUpgradeable.BitMap;
 
+    /**
+     * @dev recieve native token
+     */
+    receive() external payable {}
+
     /**********************************************
      * write functions
      **********************************************/
@@ -174,10 +179,14 @@ contract NFTManager is
         // refund fees
         BurnRefundConfig memory refundConfig = burnRefundConfigs[level];
 
-        // refund NativeToken
-        if (refundConfig.nativeToken > 0) {
-            payable(msg.sender).transfer(refundConfig.nativeToken);
+        // if no native token configuration
+        // revert
+        if (refundConfig.nativeToken == 0 && refundConfig.rebornToken == 0) {
+            revert NoBurnConfSet();
         }
+
+        // refund NativeToken
+        payable(msg.sender).transfer(refundConfig.nativeToken);
 
         emit BurnToken(
             msg.sender,

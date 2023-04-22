@@ -37,6 +37,8 @@ interface INFTManagerDefination {
     error MysteryBoxCannotBurn();
     error OnlyShardsCanMerge();
     error CanNotOpenMysteryBoxTwice();
+    error NoBurnConfSet();
+
 
     /**********************************************
      * events
