@@ -254,7 +254,7 @@ library PortalLib {
 
         uint256 pendingTributeNative;
         uint256 pendingTributeReborn;
-        // if no coinday, no pending tribute reward
+        // if no accumulativeAmount, no pending tribute reward
         if (portfolio.accumulativeAmount == 0) {
             pendingTributeNative = 0;
             pendingTributeReborn = 0;
@@ -820,6 +820,23 @@ library PortalLib {
 
         // update coinday
         _updateCoinday(portfolio, pool);
+
+        // if user have no stake before, should flatten debt
+        if (portfolio.accumulativeAmount == 0) {
+            unchecked {
+                // flatten native reward
+                portfolio.nativeRewardDebt = uint128(
+                    (portfolio.coindayCumulant * pool.accNativePerShare) /
+                        PERSHARE_BASE
+                );
+
+                // flatten reborn reward
+                portfolio.rebornRewardDebt = uint128(
+                    (portfolio.coindayCumulant * pool.accRebornPerShare) /
+                        PERSHARE_BASE
+                );
+            }
+        }
 
         unchecked {
             portfolio.accumulativeAmount += amount;
