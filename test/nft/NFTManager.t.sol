@@ -163,6 +163,22 @@ contract NFTManagerTest is Test, IDegenNFTDefination, INFTManagerDefination {
         nftManager.burn(1);
     }
 
+    function testSetLevelFuzz(uint256[] memory seeds) public {
+        uint256 length = seeds.length;
+        uint256[] memory tokenIds = new uint256[](length);
+        uint256[] memory levels = new uint256[](length);
+        for (uint256 i = 0; i < length; i++) {
+            tokenIds[i] = bound(seeds[i], 1, 3000);
+            levels[i] = bound(seeds[i], 0, 5);
+        }
+        vm.startPrank(signer);
+        for (uint256 i = 0; i < length; i++) {
+            nftManager.setLevel(tokenIds[i], levels[i]);
+
+            assertEq(degenNFT.getLevel(tokenIds[i]), levels[i]);
+        }
+    }
+
     function testBatchMetadataUpdate() public {
         vm.expectEmit(true, true, true, true);
         emit BatchMetadataUpdate(0, type(uint256).max);
