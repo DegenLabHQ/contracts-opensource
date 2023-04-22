@@ -181,7 +181,7 @@ contract NFTManager is
 
         // if no native token configuration
         // revert
-        if (refundConfig.nativeToken == 0) {
+        if (refundConfig.nativeToken == 0 && refundConfig.rebornToken == 0) {
             revert NoBurnConfSet();
         }
 
