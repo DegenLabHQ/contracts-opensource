@@ -115,6 +115,7 @@ library PortalLib {
 
     event DropNative(uint256 indexed tokenId, uint256 amount);
     event DropReborn(uint256 indexed tokenId, uint256 amount);
+
     event ClaimRebornDrop(uint256 indexed tokenId, uint256 rebornAmount);
     event ClaimNativeDrop(uint256 indexed tokenId, uint256 nativeAmount);
     event NewDropConf(AirdropConf conf);
@@ -265,55 +266,6 @@ library PortalLib {
             portfolio.rebornRewardDebt = uint128(
                 (userRebornCoinday * pool.accRebornPerShare) / PERSHARE_BASE
             );
-        }
-    }
-
-    function _directDropNativeToTopTokenIds(
-        uint256[] memory tokenIds,
-        uint256 dropAmount
-    ) external {
-        for (uint256 i = 0; i < tokenIds.length; ) {
-            uint256 tokenId = tokenIds[i];
-
-            emit DropNative(tokenId, dropAmount);
-
-            // i auto increment
-            unchecked {
-                i++;
-            }
-        }
-    }
-
-    function _directDropNativeToRaffleTokenIds(
-        uint256[] memory tokenIds,
-        uint256 dropAmount
-    ) external {
-        for (uint256 i = 0; i < tokenIds.length; i++) {
-            uint256 tokenId = tokenIds[i];
-
-            emit DropNative(tokenId, dropAmount);
-        }
-    }
-
-    function _directDropRebornToTopTokenIds(
-        uint256[] memory tokenIds,
-        uint256 dropAmount
-    ) external {
-        for (uint256 i = 0; i < tokenIds.length; i++) {
-            uint256 tokenId = tokenIds[i];
-
-            emit DropReborn(tokenId, dropAmount);
-        }
-    }
-
-    function _directDropRebornToRaffleTokenIds(
-        uint256[] memory tokenIds,
-        uint256 dropAmount
-    ) external {
-        for (uint256 i = 0; i < tokenIds.length; i++) {
-            uint256 tokenId = tokenIds[i];
-
-            emit DropReborn(tokenId, dropAmount);
         }
     }
 

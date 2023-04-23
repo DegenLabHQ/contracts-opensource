@@ -735,8 +735,6 @@ contract RebornPortal is
             totalAmount = (dropTopAmount + dropRaffleAmount) * 10;
         }
 
-        PortalLib._directDropRebornToTopTokenIds(topTens, dropTopAmount);
-
         uint256[] memory selectedTokenIds = new uint256[](10);
 
         uint256 r = rs.randomWords;
@@ -748,14 +746,16 @@ contract RebornPortal is
             }
         }
 
-        PortalLib._directDropRebornToRaffleTokenIds(
-            selectedTokenIds,
-            dropRaffleAmount
-        );
-
         vault.reward(address(_airdropVault), totalAmount);
 
         _pendingDrops.remove(requestId);
+
+        emit AirdropDegen(
+            topTens,
+            dropTopAmount,
+            selectedTokenIds,
+            dropRaffleAmount
+        );
     }
 
     /**
@@ -795,8 +795,6 @@ contract RebornPortal is
             _seasonData[_season]._jackpot -= totalDropAmount;
         }
 
-        PortalLib._directDropNativeToTopTokenIds(topTens, nativeTopAmount);
-
         uint256[] memory selectedTokenIds = new uint256[](10);
 
         uint256 r = rs.randomWords;
@@ -808,15 +806,17 @@ contract RebornPortal is
             }
         }
 
-        PortalLib._directDropNativeToRaffleTokenIds(
-            selectedTokenIds,
-            nativeRaffleAmount
-        );
-
         // transfer reward to airdrop vault
         payable(address(_airdropVault)).transfer(totalDropAmount);
 
         _pendingDrops.remove(requestId);
+
+        emit AirdropNative(
+            topTens,
+            nativeTopAmount,
+            selectedTokenIds,
+            nativeRaffleAmount
+        );
     }
 
     function _requestDropReborn() internal onlyDropOn {
