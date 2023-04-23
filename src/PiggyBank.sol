@@ -235,7 +235,7 @@ contract PiggyBank is SafeOwnableUpgradeable, UUPSUpgradeable, IPiggyBank {
         bool isAutoEnd = ((block.timestamp >
             seasons[season].startTime + minTimeLong) &&
             (rounds[season].totalAmount < rounds[season].target) &&
-            (block.timestamp - rounds[season].startTime) >= 3600);
+            (block.timestamp - rounds[season].startTime) >= 1 days);
 
         if (isAutoEnd || seasons[season].stoped) {
             isEnd = true;
