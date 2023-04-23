@@ -193,9 +193,9 @@ contract AirdropTest is RebornPortalBaseTest {
 
         vm.expectEmit(true, true, true, true);
         if (portal.ownerOf(1) == user) {
-            emit PortalLib.ClaimRebornDrop(1, 1600 ether);
+            // emit PortalLib.ClaimRebornDrop(1, 1600 ether);
         } else {
-            emit PortalLib.ClaimRebornDrop(1, 1280 ether);
+            // emit PortalLib.ClaimRebornDrop(1, 1280 ether);
         }
         vm.prank(user);
         // portal.claimDrops(ds);

@@ -197,7 +197,6 @@ contract RebornPortal is
         uint256 amount,
         TributeDirection tributeDirection
     ) external override whenNotStoped {
-        _claimPoolDrop(tokenId);
         _infuse(tokenId, amount, tributeDirection);
     }
 
@@ -214,7 +213,6 @@ contract RebornPortal is
         bytes32 s,
         uint8 v
     ) external override whenNotStoped {
-        _claimPoolDrop(tokenId);
         _permit(permitAmount, deadline, r, s, v);
         _infuse(tokenId, amount, tributeDirection);
     }
@@ -228,8 +226,6 @@ contract RebornPortal is
         uint256 amount,
         TributeDirection tributeDirection
     ) external override whenNotStoped {
-        _claimPoolDrop(fromTokenId);
-        _claimPoolDrop(toTokenId);
         _decreaseFromPool(fromTokenId, amount);
         _increaseToPool(toTokenId, amount, tributeDirection);
     }
@@ -238,8 +234,32 @@ contract RebornPortal is
      * @inheritdoc IRebornPortal
      */
     function claimNativeDrops(
-        uint256[] calldata tokenIds
-    ) external override whenNotPaused {}
+        uint256 totalAmount,
+        bytes32[] calldata merkleProof
+    ) external override whenNotPaused {
+        bytes32 leaf = keccak256(
+            bytes.concat(keccak256(abi.encode(msg.sender, totalAmount)))
+        );
+
+        bool valid = MerkleProof.verify(merkleProof, _dropNativeRoot, leaf);
+
+        if (!valid) {
+            revert InvalidProof();
+        }
+
+        uint256 remainingNativeAmount = totalAmount -
+            _airdropDebt[msg.sender].degenDebt;
+
+        if (remainingNativeAmount == 0) {
+            revert NoRemainingReward();
+        }
+
+        _airdropDebt[msg.sender].nativeDebt = uint128(totalAmount);
+
+        _airdropVault.rewardDegen(msg.sender, remainingNativeAmount);
+
+        emit ClaimDegenAirDrop(remainingNativeAmount);
+    }
 
     /**
      * @inheritdoc IRebornPortal
