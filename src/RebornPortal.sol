@@ -256,7 +256,7 @@ contract RebornPortal is
 
         _airdropDebt[msg.sender].nativeDebt = uint128(totalAmount);
 
-        _airdropVault.rewardDegen(msg.sender, remainingNativeAmount);
+        airdropVault.rewardDegen(msg.sender, remainingNativeAmount);
 
         emit ClaimDegenAirDrop(remainingNativeAmount);
     }
@@ -287,7 +287,7 @@ contract RebornPortal is
 
         _airdropDebt[msg.sender].degenDebt = uint128(totalAmount);
 
-        _airdropVault.rewardDegen(msg.sender, remainingDegenAmount);
+        airdropVault.rewardDegen(msg.sender, remainingDegenAmount);
 
         emit ClaimDegenAirDrop(remainingDegenAmount);
     }
@@ -398,7 +398,7 @@ contract RebornPortal is
      * @param vault_ new airdrop vault address
      */
     function setAirdropVault(AirdropVault vault_) external onlyOwner {
-        _airdropVault = vault_;
+        airdropVault = vault_;
         emit AirdropVaultSet(address(vault_));
     }
 
@@ -423,7 +423,7 @@ contract RebornPortal is
      * @param to the address which owner withdraw token to
      */
     function withdrawAirdropVault(address to) external whenPaused onlyOwner {
-        _airdropVault.withdrawEmergency(to);
+        airdropVault.withdrawEmergency(to);
     }
 
     /**
@@ -798,7 +798,7 @@ contract RebornPortal is
             }
         }
 
-        vault.reward(address(_airdropVault), totalAmount);
+        vault.reward(address(airdropVault), totalAmount);
 
         _pendingDrops.remove(requestId);
 
@@ -859,7 +859,7 @@ contract RebornPortal is
         }
 
         // transfer reward to airdrop vault
-        payable(address(_airdropVault)).transfer(totalDropAmount);
+        payable(address(airdropVault)).transfer(totalDropAmount);
 
         _pendingDrops.remove(requestId);
 

@@ -59,7 +59,7 @@ contract RebornPortalStorage is IRebornDefination {
     uint256 internal piggyBankFee;
 
     // airdrop vault
-    AirdropVault internal _airdropVault;
+    AirdropVault public airdropVault;
 
     bytes32 internal _dropNativeRoot;
     bytes32 internal _dropDegenRoot;
