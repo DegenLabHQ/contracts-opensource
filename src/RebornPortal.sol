@@ -348,14 +348,20 @@ contract RebornPortal is
         PortalLib.setCharProperty(tokenIds, charParams, _characterProperties);
     }
 
-    function setNativeDropRoot(bytes32 nativeDropRoot) external onlySigner {
+    function setNativeDropRoot(
+        bytes32 nativeDropRoot,
+        uint256 timestamp
+    ) external onlySigner {
         _dropNativeRoot = nativeDropRoot;
-        emit NativeDropRootSet(nativeDropRoot);
+        emit NativeDropRootSet(nativeDropRoot, timestamp);
     }
 
-    function setDegenDropRoot(bytes32 degenDropRoot) external onlySigner {
+    function setDegenDropRoot(
+        bytes32 degenDropRoot,
+        uint256 timestamp
+    ) external onlySigner {
         _dropDegenRoot = degenDropRoot;
-        emit DegenDropRootSet(degenDropRoot);
+        emit DegenDropRootSet(degenDropRoot, timestamp);
     }
 
     /**

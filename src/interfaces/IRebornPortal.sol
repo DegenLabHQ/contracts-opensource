@@ -175,8 +175,8 @@ interface IRebornDefination {
     event ClaimNativeAirDrop(uint256 amount);
     event ClaimDegenAirDrop(uint256 amount);
 
-    event NativeDropRootSet(bytes32);
-    event DegenDropRootSet(bytes32);
+    event NativeDropRootSet(bytes32, uint256);
+    event DegenDropRootSet(bytes32, uint256);
 
     /// @dev revert when msg.value is insufficient
     error InsufficientAmount();
