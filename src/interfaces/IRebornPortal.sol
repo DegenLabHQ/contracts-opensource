@@ -138,6 +138,8 @@ interface IRebornDefination {
     /// @dev event about the vault address is set
     event VaultSet(address rewardVault);
 
+    event AirdropVaultSet(address airdropVault);
+
     event NewSeason(uint256);
 
     event NewIncarnationLimit(uint256 limit);

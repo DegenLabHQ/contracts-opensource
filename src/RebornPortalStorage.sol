@@ -9,6 +9,7 @@ import {SingleRanking} from "src/lib/SingleRanking.sol";
 import {PortalLib} from "src/PortalLib.sol";
 import {FastArray} from "src/lib/FastArray.sol";
 import {IPiggyBank} from "./interfaces/IPiggyBank.sol";
+import {AirdropVault} from "src/AirdropVault.sol";
 
 contract RebornPortalStorage is IRebornDefination {
     //########### Link Contract Address ########## //
@@ -57,6 +58,9 @@ contract RebornPortalStorage is IRebornDefination {
     // X% to piggyBank piggyBankFee / 10000
     uint256 internal piggyBankFee;
 
+    // airdrop vault
+    AirdropVault internal _airdropVault;
+
     /// @dev gap for potential variable
-    uint256[27] private _gap;
+    uint256[26] private _gap;
 }

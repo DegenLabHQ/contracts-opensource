@@ -22,6 +22,7 @@ import {PortalLib} from "src/PortalLib.sol";
 import {FastArray} from "src/lib/FastArray.sol";
 import {IPiggyBank} from "./interfaces/IPiggyBank.sol";
 import {PiggyBank} from "src/PiggyBank.sol";
+import {AirdropVault} from "src/AirdropVault.sol";
 
 contract RebornPortal is
     IRebornPortal,
@@ -346,6 +347,15 @@ contract RebornPortal is
     function setVault(RewardVault vault_) external onlyOwner {
         vault = vault_;
         emit VaultSet(address(vault_));
+    }
+
+    /**
+     * @dev set airdrop vault
+     * @param vault_ new airdrop vault address
+     */
+    function setAirdropVault(AirdropVault vault_) external onlyOwner {
+        _airdropVault = vault_;
+        emit AirdropVaultSet(address(vault_));
     }
 
     /**
@@ -714,12 +724,15 @@ contract RebornPortal is
 
         uint256 dropTopAmount;
         uint256 dropRaffleAmount;
+        uint256 totalAmount;
 
         unchecked {
             dropTopAmount = uint256(_dropConf._rebornTopEthAmount) * 1 ether;
             dropRaffleAmount =
                 uint256(_dropConf._rebornRaffleEthAmount) *
                 1 ether;
+
+            totalAmount = (dropTopAmount + dropRaffleAmount) * 10;
         }
 
         PortalLib._directDropRebornToTopTokenIds(topTens, dropTopAmount);
@@ -727,15 +740,20 @@ contract RebornPortal is
         uint256[] memory selectedTokenIds = new uint256[](10);
 
         uint256 r = rs.randomWords;
-        for (uint256 i = 0; i < 10; i++) {
+        for (uint256 i = 0; i < 10; ) {
             selectedTokenIds[i] = topTenToHundreds[r % 40];
             r = uint256(keccak256(abi.encode(r)));
+            unchecked {
+                i++;
+            }
         }
 
         PortalLib._directDropRebornToRaffleTokenIds(
             selectedTokenIds,
             dropRaffleAmount
         );
+
+        vault.reward(address(_airdropVault), totalAmount);
 
         _pendingDrops.remove(requestId);
     }
@@ -761,6 +779,7 @@ contract RebornPortal is
 
         uint256 nativeTopAmount;
         uint256 nativeRaffleAmount;
+        uint256 totalDropAmount;
 
         unchecked {
             nativeTopAmount =
@@ -772,8 +791,7 @@ contract RebornPortal is
                     _seasonData[_season]._jackpot) /
                 PortalLib.PERCENTAGE_BASE;
             // remove the amount from jackpot
-            uint256 totalDropAmount = (nativeTopAmount + nativeRaffleAmount) *
-                10;
+            totalDropAmount = (nativeTopAmount + nativeRaffleAmount) * 10;
             _seasonData[_season]._jackpot -= totalDropAmount;
         }
 
@@ -794,6 +812,9 @@ contract RebornPortal is
             selectedTokenIds,
             nativeRaffleAmount
         );
+
+        // transfer reward to airdrop vault
+        payable(address(_airdropVault)).transfer(totalDropAmount);
 
         _pendingDrops.remove(requestId);
     }
