@@ -157,46 +157,6 @@ contract AirdropTest is RebornPortalBaseTest {
         mockAirdrop();
     }
 
-    function testClaimDropOne(address user) public {
-        // only EOA and not precompile address
-        vm.assume(user.code.length == 0 && uint160(user) > 20);
-        // give native token to portal
-        deal(address(portal), 1 << 128);
-        setDropConf();
-
-        uint256 tokenId = 1;
-        // mock infuse
-        uint256 amount = 10 ether;
-        mockInfuse(user, tokenId, amount);
-
-        // mock incarnate
-        _mockIncarnate();
-        // engrave
-        mockEngravesIncre(1);
-        // time pass by, set timestamp
-        vm.warp(block.timestamp + 1 days);
-
-        // airdrop
-        mockAirdrop();
-
-        // deal some reborn token to reward vault
-        deal(address(rbt), address(portal.vault()), UINT256_MAX);
-
-        // should claim amount match
-        uint256[] memory ds = new uint256[](1);
-        ds[0] = tokenId;
-
-        vm.expectEmit(true, true, true, true);
-        if (portal.ownerOf(1) == user) {
-            emit PortalLib.ClaimRebornDrop(1, 800 ether);
-        } else {
-            emit PortalLib.ClaimRebornDrop(1, 640 ether);
-        }
-        vm.prank(user);
-        portal.claimDrops(ds);
-        vm.stopPrank();
-    }
-
     function testClaimCrossTimeCorrect(address user) public {
         // only EOA and not precompile address
         vm.assume(user.code.length == 0 && uint160(user) > 20);
@@ -238,7 +198,7 @@ contract AirdropTest is RebornPortalBaseTest {
             emit PortalLib.ClaimRebornDrop(1, 1280 ether);
         }
         vm.prank(user);
-        portal.claimDrops(ds);
+        // portal.claimDrops(ds);
         vm.stopPrank();
     }
 
@@ -284,7 +244,7 @@ contract AirdropTest is RebornPortalBaseTest {
             uint256[] memory ds = new uint256[](1);
             ds[0] = tokenId;
             vm.prank(users[i]);
-            portal.claimDrops(ds);
+            // portal.claimDrops(ds);
             mockInfuse(user, tokenId, amount);
 
             vm.stopPrank();

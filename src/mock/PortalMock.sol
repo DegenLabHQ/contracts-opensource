@@ -15,12 +15,6 @@ contract PortalMock is RebornPortal {
         return _seasonData[_season]._tributeRank.get(0, 100);
     }
 
-    function claimDrops(uint256[] calldata tokenIds) external whenNotPaused {
-        for (uint256 i = 0; i < tokenIds.length; i++) {
-            _claimPoolDrop(tokenIds[i]);
-        }
-    }
-
     function mockIncarnet(
         uint256 season,
         address account,

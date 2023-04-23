@@ -722,11 +722,7 @@ contract RebornPortal is
                 1 ether;
         }
 
-        PortalLib._directDropRebornToTopTokenIds(
-            topTens,
-            dropTopAmount,
-            _seasonData[_season]
-        );
+        PortalLib._directDropRebornToTopTokenIds(topTens, dropTopAmount);
 
         uint256[] memory selectedTokenIds = new uint256[](10);
 
@@ -738,8 +734,7 @@ contract RebornPortal is
 
         PortalLib._directDropRebornToRaffleTokenIds(
             selectedTokenIds,
-            dropRaffleAmount,
-            _seasonData[_season]
+            dropRaffleAmount
         );
 
         _pendingDrops.remove(requestId);
@@ -782,11 +777,7 @@ contract RebornPortal is
             _seasonData[_season]._jackpot -= totalDropAmount;
         }
 
-        PortalLib._directDropNativeToTopTokenIds(
-            topTens,
-            nativeTopAmount,
-            _seasonData[_season]
-        );
+        PortalLib._directDropNativeToTopTokenIds(topTens, nativeTopAmount);
 
         uint256[] memory selectedTokenIds = new uint256[](10);
 
@@ -801,8 +792,7 @@ contract RebornPortal is
 
         PortalLib._directDropNativeToRaffleTokenIds(
             selectedTokenIds,
-            nativeRaffleAmount,
-            _seasonData[_season]
+            nativeRaffleAmount
         );
 
         _pendingDrops.remove(requestId);
@@ -877,23 +867,6 @@ contract RebornPortal is
 
             _pendingDrops.insert(requestId);
         }
-    }
-
-    /**
-     * @dev user claim a drop from a pool
-     */
-    function _claimPoolDrop(uint256 tokenId) internal nonReentrant {
-        PortalLib._claimPoolNativeDrop(
-            tokenId,
-            _dropConf,
-            _seasonData[_season]
-        );
-        PortalLib._claimPoolRebornDrop(
-            tokenId,
-            vault,
-            _dropConf,
-            _seasonData[_season]
-        );
     }
 
     /**

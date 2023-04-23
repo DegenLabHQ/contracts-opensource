@@ -236,58 +236,6 @@ library PortalLib {
         }
     }
 
-    /**
-     * @dev calculate drop from a pool
-     */
-    function _calculatePoolDrop(
-        uint256 tokenId,
-        IRebornDefination.SeasonData storage _seasonData,
-        AirdropConf storage dropConf
-    ) public view returns (uint256 pendingNative, uint256 pendingReborn) {
-        Pool storage pool = _seasonData.pools[tokenId];
-        Portfolio storage portfolio = _seasonData.portfolios[msg.sender][
-            tokenId
-        ];
-
-        uint256 pendingTributeNative;
-        uint256 pendingTributeReborn;
-        // if no accumulativeAmount, no pending tribute reward
-        if (portfolio.accumulativeAmount == 0) {
-            pendingTributeNative = 0;
-            pendingTributeReborn = 0;
-        } else {
-            (
-                uint256 userNativeCoinday,
-                uint256 userRebornCoinday
-            ) = _computeUserCoindayOfAirdropTimestamp(
-                    tokenId,
-                    msg.sender,
-                    dropConf,
-                    _seasonData
-                );
-
-            pendingTributeNative = userNativeCoinday > 0
-                ? (userNativeCoinday * pool.accNativePerShare) /
-                    PERSHARE_BASE -
-                    portfolio.nativeRewardDebt
-                : 0;
-
-            pendingTributeReborn = userRebornCoinday > 0
-                ? (userRebornCoinday * pool.accRebornPerShare) /
-                    PERSHARE_BASE -
-                    portfolio.rebornRewardDebt
-                : 0;
-        }
-
-        pendingNative =
-            pendingTributeNative +
-            portfolio.pendingOwnerNativeReward;
-
-        pendingReborn =
-            pendingTributeReborn +
-            portfolio.pendingOwnerRebornReward;
-    }
-
     function _flattenRewardDebt(
         uint256 tokenId,
         address user,
@@ -320,66 +268,12 @@ library PortalLib {
         }
     }
 
-    /**
-     * @dev read pending reward from specific pool
-     * @param tokenIds tokenId array of the pools
-     */
-    function _pendingDrop(
-        IRebornDefination.SeasonData storage _seasonData,
-        uint256[] memory tokenIds,
-        AirdropConf storage dropConf
-    ) external view returns (uint256 pNative, uint256 pReborn) {
-        for (uint256 i = 0; i < tokenIds.length; i++) {
-            (uint256 n, uint256 r) = _calculatePoolDrop(
-                tokenIds[i],
-                _seasonData,
-                dropConf
-            );
-            pNative += n;
-            pReborn += r;
-        }
-    }
-
     function _directDropNativeToTopTokenIds(
         uint256[] memory tokenIds,
-        uint256 dropAmount,
-        IRebornDefination.SeasonData storage _seasonData
+        uint256 dropAmount
     ) external {
         for (uint256 i = 0; i < tokenIds.length; ) {
             uint256 tokenId = tokenIds[i];
-            // if tokenId is zero, return
-            // as there is no enough incarnation
-            if (tokenId == 0) {
-                return;
-            }
-
-            uint256 poolCoinday = getPoolCoinday(tokenId, _seasonData);
-            // if no coin day, cointue and jump to next one
-            if (poolCoinday == 0) {
-                continue;
-            }
-
-            Pool storage pool = _seasonData.pools[tokenId];
-            pool.lastDropNativeTime = uint32(block.timestamp);
-
-            address owner = IERC721(address(this)).ownerOf(tokenId);
-            Portfolio storage portfolio = _seasonData.portfolios[owner][
-                tokenId
-            ];
-
-            unchecked {
-                // 80% to pool
-                pool.droppedNativeTotal += (4 * uint128(dropAmount)) / 5;
-                pool.accNativePerShare =
-                    (pool.droppedNativeTotal * PERSHARE_BASE) /
-                    poolCoinday;
-
-                // 20% to owner
-
-                portfolio.pendingOwnerNativeReward += uint128(
-                    (dropAmount * 1) / 5
-                );
-            }
 
             emit DropNative(tokenId, dropAmount);
 
@@ -392,42 +286,10 @@ library PortalLib {
 
     function _directDropNativeToRaffleTokenIds(
         uint256[] memory tokenIds,
-        uint256 dropAmount,
-        IRebornDefination.SeasonData storage _seasonData
+        uint256 dropAmount
     ) external {
         for (uint256 i = 0; i < tokenIds.length; i++) {
             uint256 tokenId = tokenIds[i];
-            // if it's empty, continue as it's raffle
-            if (tokenId == 0) {
-                continue;
-            }
-
-            uint256 poolCoinday = getPoolCoinday(tokenId, _seasonData);
-            // if no coinday, continue and jump to next one
-            if (poolCoinday == 0) {
-                continue;
-            }
-
-            Pool storage pool = _seasonData.pools[tokenId];
-            pool.lastDropNativeTime = uint32(block.timestamp);
-
-            address owner = IERC721(address(this)).ownerOf(tokenId);
-            Portfolio storage portfolio = _seasonData.portfolios[owner][
-                tokenId
-            ];
-
-            unchecked {
-                // 80% to pool
-                pool.droppedNativeTotal += (4 * uint128(dropAmount)) / 5;
-                pool.accNativePerShare =
-                    (pool.droppedNativeTotal * PERSHARE_BASE) /
-                    poolCoinday;
-
-                // 20% to owner
-                portfolio.pendingOwnerNativeReward += uint128(
-                    (dropAmount * 1) / 5
-                );
-            }
 
             emit DropNative(tokenId, dropAmount);
         }
@@ -435,47 +297,10 @@ library PortalLib {
 
     function _directDropRebornToTopTokenIds(
         uint256[] memory tokenIds,
-        uint256 dropAmount,
-        IRebornDefination.SeasonData storage _seasonData
+        uint256 dropAmount
     ) external {
         for (uint256 i = 0; i < tokenIds.length; i++) {
             uint256 tokenId = tokenIds[i];
-
-            // if tokenId is zero, return
-            // as 0 means there is no more tokenIds
-            if (tokenId == 0) {
-                return;
-            }
-
-            uint256 poolCoinday = getPoolCoinday(tokenId, _seasonData);
-            // if no coinday,
-            // continue and jump to next one
-            if (poolCoinday == 0) {
-                continue;
-            }
-
-            Pool storage pool = _seasonData.pools[tokenId];
-            pool.lastDropRebornTime = uint32(block.timestamp);
-
-            unchecked {
-                // 80% to pool
-                pool.droppedRebornTotal += (4 * uint128(dropAmount)) / 5;
-                pool.accRebornPerShare =
-                    (pool.droppedRebornTotal * PERSHARE_BASE) /
-                    poolCoinday;
-            }
-
-            // 20% to owner
-            address owner = IERC721(address(this)).ownerOf(tokenId);
-            Portfolio storage portfolio = _seasonData.portfolios[owner][
-                tokenId
-            ];
-
-            unchecked {
-                portfolio.pendingOwnerRebornReward += uint128(
-                    (dropAmount * 1) / 5
-                );
-            }
 
             emit DropReborn(tokenId, dropAmount);
         }
@@ -483,45 +308,10 @@ library PortalLib {
 
     function _directDropRebornToRaffleTokenIds(
         uint256[] memory tokenIds,
-        uint256 dropAmount,
-        IRebornDefination.SeasonData storage _seasonData
+        uint256 dropAmount
     ) external {
         for (uint256 i = 0; i < tokenIds.length; i++) {
             uint256 tokenId = tokenIds[i];
-
-            // if tokenId is zero, continue
-            // as it's raffle
-            if (tokenId == 0) {
-                continue;
-            }
-            uint256 poolCoinday = getPoolCoinday(tokenId, _seasonData);
-            // if no coinday, continue
-            if (poolCoinday == 0) {
-                continue;
-            }
-
-            Pool storage pool = _seasonData.pools[tokenId];
-            pool.lastDropRebornTime = uint32(block.timestamp);
-
-            unchecked {
-                // 80% to pool
-                pool.droppedRebornTotal += (4 * uint128(dropAmount)) / 5;
-                pool.accRebornPerShare =
-                    (pool.droppedRebornTotal * PERSHARE_BASE) /
-                    poolCoinday;
-            }
-
-            // 20% to owner
-            address owner = IERC721(address(this)).ownerOf(tokenId);
-            Portfolio storage portfolio = _seasonData.portfolios[owner][
-                tokenId
-            ];
-
-            unchecked {
-                portfolio.pendingOwnerRebornReward += uint128(
-                    (dropAmount * 1) / 5
-                );
-            }
 
             emit DropReborn(tokenId, dropAmount);
         }
