@@ -264,7 +264,7 @@ contract RebornPortal is
     /**
      * @inheritdoc IRebornPortal
      */
-    function claimRebornDrops(
+    function claimDegenDrops(
         uint256 totalAmount,
         bytes32[] calldata merkleProof
     ) external override whenNotPaused {
@@ -1094,6 +1094,12 @@ contract RebornPortal is
      */
     function getJackPot() public view returns (uint256) {
         return _seasonData[_season]._jackpot;
+    }
+
+    function getAirdropDebt(
+        address user
+    ) public view returns (AirDropDebt memory) {
+        return _airdropDebt[user];
     }
 
     function readCharProperty(

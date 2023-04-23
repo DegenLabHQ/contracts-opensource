@@ -318,7 +318,7 @@ interface IRebornPortal is IRebornDefination {
         bytes32[] calldata proof
     ) external;
 
-    function claimRebornDrops(
+    function claimDegenDrops(
         uint256 totalAmount,
         bytes32[] calldata proof
     ) external;
