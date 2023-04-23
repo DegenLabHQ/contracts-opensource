@@ -45,6 +45,7 @@ interface IPiggyBankDefination {
         address verifySigner
     );
     event ClaimedReward(uint256 season, address account, uint256 amount);
+    event SetNewCountDownTimeLong(uint32 countDownTimeLong);
 
     error CallerNotPortal();
     error InvalidRoundInfo();
@@ -52,6 +53,7 @@ interface IPiggyBankDefination {
     error InvalidSeason();
     error AlreadyClaimed();
     error SeasonNotOver();
+    error CountDownTimeLongNotSet();
 }
 
 interface IPiggyBank is IPiggyBankDefination {
