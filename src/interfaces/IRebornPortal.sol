@@ -174,7 +174,7 @@ interface IRebornDefination {
 
     error DropLocked();
 
-    error SeasonStoped();
+    error SeasonAlreadyStoped();
 }
 
 interface IRebornPortal is IRebornDefination {
