@@ -27,7 +27,9 @@ contract PiggyBank is SafeOwnableUpgradeable, UUPSUpgradeable, IPiggyBank {
     mapping(address => mapping(uint256 => mapping(uint256 => UserInfo)))
         internal users;
 
-    uint256[44] internal _gap;
+    uint32 public countDownTimeLong;
+
+    uint256[43] internal _gap;
 
     function initialize(address owner_, address portal_) public initializer {
         if (portal_ == address(0) || owner_ == address(0)) {
@@ -67,6 +69,10 @@ contract PiggyBank is SafeOwnableUpgradeable, UUPSUpgradeable, IPiggyBank {
         address account,
         uint256 income
     ) external payable override onlyPortal {
+        if (countDownTimeLong == 0) {
+            revert CountDownTimeLongNotSet();
+        }
+
         bool isEnd = checkIsSeasonEnd(season);
         if (isEnd) {
             if (!seasons[season].stoped) {
@@ -165,6 +171,14 @@ contract PiggyBank is SafeOwnableUpgradeable, UUPSUpgradeable, IPiggyBank {
         emit SetMinTimeLong(minTimeLong_);
     }
 
+    function setCoundDownTimeLong(
+        uint32 countDownTimeLong_
+    ) external onlyOwner {
+        countDownTimeLong = countDownTimeLong_;
+
+        emit SetNewCountDownTimeLong(countDownTimeLong_);
+    }
+
     function setSeasonStopedHash(
         uint256 season,
         bytes32 stopedHash,
@@ -235,7 +249,7 @@ contract PiggyBank is SafeOwnableUpgradeable, UUPSUpgradeable, IPiggyBank {
         bool isAutoEnd = ((block.timestamp >
             seasons[season].startTime + minTimeLong) &&
             (rounds[season].totalAmount < rounds[season].target) &&
-            (block.timestamp - rounds[season].startTime) >= 1 days);
+            (block.timestamp - rounds[season].startTime) >= countDownTimeLong);
 
         if (isAutoEnd || seasons[season].stoped) {
             isEnd = true;
@@ -245,8 +259,9 @@ contract PiggyBank is SafeOwnableUpgradeable, UUPSUpgradeable, IPiggyBank {
 
     function getSeasonInfo(
         uint256 season
-    ) external view returns (SeasonInfo memory) {
-        return seasons[season];
+    ) external view returns (SeasonInfo memory seasonInfo, bool isSeasonEnd) {
+        seasonInfo = seasons[season];
+        isSeasonEnd = checkIsSeasonEnd(season);
     }
 
     function getRoundInfo(
