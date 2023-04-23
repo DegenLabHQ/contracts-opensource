@@ -259,8 +259,9 @@ contract PiggyBank is SafeOwnableUpgradeable, UUPSUpgradeable, IPiggyBank {
 
     function getSeasonInfo(
         uint256 season
-    ) external view returns (SeasonInfo memory) {
-        return seasons[season];
+    ) external view returns (SeasonInfo memory seasonInfo, bool isSeasonEnd) {
+        seasonInfo = seasons[season];
+        isSeasonEnd = checkIsSeasonEnd(season);
     }
 
     function getRoundInfo(

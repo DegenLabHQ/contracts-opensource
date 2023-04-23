@@ -173,6 +173,8 @@ interface IRebornDefination {
     error DirectionError();
 
     error DropLocked();
+
+    error SeasonStoped();
 }
 
 interface IRebornPortal is IRebornDefination {

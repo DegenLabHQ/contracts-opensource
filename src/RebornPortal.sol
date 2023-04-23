@@ -81,6 +81,7 @@ contract RebornPortal is
         payable
         override
         whenNotPaused
+        whenSeasonNotStoped
         nonReentrant
         checkIncarnationCount
     {
@@ -101,6 +102,7 @@ contract RebornPortal is
         payable
         override
         whenNotPaused
+        whenSeasonNotStoped
         nonReentrant
         checkIncarnationCount
     {
@@ -129,7 +131,7 @@ contract RebornPortal is
         uint256 nativeCost,
         uint256 rebornCost,
         string calldata creatorName
-    ) external override whenNotPaused onlySigner {
+    ) external override whenNotPaused whenSeasonNotStoped onlySigner {
         if (_seeds.get(uint256(seed))) {
             revert SameSeed();
         }
@@ -181,7 +183,7 @@ contract RebornPortal is
         address user,
         uint256 amount,
         uint256 baptiseType
-    ) external override whenNotPaused onlySigner {
+    ) external override whenNotPaused whenSeasonNotStoped onlySigner {
         vault.reward(user, amount);
 
         emit Baptise(user, amount, baptiseType);
@@ -194,7 +196,7 @@ contract RebornPortal is
         uint256 tokenId,
         uint256 amount,
         TributeDirection tributeDirection
-    ) external override whenNotPaused {
+    ) external override whenNotPaused whenSeasonNotStoped {
         _claimPoolDrop(tokenId);
         _infuse(tokenId, amount, tributeDirection);
     }
@@ -211,7 +213,7 @@ contract RebornPortal is
         bytes32 r,
         bytes32 s,
         uint8 v
-    ) external override whenNotPaused {
+    ) external override whenNotPaused whenSeasonNotStoped {
         _claimPoolDrop(tokenId);
         _permit(permitAmount, deadline, r, s, v);
         _infuse(tokenId, amount, tributeDirection);
@@ -225,7 +227,7 @@ contract RebornPortal is
         uint256 toTokenId,
         uint256 amount,
         TributeDirection tributeDirection
-    ) external override whenNotPaused {
+    ) external override whenNotPaused whenSeasonNotStoped {
         _claimPoolDrop(fromTokenId);
         _claimPoolDrop(toTokenId);
         _decreaseFromPool(fromTokenId, amount);
@@ -237,7 +239,7 @@ contract RebornPortal is
      */
     function claimNativeDrops(
         uint256[] calldata tokenIds
-    ) external override whenNotPaused {
+    ) external override whenNotPaused whenSeasonNotStoped {
         for (uint256 i = 0; i < tokenIds.length; i++) {
             PortalLib._claimPoolNativeDrop(
                 tokenIds[i],
@@ -252,7 +254,7 @@ contract RebornPortal is
      */
     function claimRebornDrops(
         uint256[] calldata tokenIds
-    ) external override whenNotPaused {
+    ) external override whenNotPaused whenSeasonNotStoped {
         for (uint256 i = 0; i < tokenIds.length; i++) {
             PortalLib._claimPoolRebornDrop(
                 tokenIds[i],
@@ -268,7 +270,7 @@ contract RebornPortal is
      */
     function performUpkeep(
         bytes calldata performData
-    ) external override whenNotPaused {
+    ) external override whenNotPaused whenSeasonNotStoped {
         (uint256 t, uint256 id) = abi.decode(performData, (uint256, uint256));
 
         if (t == 1) {
@@ -1097,6 +1099,12 @@ contract RebornPortal is
         }
     }
 
+    function _checkPiggyBankStoped() internal view {
+        if (piggyBank.checkIsSeasonEnd(_season)) {
+            revert SeasonStoped();
+        }
+    }
+
     modifier onlySigner() {
         _checkSigner();
         _;
@@ -1115,6 +1123,11 @@ contract RebornPortal is
      */
     modifier onlyDropOn() {
         _checkDropOn();
+        _;
+    }
+
+    modifier whenSeasonNotStoped() {
+        _checkPiggyBankStoped();
         _;
     }
 }
