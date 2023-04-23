@@ -61,6 +61,9 @@ library PortalLib {
         uint32 coindayUpdateLastTime;
         uint112 totalForwardTribute;
         uint112 totalReverseTribute;
+        uint32 lastDropNativeTime;
+        uint32 lastDropRebornTime;
+        uint192 placeholder;
     }
 
     //
@@ -145,25 +148,29 @@ library PortalLib {
             dropConf,
             _seasonData
         );
-        // if no portfolio, no pending tribute reward
-        if (userRebornCoinday == 0) {
+        // if no coinday or tribute, no pending tribute reward
+        // no tribute include no coinday
+        if (portfolio.accumulativeAmount == 0) {
             pendingTributeReborn = 0;
         } else {
+            uint256 cumulativeRebornReward = (userRebornCoinday *
+                pool.accRebornPerShare) / PERSHARE_BASE;
+            // if cumulative reward is less than debt, return
+            // if no more aidrop, coinday update would always larget than airdrop update
+            // then no valid coiday for this pool
+            if (cumulativeRebornReward < portfolio.rebornRewardDebt) {
+                return;
+            }
             pendingTributeReborn =
-                (userRebornCoinday * pool.accRebornPerShare) /
-                PERSHARE_BASE -
+                cumulativeRebornReward -
                 portfolio.rebornRewardDebt;
+
+            // here, userRebornCoinday must larger than 0
+            portfolio.rebornRewardDebt = uint128(cumulativeRebornReward);
         }
 
         uint256 pendingReborn = pendingTributeReborn +
             portfolio.pendingOwnerRebornReward;
-
-        // set current amount as debt
-        if (userRebornCoinday > 0) {
-            portfolio.rebornRewardDebt = uint128(
-                (userRebornCoinday * pool.accRebornPerShare) / PERSHARE_BASE
-            );
-        }
 
         // clean up reward as owner
         portfolio.pendingOwnerRebornReward = 0;
@@ -192,23 +199,31 @@ library PortalLib {
             dropConf,
             _seasonData
         );
-        // if no coinday, no pending tribute reward
-        if (userNativeCoinday == 0) {
+
+        // if no coinday/tribute, no pending tribute reward
+        // no tribute include no coinday
+        if (portfolio.accumulativeAmount == 0) {
             pendingTributeNative = 0;
         } else {
+            uint256 cumulativeNativeReward = (userNativeCoinday *
+                pool.accNativePerShare) / PERSHARE_BASE;
+            // if cumulative reward is less than debt, return
+            // if no more aidrop, coinday update would always larget than airdrop update
+            // then no valid coiday for this pool
+            if (cumulativeNativeReward < portfolio.nativeRewardDebt) {
+                return;
+            }
             pendingTributeNative =
-                (userNativeCoinday * pool.accNativePerShare) /
-                PERSHARE_BASE -
+                cumulativeNativeReward -
                 portfolio.nativeRewardDebt;
+
+            // set current amount as debt
+            // here, userNativeCoinday must larger than zero
+            portfolio.nativeRewardDebt = uint128(cumulativeNativeReward);
         }
 
         uint256 pendingNative = pendingTributeNative +
             portfolio.pendingOwnerNativeReward;
-
-        // set current amount as debt
-        portfolio.nativeRewardDebt = uint128(
-            (userNativeCoinday * pool.accNativePerShare) / PERSHARE_BASE
-        );
 
         // clean up reward as owner
         portfolio.pendingOwnerNativeReward = 0;
@@ -236,7 +251,7 @@ library PortalLib {
 
         uint256 pendingTributeNative;
         uint256 pendingTributeReborn;
-        // if no coinday, no pending tribute reward
+        // if no accumulativeAmount, no pending tribute reward
         if (portfolio.accumulativeAmount == 0) {
             pendingTributeNative = 0;
             pendingTributeReborn = 0;
@@ -273,6 +288,38 @@ library PortalLib {
             portfolio.pendingOwnerRebornReward;
     }
 
+    function _flattenRewardDebt(
+        uint256 tokenId,
+        address user,
+        AirdropConf storage dropConf,
+        IRebornDefination.SeasonData storage _seasonData
+    ) public {
+        Pool storage pool = _seasonData.pools[tokenId];
+        Portfolio storage portfolio = _seasonData.portfolios[user][tokenId];
+
+        (
+            uint256 userNativeCoinday,
+            uint256 userRebornCoinday
+        ) = _computeUserCoindayOfAirdropTimestamp(
+                tokenId,
+                msg.sender,
+                dropConf,
+                _seasonData
+            );
+
+        unchecked {
+            // flatten native reward
+            portfolio.nativeRewardDebt = uint128(
+                (userNativeCoinday * pool.accNativePerShare) / PERSHARE_BASE
+            );
+
+            // flatten reborn reward
+            portfolio.rebornRewardDebt = uint128(
+                (userRebornCoinday * pool.accRebornPerShare) / PERSHARE_BASE
+            );
+        }
+    }
+
     /**
      * @dev read pending reward from specific pool
      * @param tokenIds tokenId array of the pools
@@ -306,14 +353,14 @@ library PortalLib {
                 return;
             }
 
-            Pool storage pool = _seasonData.pools[tokenId];
-
             uint256 poolCoinday = getPoolCoinday(tokenId, _seasonData);
-
             // if no coin day, cointue and jump to next one
             if (poolCoinday == 0) {
                 continue;
             }
+
+            Pool storage pool = _seasonData.pools[tokenId];
+            pool.lastDropNativeTime = uint32(block.timestamp);
 
             address owner = IERC721(address(this)).ownerOf(tokenId);
             Portfolio storage portfolio = _seasonData.portfolios[owner][
@@ -355,14 +402,14 @@ library PortalLib {
                 continue;
             }
 
-            Pool storage pool = _seasonData.pools[tokenId];
-
             uint256 poolCoinday = getPoolCoinday(tokenId, _seasonData);
-
             // if no coinday, continue and jump to next one
             if (poolCoinday == 0) {
                 continue;
             }
+
+            Pool storage pool = _seasonData.pools[tokenId];
+            pool.lastDropNativeTime = uint32(block.timestamp);
 
             address owner = IERC721(address(this)).ownerOf(tokenId);
             Portfolio storage portfolio = _seasonData.portfolios[owner][
@@ -399,15 +446,16 @@ library PortalLib {
             if (tokenId == 0) {
                 return;
             }
-            Pool storage pool = _seasonData.pools[tokenId];
 
             uint256 poolCoinday = getPoolCoinday(tokenId, _seasonData);
-
-            // if no coinday, 
+            // if no coinday,
             // continue and jump to next one
             if (poolCoinday == 0) {
                 continue;
             }
+
+            Pool storage pool = _seasonData.pools[tokenId];
+            pool.lastDropRebornTime = uint32(block.timestamp);
 
             unchecked {
                 // 80% to pool
@@ -446,14 +494,14 @@ library PortalLib {
             if (tokenId == 0) {
                 continue;
             }
-            Pool storage pool = _seasonData.pools[tokenId];
-
             uint256 poolCoinday = getPoolCoinday(tokenId, _seasonData);
-
             // if no coinday, continue
             if (poolCoinday == 0) {
                 continue;
             }
+
+            Pool storage pool = _seasonData.pools[tokenId];
+            pool.lastDropRebornTime = uint32(block.timestamp);
 
             unchecked {
                 // 80% to pool
@@ -667,25 +715,34 @@ library PortalLib {
             tokenId
         ];
 
+        PortalLib.Pool storage pool = _seasonData.pools[tokenId];
+
+        uint256 lastNativeUpdate;
+        uint256 lastRebornUpdate;
+        if (pool.lastDropNativeTime == 0) {
+            lastNativeUpdate = dropConf._nativeDropLastUpdate;
+        } else {
+            lastNativeUpdate = pool.lastDropNativeTime;
+        }
+        if (pool.lastDropRebornTime == 0) {
+            lastRebornUpdate = dropConf._rebornDropLastUpdate;
+        } else {
+            lastRebornUpdate = pool.lastDropRebornTime;
+        }
+
         unchecked {
-            if (
-                portfolio.coindayUpdateLastTime < dropConf._nativeDropLastUpdate
-            ) {
+            if (portfolio.coindayUpdateLastTime < lastNativeUpdate) {
                 userNativeCoinday =
                     portfolio.coindayCumulant +
-                    ((dropConf._nativeDropLastUpdate -
-                        portfolio.coindayUpdateLastTime) *
+                    ((lastNativeUpdate - portfolio.coindayUpdateLastTime) *
                         portfolio.accumulativeAmount) /
                     1 days;
             }
 
-            if (
-                portfolio.coindayUpdateLastTime < dropConf._rebornDropLastUpdate
-            ) {
+            if (portfolio.coindayUpdateLastTime < lastRebornUpdate) {
                 userRebornCoinday =
                     portfolio.coindayCumulant +
-                    ((dropConf._rebornDropLastUpdate -
-                        portfolio.coindayUpdateLastTime) *
+                    ((lastRebornUpdate - portfolio.coindayUpdateLastTime) *
                         portfolio.accumulativeAmount) /
                     1 days;
             }
@@ -760,6 +817,23 @@ library PortalLib {
 
         // update coinday
         _updateCoinday(portfolio, pool);
+
+        // if user have no stake before, should flatten debt
+        if (portfolio.accumulativeAmount == 0) {
+            unchecked {
+                // flatten native reward
+                portfolio.nativeRewardDebt = uint128(
+                    (portfolio.coindayCumulant * pool.accNativePerShare) /
+                        PERSHARE_BASE
+                );
+
+                // flatten reborn reward
+                portfolio.rebornRewardDebt = uint128(
+                    (portfolio.coindayCumulant * pool.accRebornPerShare) /
+                        PERSHARE_BASE
+                );
+            }
+        }
 
         unchecked {
             portfolio.accumulativeAmount += amount;

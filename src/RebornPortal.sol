@@ -494,17 +494,23 @@ contract RebornPortal is
         emit SetNewPiggyBankFee(piggyBankFee_);
     }
 
-    /**
-     * @dev anticheat, downgrade score and remove from rank
-     */
-    function antiCheat(uint256 tokenId, uint256 score) external onlyOwner {
-        LifeDetail storage detail = details[tokenId];
-        uint256 oldScore = detail.score;
+    function flattenUserDrop(uint256 tokenId, address user) external onlyOwner {
+        PortalLib._flattenRewardDebt(
+            tokenId,
+            user,
+            _dropConf,
+            _seasonData[_season]
+        );
+    }
 
-        detail.score = uint64(score);
-
-        // if it's top one hundred make this tokenId exit rank
-        _exitRank(tokenId, oldScore);
+    function fixLastDropTime(
+        uint256 tokenId,
+        uint256 lastDropNativeTime,
+        uint256 lastDropRebornTime
+    ) external onlyOwner {
+        PortalLib.Pool storage pool = _seasonData[_season].pools[tokenId];
+        pool.lastDropNativeTime = uint32(lastDropNativeTime);
+        pool.lastDropRebornTime = uint32(lastDropRebornTime);
     }
 
     /**
@@ -715,6 +721,13 @@ contract RebornPortal is
         _dropConf._rebornDropLastUpdate = uint32(block.timestamp);
         _dropConf._lockRequestDropReborn = false;
 
+        RequestStatus storage rs = _vrfRequests[requestId];
+        rs.executed = true;
+
+        if (rs.t != AirdropVrfType.DropReborn) {
+            revert CommonError.InvalidParams();
+        }
+
         uint256[] memory topTens = _getTopNTokenId(10);
         uint256[] memory topTenToHundreds = _getFirstNTokenIdByOffSet(10, 50);
 
@@ -735,9 +748,6 @@ contract RebornPortal is
         );
 
         uint256[] memory selectedTokenIds = new uint256[](10);
-
-        RequestStatus storage rs = _vrfRequests[requestId];
-        rs.executed = true;
 
         uint256 r = rs.randomWords;
         for (uint256 i = 0; i < 10; i++) {
@@ -763,6 +773,12 @@ contract RebornPortal is
         // update last drop timestamp, no back to specfic hour, for accurate coinday
         _dropConf._nativeDropLastUpdate = uint32(block.timestamp);
         _dropConf._lockRequestDropNative = false;
+
+        RequestStatus storage rs = _vrfRequests[requestId];
+        rs.executed = true;
+        if (rs.t != AirdropVrfType.DropNative) {
+            revert CommonError.InvalidParams();
+        }
 
         uint256[] memory topTens = _getTopNTokenId(10);
         uint256[] memory topTenToHundreds = _getFirstNTokenIdByOffSet(10, 50);
@@ -792,9 +808,6 @@ contract RebornPortal is
         );
 
         uint256[] memory selectedTokenIds = new uint256[](10);
-
-        RequestStatus storage rs = _vrfRequests[requestId];
-        rs.executed = true;
 
         uint256 r = rs.randomWords;
         for (uint256 i = 0; i < 10; ) {
