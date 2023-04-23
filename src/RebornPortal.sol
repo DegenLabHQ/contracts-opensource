@@ -393,6 +393,14 @@ contract RebornPortal is
     }
 
     /**
+     * @dev withdraw token from airdrop vault
+     * @param to the address which owner withdraw token to
+     */
+    function withdrawAirdropVault(address to) external whenPaused onlyOwner {
+        _airdropVault.withdrawEmergency(to);
+    }
+
+    /**
      * @dev burn $REBORN from burn pool
      * @param amount burn from burn pool
      */
