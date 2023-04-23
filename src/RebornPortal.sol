@@ -828,6 +828,15 @@ contract RebornPortal is
     }
 
     function _requestDropReborn() internal onlyDropOn {
+        if (
+            block.timestamp <
+            PortalLib._toLastHour(_dropConf._rebornDropLastUpdate) +
+                _dropConf._rebornDropInterval &&
+            !_dropConf._lockRequestDropReborn
+        ) {
+            revert CommonError.InvalidParams();
+        }
+
         if (_dropConf._lockRequestDropReborn) {
             revert DropLocked();
         }
@@ -847,6 +856,15 @@ contract RebornPortal is
     }
 
     function _requestDropNative() internal onlyDropOn {
+        if (
+            block.timestamp <
+            PortalLib._toLastHour(_dropConf._nativeDropLastUpdate) +
+                _dropConf._nativeDropInterval &&
+            !_dropConf._lockRequestDropNative
+        ) {
+            revert CommonError.InvalidParams();
+        }
+
         if (_dropConf._lockRequestDropNative) {
             revert DropLocked();
         }
