@@ -328,6 +328,16 @@ contract RebornPortal is
         PortalLib.setCharProperty(tokenIds, charParams, _characterProperties);
     }
 
+    function setNativeDropRoot(bytes32 nativeDropRoot) external onlySigner {
+        _dropNativeRoot = nativeDropRoot;
+        emit NativeDropRootSet(nativeDropRoot);
+    }
+
+    function setDegenDropRoot(bytes32 degenDropRoot) external onlySigner {
+        _dropDegenRoot = degenDropRoot;
+        emit DegenDropRootSet(degenDropRoot);
+    }
+
     /**
      * @inheritdoc IRebornPortal
      */
