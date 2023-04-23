@@ -61,6 +61,11 @@ contract RebornPortalStorage is IRebornDefination {
     // airdrop vault
     AirdropVault internal _airdropVault;
 
+    bytes32 internal _dropNativeRoot;
+    bytes32 internal _dropDegenRoot;
+
+    mapping(address => AirDropDebt) internal _airdropDebt;
+
     /// @dev gap for potential variable
-    uint256[26] private _gap;
+    uint256[23] private _gap;
 }

@@ -59,6 +59,11 @@ interface IRebornDefination {
         uint256 _jackpot;
     }
 
+    struct AirDropDebt {
+        uint128 nativeDebt;
+        uint128 degenDebt;
+    }
+
     event AirdropNative(
         uint256[] topTokenIds,
         uint256 topAmountPer,
@@ -167,6 +172,9 @@ interface IRebornDefination {
 
     event SetNewPiggyBankFee(uint256 piggyBankFee);
 
+    event ClaimNativeAirDrop(uint256 amount);
+    event ClaimDegenAirDrop(uint256 amount);
+
     /// @dev revert when msg.value is insufficient
     error InsufficientAmount();
 
@@ -188,6 +196,10 @@ interface IRebornDefination {
     error DirectionError();
 
     error DropLocked();
+
+    error InvalidProof();
+
+    error NoRemainingReward();
 
     error SeasonAlreadyStoped();
 }
@@ -298,17 +310,15 @@ interface IRebornPortal is IRebornDefination {
      */
     function setVrfConf(PortalLib.VrfConf calldata conf) external;
 
-    /**
-     * @dev user claim many pools' native token airdrop
-     * @param tokenIds pools' tokenId array to claim
-     */
-    function claimNativeDrops(uint256[] calldata tokenIds) external;
+    function claimNativeDrops(
+        uint256 totalAmount,
+        bytes32[] calldata proof
+    ) external;
 
-    /**
-     * @dev user claim many pools' reborn token airdrop
-     * @param tokenIds pools' tokenId array to claim
-     */
-    function claimRebornDrops(uint256[] calldata tokenIds) external;
+    function claimRebornDrops(
+        uint256 totalAmount,
+        bytes32[] calldata proof
+    ) external;
 
     /**
      * @dev switch to next season, call by owner

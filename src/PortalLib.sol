@@ -116,8 +116,6 @@ library PortalLib {
     event DropNative(uint256 indexed tokenId, uint256 amount);
     event DropReborn(uint256 indexed tokenId, uint256 amount);
 
-    event ClaimRebornDrop(uint256 indexed tokenId, uint256 rebornAmount);
-    event ClaimNativeDrop(uint256 indexed tokenId, uint256 nativeAmount);
     event NewDropConf(AirdropConf conf);
     event NewVrfConf(VrfConf conf);
     event SignerUpdate(address signer, bool valid);
@@ -130,112 +128,6 @@ library PortalLib {
         RewardType rewardType
     );
     event Refer(address referee, address referrer);
-
-    function _claimPoolRebornDrop(
-        uint256 tokenId,
-        RewardVault vault,
-        AirdropConf storage dropConf,
-        IRebornDefination.SeasonData storage _seasonData
-    ) external {
-        Pool storage pool = _seasonData.pools[tokenId];
-        Portfolio storage portfolio = _seasonData.portfolios[msg.sender][
-            tokenId
-        ];
-
-        uint256 pendingTributeReborn;
-        (, uint256 userRebornCoinday) = _computeUserCoindayOfAirdropTimestamp(
-            tokenId,
-            msg.sender,
-            dropConf,
-            _seasonData
-        );
-        // if no coinday or tribute, no pending tribute reward
-        // no tribute include no coinday
-        if (portfolio.accumulativeAmount == 0) {
-            pendingTributeReborn = 0;
-        } else {
-            uint256 cumulativeRebornReward = (userRebornCoinday *
-                pool.accRebornPerShare) / PERSHARE_BASE;
-            // if cumulative reward is less than debt, return
-            // if no more aidrop, coinday update would always larget than airdrop update
-            // then no valid coiday for this pool
-            if (cumulativeRebornReward < portfolio.rebornRewardDebt) {
-                return;
-            }
-            pendingTributeReborn =
-                cumulativeRebornReward -
-                portfolio.rebornRewardDebt;
-
-            // here, userRebornCoinday must larger than 0
-            portfolio.rebornRewardDebt = uint128(cumulativeRebornReward);
-        }
-
-        uint256 pendingReborn = pendingTributeReborn +
-            portfolio.pendingOwnerRebornReward;
-
-        // clean up reward as owner
-        portfolio.pendingOwnerRebornReward = 0;
-
-        /// @dev send drop
-        if (pendingReborn > 0) {
-            vault.reward(msg.sender, pendingReborn);
-            emit ClaimRebornDrop(tokenId, pendingReborn);
-        }
-    }
-
-    function _claimPoolNativeDrop(
-        uint256 tokenId,
-        AirdropConf storage dropConf,
-        IRebornDefination.SeasonData storage _seasonData
-    ) external {
-        Pool storage pool = _seasonData.pools[tokenId];
-        Portfolio storage portfolio = _seasonData.portfolios[msg.sender][
-            tokenId
-        ];
-
-        uint256 pendingTributeNative;
-        (uint256 userNativeCoinday, ) = _computeUserCoindayOfAirdropTimestamp(
-            tokenId,
-            msg.sender,
-            dropConf,
-            _seasonData
-        );
-
-        // if no coinday/tribute, no pending tribute reward
-        // no tribute include no coinday
-        if (portfolio.accumulativeAmount == 0) {
-            pendingTributeNative = 0;
-        } else {
-            uint256 cumulativeNativeReward = (userNativeCoinday *
-                pool.accNativePerShare) / PERSHARE_BASE;
-            // if cumulative reward is less than debt, return
-            // if no more aidrop, coinday update would always larget than airdrop update
-            // then no valid coiday for this pool
-            if (cumulativeNativeReward < portfolio.nativeRewardDebt) {
-                return;
-            }
-            pendingTributeNative =
-                cumulativeNativeReward -
-                portfolio.nativeRewardDebt;
-
-            // set current amount as debt
-            // here, userNativeCoinday must larger than zero
-            portfolio.nativeRewardDebt = uint128(cumulativeNativeReward);
-        }
-
-        uint256 pendingNative = pendingTributeNative +
-            portfolio.pendingOwnerNativeReward;
-
-        // clean up reward as owner
-        portfolio.pendingOwnerNativeReward = 0;
-
-        /// @dev send drop
-        if (pendingNative > 0) {
-            payable(msg.sender).transfer(pendingNative);
-
-            emit ClaimNativeDrop(tokenId, pendingNative);
-        }
-    }
 
     function _flattenRewardDebt(
         uint256 tokenId,

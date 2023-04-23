@@ -23,6 +23,7 @@ import {FastArray} from "src/lib/FastArray.sol";
 import {IPiggyBank} from "./interfaces/IPiggyBank.sol";
 import {PiggyBank} from "src/PiggyBank.sol";
 import {AirdropVault} from "src/AirdropVault.sol";
+import {MerkleProof} from "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
 
 contract RebornPortal is
     IRebornPortal,
@@ -238,30 +239,37 @@ contract RebornPortal is
      */
     function claimNativeDrops(
         uint256[] calldata tokenIds
-    ) external override whenNotPaused {
-        for (uint256 i = 0; i < tokenIds.length; i++) {
-            PortalLib._claimPoolNativeDrop(
-                tokenIds[i],
-                _dropConf,
-                _seasonData[_season]
-            );
-        }
-    }
+    ) external override whenNotPaused {}
 
     /**
      * @inheritdoc IRebornPortal
      */
     function claimRebornDrops(
-        uint256[] calldata tokenIds
+        uint256 totalAmount,
+        bytes32[] calldata merkleProof
     ) external override whenNotPaused {
-        for (uint256 i = 0; i < tokenIds.length; i++) {
-            PortalLib._claimPoolRebornDrop(
-                tokenIds[i],
-                vault,
-                _dropConf,
-                _seasonData[_season]
-            );
+        bytes32 leaf = keccak256(
+            bytes.concat(keccak256(abi.encode(msg.sender, totalAmount)))
+        );
+
+        bool valid = MerkleProof.verify(merkleProof, _dropDegenRoot, leaf);
+
+        if (!valid) {
+            revert InvalidProof();
         }
+
+        uint256 remainingDegenAmount = totalAmount -
+            _airdropDebt[msg.sender].degenDebt;
+
+        if (remainingDegenAmount == 0) {
+            revert NoRemainingReward();
+        }
+
+        _airdropDebt[msg.sender].degenDebt = uint128(totalAmount);
+
+        _airdropVault.rewardDegen(msg.sender, remainingDegenAmount);
+
+        emit ClaimDegenAirDrop(remainingDegenAmount);
     }
 
     /**
