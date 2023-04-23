@@ -237,7 +237,7 @@ contract RebornPortal is
      */
     function claimNativeDrops(
         uint256[] calldata tokenIds
-    ) external override whenNotStoped {
+    ) external override whenNotPaused {
         for (uint256 i = 0; i < tokenIds.length; i++) {
             PortalLib._claimPoolNativeDrop(
                 tokenIds[i],
@@ -252,7 +252,7 @@ contract RebornPortal is
      */
     function claimRebornDrops(
         uint256[] calldata tokenIds
-    ) external override whenNotStoped {
+    ) external override whenNotPaused {
         for (uint256 i = 0; i < tokenIds.length; i++) {
             PortalLib._claimPoolRebornDrop(
                 tokenIds[i],
