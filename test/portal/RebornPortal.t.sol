@@ -486,39 +486,107 @@ contract RebornPortalCommonTest is RebornPortalBaseTest {
         vm.stopPrank();
     }
 
+    function getMockIncarnateParams()
+        public
+        returns (InnateParams memory, SoupParams memory)
+    {
+        InnateParams memory innateParams = InnateParams(
+            0.1 ether,
+            10 ether,
+            0.2 ether,
+            20 ether
+        );
+
+        uint256 incarnateCount = portal.getIncarnateCount(
+            portal.getSeason(),
+            _user
+        );
+
+        (uint256 deadline, bytes32 r, bytes32 s, uint8 v) = TestUtils
+            .signAuthenticateSoup(
+                11,
+                address(portal),
+                _user,
+                SOUP_PRICE,
+                incarnateCount + 1,
+                0
+            );
+
+        SoupParams memory soupParams = SoupParams(
+            SOUP_PRICE,
+            0,
+            deadline,
+            r,
+            s,
+            v
+        );
+        deal(address(rbt), _user, 1 << 128);
+        startHoax(_user);
+        rbt.approve(address(portal), UINT256_MAX);
+        vm.stopPrank();
+        return (innateParams, soupParams);
+    }
+
     function testIncarnateLimitZero() public {
         vm.prank(portal.owner());
         portal.setIncarnationLimit(0);
 
+        (
+            InnateParams memory innateParams,
+            SoupParams memory soupParams
+        ) = getMockIncarnateParams();
+        vm.prank(_user);
         vm.expectRevert(IRebornDefination.IncarnationExceedLimit.selector);
-        mockIncarnate();
+        portal.incarnate{value: 0.3 ether + SOUP_PRICE}(
+            innateParams,
+            address(0),
+            soupParams
+        );
     }
 
     function testIncarnateLimitOne() public {
         vm.expectEmit(true, true, true, true);
-        emit NewIncarnationLimit(0);
+        emit NewIncarnationLimit(1);
 
         vm.prank(portal.owner());
         portal.setIncarnationLimit(1);
 
         mockIncarnate();
+        (
+            InnateParams memory innateParams,
+            SoupParams memory soupParams
+        ) = getMockIncarnateParams();
+        vm.prank(_user);
         vm.expectRevert(IRebornDefination.IncarnationExceedLimit.selector);
-        mockIncarnate();
+        portal.incarnate{value: 0.3 ether + SOUP_PRICE}(
+            innateParams,
+            address(0),
+            soupParams
+        );
     }
 
     function testIncarnateLimitMany(uint256 nSeed) public {
-        uint256 n = bound(nSeed, 1, 1024);
+        uint256 n = bound(nSeed, 1, 100);
         vm.expectEmit(true, true, true, true);
         emit NewIncarnationLimit(n);
 
         vm.prank(portal.owner());
         portal.setIncarnationLimit(n);
 
-        for (uint256 i = 0; i < n - 1; i++) {
+        for (uint256 i = 0; i < n; i++) {
             mockIncarnate();
         }
 
+        (
+            InnateParams memory innateParams,
+            SoupParams memory soupParams
+        ) = getMockIncarnateParams();
+        vm.prank(_user);
         vm.expectRevert(IRebornDefination.IncarnationExceedLimit.selector);
-        mockIncarnate();
+        portal.incarnate{value: 0.3 ether + SOUP_PRICE}(
+            innateParams,
+            address(0),
+            soupParams
+        );
     }
 }

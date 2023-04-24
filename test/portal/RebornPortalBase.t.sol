@@ -55,7 +55,7 @@ contract RebornPortalBaseTest is Test, IRebornDefination, EventDefination {
         // deploy piggy bank
         piggyBank = deployPiggyBank();
         vm.startPrank(owner);
-        // piggyBank.setCoundDownTimeLong(1 days);
+        piggyBank.setCoundDownTimeLong(7 * 1 days);
         vm.stopPrank();
 
         deal(owner, UINT256_MAX);

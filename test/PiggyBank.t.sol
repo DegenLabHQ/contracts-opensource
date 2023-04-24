@@ -35,6 +35,7 @@ contract PiggyBankTest is Test, IPiggyBankDefination {
         portal.initializeSeason{value: 0.1 ether}(1 ether);
 
         piggyBank.setMultiple(200);
+        piggyBank.setCoundDownTimeLong(24 * 60 * 60);
 
         vm.stopPrank();
     }
