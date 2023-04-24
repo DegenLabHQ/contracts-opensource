@@ -568,17 +568,6 @@ contract RebornPortal is
     }
 
     /**
-     * @dev read pending reward from specific pool
-     * @param tokenIds tokenId array of the pools
-     */
-    function pendingDrop(
-        uint256[] memory tokenIds
-    ) external view returns (uint256 pNative, uint256 pReborn) {
-        return
-            PortalLib._pendingDrop(_seasonData[_season], tokenIds, _dropConf);
-    }
-
-    /**
      * @dev checkUpkeep for chainlink automation
      */
     function checkUpkeep(
