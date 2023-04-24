@@ -151,7 +151,7 @@ contract AirdropTest is RebornPortalBaseTest {
 
     function testUpKeepProgressSmoothly() public {
         _mockIncarnate();
-        mockEngravesAndInfuses(120);
+        mockEngravesAndInfuses(1);
         setDropConf();
         vm.warp(block.timestamp + 1 days - 1 hours);
         mockAirdrop();
