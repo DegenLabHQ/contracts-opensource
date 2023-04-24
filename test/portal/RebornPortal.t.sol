@@ -527,42 +527,31 @@ contract RebornPortalCommonTest is RebornPortalBaseTest {
         return (innateParams, soupParams);
     }
 
+    function testSetIncarnateLimitSuccess(uint256 count) public {
+        vm.expectEmit(true, true, true, true);
+        emit NewIncarnationLimit(count);
+        vm.prank(portal.owner());
+        portal.setIncarnationLimit(count);
+    }
+
     function testIncarnateLimitZero() public {
         vm.prank(portal.owner());
         portal.setIncarnationLimit(0);
 
-        (
-            InnateParams memory innateParams,
-            SoupParams memory soupParams
-        ) = getMockIncarnateParams();
-        vm.prank(_user);
         vm.expectRevert(IRebornDefination.IncarnationExceedLimit.selector);
-        portal.incarnate{value: 0.3 ether + SOUP_PRICE}(
-            innateParams,
-            address(0),
-            soupParams
-        );
+        mockIncarnate();
     }
 
     function testIncarnateLimitOne() public {
         vm.expectEmit(true, true, true, true);
-        emit NewIncarnationLimit(1);
+        emit NewIncarnationLimit(0);
 
         vm.prank(portal.owner());
         portal.setIncarnationLimit(1);
 
         mockIncarnate();
-        (
-            InnateParams memory innateParams,
-            SoupParams memory soupParams
-        ) = getMockIncarnateParams();
-        vm.prank(_user);
         vm.expectRevert(IRebornDefination.IncarnationExceedLimit.selector);
-        portal.incarnate{value: 0.3 ether + SOUP_PRICE}(
-            innateParams,
-            address(0),
-            soupParams
-        );
+        mockIncarnate();
     }
 
     function testIncarnateLimitMany(uint256 nSeed) public {
