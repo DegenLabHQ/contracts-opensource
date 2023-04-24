@@ -129,38 +129,6 @@ library PortalLib {
     );
     event Refer(address referee, address referrer);
 
-    function _flattenRewardDebt(
-        uint256 tokenId,
-        address user,
-        AirdropConf storage dropConf,
-        IRebornDefination.SeasonData storage _seasonData
-    ) public {
-        Pool storage pool = _seasonData.pools[tokenId];
-        Portfolio storage portfolio = _seasonData.portfolios[user][tokenId];
-
-        (
-            uint256 userNativeCoinday,
-            uint256 userRebornCoinday
-        ) = _computeUserCoindayOfAirdropTimestamp(
-                tokenId,
-                msg.sender,
-                dropConf,
-                _seasonData
-            );
-
-        unchecked {
-            // flatten native reward
-            portfolio.nativeRewardDebt = uint128(
-                (userNativeCoinday * pool.accNativePerShare) / PERSHARE_BASE
-            );
-
-            // flatten reborn reward
-            portfolio.rebornRewardDebt = uint128(
-                (userRebornCoinday * pool.accRebornPerShare) / PERSHARE_BASE
-            );
-        }
-    }
-
     function _toLastHour(uint256 timestamp) internal pure returns (uint256) {
         return timestamp - (timestamp % (1 hours));
     }
@@ -333,54 +301,6 @@ library PortalLib {
             ref2Reward,
             RewardType.RebornToken
         );
-    }
-
-    function _computeUserCoindayOfAirdropTimestamp(
-        uint256 tokenId,
-        address account,
-        AirdropConf storage dropConf,
-        IRebornDefination.SeasonData storage _seasonData
-    )
-        internal
-        view
-        returns (uint256 userNativeCoinday, uint256 userRebornCoinday)
-    {
-        PortalLib.Portfolio storage portfolio = _seasonData.portfolios[account][
-            tokenId
-        ];
-
-        PortalLib.Pool storage pool = _seasonData.pools[tokenId];
-
-        uint256 lastNativeUpdate;
-        uint256 lastRebornUpdate;
-        if (pool.lastDropNativeTime == 0) {
-            lastNativeUpdate = dropConf._nativeDropLastUpdate;
-        } else {
-            lastNativeUpdate = pool.lastDropNativeTime;
-        }
-        if (pool.lastDropRebornTime == 0) {
-            lastRebornUpdate = dropConf._rebornDropLastUpdate;
-        } else {
-            lastRebornUpdate = pool.lastDropRebornTime;
-        }
-
-        unchecked {
-            if (portfolio.coindayUpdateLastTime < lastNativeUpdate) {
-                userNativeCoinday =
-                    portfolio.coindayCumulant +
-                    ((lastNativeUpdate - portfolio.coindayUpdateLastTime) *
-                        portfolio.accumulativeAmount) /
-                    1 days;
-            }
-
-            if (portfolio.coindayUpdateLastTime < lastRebornUpdate) {
-                userRebornCoinday =
-                    portfolio.coindayCumulant +
-                    ((lastRebornUpdate - portfolio.coindayUpdateLastTime) *
-                        portfolio.accumulativeAmount) /
-                    1 days;
-            }
-        }
     }
 
     function getPoolCoinday(

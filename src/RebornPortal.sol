@@ -353,6 +353,15 @@ contract RebornPortal is
         uint256 timestamp
     ) external onlySigner {
         _dropNativeRoot = nativeDropRoot;
+
+        if (_dropConf._lockRequestDropNative == false) {
+            revert CannotSetRootWithoutAirdropLock();
+        }
+        _dropConf._lockRequestDropNative = false;
+
+        // update last drop timestamp, no back to specfic hour, for frontend show
+        _dropConf._nativeDropLastUpdate = uint32(block.timestamp);
+
         emit NativeDropRootSet(nativeDropRoot, timestamp);
     }
 
@@ -361,6 +370,15 @@ contract RebornPortal is
         uint256 timestamp
     ) external onlySigner {
         _dropDegenRoot = degenDropRoot;
+
+        if (_dropConf._lockRequestDropReborn == false) {
+            revert CannotSetRootWithoutAirdropLock();
+        }
+
+        _dropConf._lockRequestDropReborn = false;
+
+        // update last drop timestamp, no back to specfic hour, for frontend show
+        _dropConf._rebornDropLastUpdate = uint32(block.timestamp);
         emit DegenDropRootSet(degenDropRoot, timestamp);
     }
 
@@ -749,10 +767,6 @@ contract RebornPortal is
      * @dev raffle 10 from top 11 - top 50
      */
     function _fulfillDropReborn(uint256 requestId) internal onlyDropOn {
-        // update last drop timestamp, no back to specfic hour, for accurate coinday
-        _dropConf._rebornDropLastUpdate = uint32(block.timestamp);
-        _dropConf._lockRequestDropReborn = false;
-
         RequestStatus storage rs = _vrfRequests[requestId];
         rs.executed = true;
 
@@ -805,10 +819,6 @@ contract RebornPortal is
      * @dev raffle 10 from top 11 - top 50
      */
     function _fulfillDropNative(uint256 requestId) internal onlyDropOn {
-        // update last drop timestamp, no back to specfic hour, for accurate coinday
-        _dropConf._nativeDropLastUpdate = uint32(block.timestamp);
-        _dropConf._lockRequestDropNative = false;
-
         RequestStatus storage rs = _vrfRequests[requestId];
         rs.executed = true;
         if (rs.t != AirdropVrfType.DropNative) {

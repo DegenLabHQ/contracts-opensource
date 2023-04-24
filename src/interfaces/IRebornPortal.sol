@@ -205,6 +205,8 @@ interface IRebornDefination {
     error NoRemainingReward();
 
     error SeasonAlreadyStoped();
+
+    error CannotSetRootWithoutAirdropLock();
 }
 
 interface IRebornPortal is IRebornDefination {
