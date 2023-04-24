@@ -169,7 +169,8 @@ library Renderer {
                     RenderConstant.P5(),
                     _compressUtf8(creator),
                     RenderConstant.P6(),
-                    _tranformWeiToDecimal2(nativeCost),
+                    // Complete accuracy
+                    _tranformWeiToDecimal2(nativeCost * 10 ** 12),
                     RenderConstant.P7(),
                     _transformUint256(degenCost / 1 ether),
                     RenderConstant.P8(),
