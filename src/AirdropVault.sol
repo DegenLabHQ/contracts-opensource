@@ -59,6 +59,6 @@ contract AirdropVault is IAirdropVault, Ownable, ReentrancyGuard {
 
         payable(to).transfer(nativeBalance);
 
-        emit WithdrawEmergency(rebornToken, degenBalance, nativeBalance);
+        emit WithdrawEmergency(to, rebornToken, degenBalance, nativeBalance);
     }
 }

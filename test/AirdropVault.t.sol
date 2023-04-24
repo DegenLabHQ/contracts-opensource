@@ -9,9 +9,11 @@ import "forge-std/console2.sol";
 
 import "src/AirdropVault.sol";
 
+import "src/interfaces/IAirdropVault.sol";
+
 // import "test/TestUtils.sol";
 
-contract AirdropVaultTest is Test {
+contract AirdropVaultTest is Test, IAirdropVaultDef {
     event Transfer(address indexed from, address indexed to, uint256 value);
 
     address internal _owner = vm.addr(9);
@@ -55,10 +57,25 @@ contract AirdropVaultTest is Test {
         assertEq(_rbt.balanceOf(user), amount);
     }
 
-    function testShouldWithdrawEmergencySuccess(uint256 nativeAmount, uint256 degenAmount) public {
+    function testShouldWithdrawEmergencySuccess(
+        uint256 nativeAmount,
+        uint256 degenAmount,
+        address user
+    ) public {
+        vm.assume(user.code.length == 0);
         deal(address(_rbt), address(_vault), degenAmount);
         deal(address(_vault), nativeAmount);
 
-        // vm
+        deal(address(_rbt), user, 0);
+        deal(user, 0);
+
+        vm.expectEmit(true, true, true, true);
+        emit WithdrawEmergency(user, address(_rbt), degenAmount, nativeAmount);
+
+        vm.prank(_owner);
+        _vault.withdrawEmergency(user);
+
+        assertEq(user.balance, nativeAmount);
+        assertEq(_rbt.balanceOf(user), degenAmount);
     }
 }
