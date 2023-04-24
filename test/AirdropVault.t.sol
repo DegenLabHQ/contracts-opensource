@@ -59,6 +59,6 @@ contract AirdropVaultTest is Test {
         deal(address(_rbt), address(_vault), degenAmount);
         deal(address(_vault), nativeAmount);
 
-        vm
+        // vm
     }
 }
