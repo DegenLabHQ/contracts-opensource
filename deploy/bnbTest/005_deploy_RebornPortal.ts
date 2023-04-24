@@ -43,6 +43,13 @@ const func: DeployFunction = async function ({
     deterministicDeployment: formatBytes32String("DegenReborn_Test"),
   });
 
+  const portal = await get("RebornPortal");
+
+  if (portal.numDeployments !== 1) {
+    console.log(`upgrading RebornPortal at ${portal.address}, do not execute`);
+    return;
+  }
+
   await execute(
     "RebornPortal",
     { from: owner, log: true },

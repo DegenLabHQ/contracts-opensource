@@ -256,9 +256,9 @@ contract RebornPortal is
 
         _airdropDebt[msg.sender].nativeDebt = uint128(totalAmount);
 
-        airdropVault.rewardDegen(msg.sender, remainingNativeAmount);
+        airdropVault.rewardNative(msg.sender, remainingNativeAmount);
 
-        emit ClaimDegenAirDrop(remainingNativeAmount);
+        emit ClaimNativeAirDrop(remainingNativeAmount);
     }
 
     /**
