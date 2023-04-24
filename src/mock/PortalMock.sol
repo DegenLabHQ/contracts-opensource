@@ -27,4 +27,20 @@ contract PortalMock is RebornPortal {
     function mockStop(uint256 season) external {
         piggyBank.stop(season);
     }
+
+    function setNativeDropLock(bool lock) public {
+        _dropConf._lockRequestDropNative = lock;
+    }
+
+    function setDegenDropLock(bool lock) public {
+        _dropConf._lockRequestDropReborn = lock;
+    }
+
+    function getNativeDropLock() public view returns (bool) {
+        return _dropConf._lockRequestDropNative;
+    }
+
+    function getDegenDropLock() public view returns (bool) {
+        return _dropConf._lockRequestDropReborn;
+    }
 }

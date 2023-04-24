@@ -22,8 +22,8 @@ contract AirdropTest is RebornPortalBaseTest {
                 0,
                 20,
                 10,
-                800,
-                400,
+                80_000_000,
+                40_000_000,
                 0
             )
         );
@@ -85,9 +85,39 @@ contract AirdropTest is RebornPortalBaseTest {
         vm.stopPrank();
     }
 
+    function mockSetDegenDropRoot(bytes32 root, uint256 timestamp) public {
+        vm.prank(_signer);
+        portal.setDegenDropRoot(root, timestamp);
+    }
+
+    function mockSetNativeDropRoot(bytes32 root, uint256 timestamp) public {
+        vm.prank(_signer);
+        portal.setNativeDropRoot(root, timestamp);
+    }
+
+    function testEmitDegenDropRoot(bytes32 root, uint256 timestamp) public {
+        vm.expectEmit(true, true, true, true);
+        emit DegenDropRootSet(root, timestamp);
+
+        portal.setDegenDropLock(true);
+        mockSetDegenDropRoot(root, timestamp);
+    }
+
+    function testEmitNativeDropRoot(bytes32 root, uint256 timestamp) public {
+        portal.setNativeDropLock(true);
+
+        vm.expectEmit(true, true, true, true);
+        emit NativeDropRootSet(root, timestamp);
+
+        mockSetNativeDropRoot(root, timestamp);
+    }
+
     function mockAirdrop() public {
         bool up;
         bytes memory perfromData;
+
+        // deal vault with infinite balance
+        deal(address(rbt), address(portal.vault()), UINT256_MAX);
 
         // request reborn token
         (up, perfromData) = portal.checkUpkeep(new bytes(0));
