@@ -494,25 +494,6 @@ contract RebornPortal is
         emit SetNewPiggyBankFee(piggyBankFee_);
     }
 
-    function flattenUserDrop(uint256 tokenId, address user) external onlyOwner {
-        PortalLib._flattenRewardDebt(
-            tokenId,
-            user,
-            _dropConf,
-            _seasonData[_season]
-        );
-    }
-
-    function fixLastDropTime(
-        uint256 tokenId,
-        uint256 lastDropNativeTime,
-        uint256 lastDropRebornTime
-    ) external onlyOwner {
-        PortalLib.Pool storage pool = _seasonData[_season].pools[tokenId];
-        pool.lastDropNativeTime = uint32(lastDropNativeTime);
-        pool.lastDropRebornTime = uint32(lastDropRebornTime);
-    }
-
     /**
      * @dev withdraw native token for reward distribution
      * @dev amount how much to withdraw
@@ -817,6 +798,15 @@ contract RebornPortal is
     }
 
     function _requestDropReborn() internal onlyDropOn {
+        if (
+            block.timestamp <
+            PortalLib._toLastHour(_dropConf._rebornDropLastUpdate) +
+                _dropConf._rebornDropInterval &&
+            !_dropConf._lockRequestDropReborn
+        ) {
+            revert CommonError.InvalidParams();
+        }
+
         if (_dropConf._lockRequestDropReborn) {
             revert DropLocked();
         }
@@ -836,6 +826,15 @@ contract RebornPortal is
     }
 
     function _requestDropNative() internal onlyDropOn {
+        if (
+            block.timestamp <
+            PortalLib._toLastHour(_dropConf._nativeDropLastUpdate) +
+                _dropConf._nativeDropInterval &&
+            !_dropConf._lockRequestDropNative
+        ) {
+            revert CommonError.InvalidParams();
+        }
+
         if (_dropConf._lockRequestDropNative) {
             revert DropLocked();
         }

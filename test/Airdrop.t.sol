@@ -137,6 +137,16 @@ contract AirdropTest is RebornPortalBaseTest {
         // after all perform, upKeep should be false
         (up, perfromData) = portal.checkUpkeep(new bytes(0));
         assertEq(up, false);
+
+        // request again would not success
+        vm.expectRevert(CommonError.InvalidParams.selector);
+        // request reborn token
+        perfromData = abi.encode(1, 0);
+        portal.performUpkeep(perfromData);
+
+        vm.expectRevert(CommonError.InvalidParams.selector);
+        perfromData = abi.encode(2, 0);
+        portal.performUpkeep(perfromData);
     }
 
     function testUpKeepProgressSmoothly() public {
