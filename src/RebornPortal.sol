@@ -248,7 +248,7 @@ contract RebornPortal is
         }
 
         uint256 remainingNativeAmount = totalAmount -
-            _airdropDebt[msg.sender].degenDebt;
+            _airdropDebt[msg.sender].nativeDebt;
 
         if (remainingNativeAmount == 0) {
             revert NoRemainingReward();
