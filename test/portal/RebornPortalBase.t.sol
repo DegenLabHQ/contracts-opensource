@@ -14,6 +14,7 @@ import {ECDSAUpgradeable} from "@oz/contracts-upgradeable/utils/cryptography/ECD
 import {IERC20Upgradeable} from "@oz/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
 import {BurnPool} from "src/BurnPool.sol";
 import {VRFCoordinatorV2Mock} from "src/mock/VRFCoordinatorV2Mock.sol";
+import "src/AirdropVault.sol";
 
 import "src/mock/PiggyBankMock.sol";
 
@@ -23,6 +24,7 @@ contract RebornPortalBaseTest is Test, IRebornDefination, EventDefination {
     PiggyBankMock piggyBank;
     RBT rbt;
     BurnPool burnPool;
+    AirdropVault _airdropVault;
     address owner = vm.addr(2);
     address _user = vm.addr(10);
     address _signer = vm.addr(11);
@@ -74,8 +76,15 @@ contract RebornPortalBaseTest is Test, IRebornDefination, EventDefination {
 
         // deploy vault
         RewardVault vault = new RewardVault(address(portal), address(rbt));
+        // set vault with infinite degen
+        deal(address(rbt), address(vault), UINT256_MAX);
         vm.prank(owner);
         portal.setVault(vault);
+
+        // deploy airdrop vault
+        _airdropVault = new AirdropVault(address(portal), address(rbt));
+        vm.prank(owner);
+        portal.setAirdropVault(_airdropVault);
 
         // add portal as minter
         vm.prank(owner);

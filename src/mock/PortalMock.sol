@@ -15,12 +15,6 @@ contract PortalMock is RebornPortal {
         return _seasonData[_season]._tributeRank.get(0, 100);
     }
 
-    function claimDrops(uint256[] calldata tokenIds) external whenNotPaused {
-        for (uint256 i = 0; i < tokenIds.length; i++) {
-            _claimPoolDrop(tokenIds[i]);
-        }
-    }
-
     function mockIncarnet(
         uint256 season,
         address account,
@@ -32,5 +26,21 @@ contract PortalMock is RebornPortal {
 
     function mockStop(uint256 season) external {
         piggyBank.stop(season);
+    }
+
+    function setNativeDropLock(bool lock) public {
+        _dropConf._lockRequestDropNative = lock;
+    }
+
+    function setDegenDropLock(bool lock) public {
+        _dropConf._lockRequestDropReborn = lock;
+    }
+
+    function getNativeDropLock() public view returns (bool) {
+        return _dropConf._lockRequestDropNative;
+    }
+
+    function getDegenDropLock() public view returns (bool) {
+        return _dropConf._lockRequestDropReborn;
     }
 }

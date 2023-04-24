@@ -22,6 +22,8 @@ import {PortalLib} from "src/PortalLib.sol";
 import {FastArray} from "src/lib/FastArray.sol";
 import {IPiggyBank} from "./interfaces/IPiggyBank.sol";
 import {PiggyBank} from "src/PiggyBank.sol";
+import {AirdropVault} from "src/AirdropVault.sol";
+import {MerkleProof} from "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
 
 contract RebornPortal is
     IRebornPortal,
@@ -195,7 +197,6 @@ contract RebornPortal is
         uint256 amount,
         TributeDirection tributeDirection
     ) external override whenNotStoped {
-        _claimPoolDrop(tokenId);
         _infuse(tokenId, amount, tributeDirection);
     }
 
@@ -212,7 +213,6 @@ contract RebornPortal is
         bytes32 s,
         uint8 v
     ) external override whenNotStoped {
-        _claimPoolDrop(tokenId);
         _permit(permitAmount, deadline, r, s, v);
         _infuse(tokenId, amount, tributeDirection);
     }
@@ -226,8 +226,6 @@ contract RebornPortal is
         uint256 amount,
         TributeDirection tributeDirection
     ) external override whenNotStoped {
-        _claimPoolDrop(fromTokenId);
-        _claimPoolDrop(toTokenId);
         _decreaseFromPool(fromTokenId, amount);
         _increaseToPool(toTokenId, amount, tributeDirection);
     }
@@ -236,31 +234,62 @@ contract RebornPortal is
      * @inheritdoc IRebornPortal
      */
     function claimNativeDrops(
-        uint256[] calldata tokenIds
+        uint256 totalAmount,
+        bytes32[] calldata merkleProof
     ) external override whenNotPaused {
-        for (uint256 i = 0; i < tokenIds.length; i++) {
-            PortalLib._claimPoolNativeDrop(
-                tokenIds[i],
-                _dropConf,
-                _seasonData[_season]
-            );
+        bytes32 leaf = keccak256(
+            bytes.concat(keccak256(abi.encode(msg.sender, totalAmount)))
+        );
+
+        bool valid = MerkleProof.verify(merkleProof, _dropNativeRoot, leaf);
+
+        if (!valid) {
+            revert InvalidProof();
         }
+
+        uint256 remainingNativeAmount = totalAmount -
+            _airdropDebt[msg.sender].nativeDebt;
+
+        if (remainingNativeAmount == 0) {
+            revert NoRemainingReward();
+        }
+
+        _airdropDebt[msg.sender].nativeDebt = uint128(totalAmount);
+
+        airdropVault.rewardNative(msg.sender, remainingNativeAmount);
+
+        emit ClaimNativeAirDrop(remainingNativeAmount);
     }
 
     /**
      * @inheritdoc IRebornPortal
      */
-    function claimRebornDrops(
-        uint256[] calldata tokenIds
+    function claimDegenDrops(
+        uint256 totalAmount,
+        bytes32[] calldata merkleProof
     ) external override whenNotPaused {
-        for (uint256 i = 0; i < tokenIds.length; i++) {
-            PortalLib._claimPoolRebornDrop(
-                tokenIds[i],
-                vault,
-                _dropConf,
-                _seasonData[_season]
-            );
+        bytes32 leaf = keccak256(
+            bytes.concat(keccak256(abi.encode(msg.sender, totalAmount)))
+        );
+
+        bool valid = MerkleProof.verify(merkleProof, _dropDegenRoot, leaf);
+
+        if (!valid) {
+            revert InvalidProof();
         }
+
+        uint256 remainingDegenAmount = totalAmount -
+            _airdropDebt[msg.sender].degenDebt;
+
+        if (remainingDegenAmount == 0) {
+            revert NoRemainingReward();
+        }
+
+        _airdropDebt[msg.sender].degenDebt = uint128(totalAmount);
+
+        airdropVault.rewardDegen(msg.sender, remainingDegenAmount);
+
+        emit ClaimDegenAirDrop(remainingDegenAmount);
     }
 
     /**
@@ -319,6 +348,40 @@ contract RebornPortal is
         PortalLib.setCharProperty(tokenIds, charParams, _characterProperties);
     }
 
+    function setNativeDropRoot(
+        bytes32 nativeDropRoot,
+        uint256 timestamp
+    ) external onlySigner {
+        _dropNativeRoot = nativeDropRoot;
+
+        if (_dropConf._lockRequestDropNative == false) {
+            revert CannotSetRootWithoutAirdropLock();
+        }
+        _dropConf._lockRequestDropNative = false;
+
+        // update last drop timestamp, no back to specfic hour, for frontend show
+        _dropConf._nativeDropLastUpdate = uint32(block.timestamp);
+
+        emit NativeDropRootSet(nativeDropRoot, timestamp);
+    }
+
+    function setDegenDropRoot(
+        bytes32 degenDropRoot,
+        uint256 timestamp
+    ) external onlySigner {
+        _dropDegenRoot = degenDropRoot;
+
+        if (_dropConf._lockRequestDropReborn == false) {
+            revert CannotSetRootWithoutAirdropLock();
+        }
+
+        _dropConf._lockRequestDropReborn = false;
+
+        // update last drop timestamp, no back to specfic hour, for frontend show
+        _dropConf._rebornDropLastUpdate = uint32(block.timestamp);
+        emit DegenDropRootSet(degenDropRoot, timestamp);
+    }
+
     /**
      * @inheritdoc IRebornPortal
      */
@@ -349,6 +412,15 @@ contract RebornPortal is
     }
 
     /**
+     * @dev set airdrop vault
+     * @param vault_ new airdrop vault address
+     */
+    function setAirdropVault(AirdropVault vault_) external onlyOwner {
+        airdropVault = vault_;
+        emit AirdropVaultSet(address(vault_));
+    }
+
+    /**
      * @dev set incarnation limit
      */
     function setIncarnationLimit(uint256 limit) external onlyOwner {
@@ -362,6 +434,14 @@ contract RebornPortal is
      */
     function withdrawVault(address to) external whenPaused onlyOwner {
         vault.withdrawEmergency(to);
+    }
+
+    /**
+     * @dev withdraw token from airdrop vault
+     * @param to the address which owner withdraw token to
+     */
+    function withdrawAirdropVault(address to) external whenPaused onlyOwner {
+        airdropVault.withdrawEmergency(to);
     }
 
     /**
@@ -503,17 +583,6 @@ contract RebornPortal is
         uint256 amount
     ) external whenPaused onlyOwner {
         payable(to).transfer(amount);
-    }
-
-    /**
-     * @dev read pending reward from specific pool
-     * @param tokenIds tokenId array of the pools
-     */
-    function pendingDrop(
-        uint256[] memory tokenIds
-    ) external view returns (uint256 pNative, uint256 pReborn) {
-        return
-            PortalLib._pendingDrop(_seasonData[_season], tokenIds, _dropConf);
     }
 
     /**
@@ -698,10 +767,6 @@ contract RebornPortal is
      * @dev raffle 10 from top 11 - top 50
      */
     function _fulfillDropReborn(uint256 requestId) internal onlyDropOn {
-        // update last drop timestamp, no back to specfic hour, for accurate coinday
-        _dropConf._rebornDropLastUpdate = uint32(block.timestamp);
-        _dropConf._lockRequestDropReborn = false;
-
         RequestStatus storage rs = _vrfRequests[requestId];
         rs.executed = true;
 
@@ -714,79 +779,16 @@ contract RebornPortal is
 
         uint256 dropTopAmount;
         uint256 dropRaffleAmount;
+        uint256 totalAmount;
 
         unchecked {
             dropTopAmount = uint256(_dropConf._rebornTopEthAmount) * 1 ether;
             dropRaffleAmount =
                 uint256(_dropConf._rebornRaffleEthAmount) *
                 1 ether;
+
+            totalAmount = (dropTopAmount + dropRaffleAmount) * 10;
         }
-
-        PortalLib._directDropRebornToTopTokenIds(
-            topTens,
-            dropTopAmount,
-            _seasonData[_season]
-        );
-
-        uint256[] memory selectedTokenIds = new uint256[](10);
-
-        uint256 r = rs.randomWords;
-        for (uint256 i = 0; i < 10; i++) {
-            selectedTokenIds[i] = topTenToHundreds[r % 40];
-            r = uint256(keccak256(abi.encode(r)));
-        }
-
-        PortalLib._directDropRebornToRaffleTokenIds(
-            selectedTokenIds,
-            dropRaffleAmount,
-            _seasonData[_season]
-        );
-
-        _pendingDrops.remove(requestId);
-    }
-
-    /**
-     * @dev airdrop to top 100 tvl pool
-     * @dev directly drop to top 10
-     * @dev raffle 10 from top 11 - top 50
-     */
-    function _fulfillDropNative(uint256 requestId) internal onlyDropOn {
-        // update last drop timestamp, no back to specfic hour, for accurate coinday
-        _dropConf._nativeDropLastUpdate = uint32(block.timestamp);
-        _dropConf._lockRequestDropNative = false;
-
-        RequestStatus storage rs = _vrfRequests[requestId];
-        rs.executed = true;
-        if (rs.t != AirdropVrfType.DropNative) {
-            revert CommonError.InvalidParams();
-        }
-
-        uint256[] memory topTens = _getTopNTokenId(10);
-        uint256[] memory topTenToHundreds = _getFirstNTokenIdByOffSet(10, 50);
-
-        uint256 nativeTopAmount;
-        uint256 nativeRaffleAmount;
-
-        unchecked {
-            nativeTopAmount =
-                (uint256(_dropConf._nativeTopDropRatio) *
-                    _seasonData[_season]._jackpot) /
-                PortalLib.PERCENTAGE_BASE;
-            nativeRaffleAmount =
-                (uint256(_dropConf._nativeRaffleDropRatio) *
-                    _seasonData[_season]._jackpot) /
-                PortalLib.PERCENTAGE_BASE;
-            // remove the amount from jackpot
-            uint256 totalDropAmount = (nativeTopAmount + nativeRaffleAmount) *
-                10;
-            _seasonData[_season]._jackpot -= totalDropAmount;
-        }
-
-        PortalLib._directDropNativeToTopTokenIds(
-            topTens,
-            nativeTopAmount,
-            _seasonData[_season]
-        );
 
         uint256[] memory selectedTokenIds = new uint256[](10);
 
@@ -799,13 +801,73 @@ contract RebornPortal is
             }
         }
 
-        PortalLib._directDropNativeToRaffleTokenIds(
-            selectedTokenIds,
-            nativeRaffleAmount,
-            _seasonData[_season]
-        );
+        vault.reward(address(airdropVault), totalAmount);
 
         _pendingDrops.remove(requestId);
+
+        emit AirdropDegen(
+            topTens,
+            dropTopAmount,
+            selectedTokenIds,
+            dropRaffleAmount
+        );
+    }
+
+    /**
+     * @dev airdrop to top 100 tvl pool
+     * @dev directly drop to top 10
+     * @dev raffle 10 from top 11 - top 50
+     */
+    function _fulfillDropNative(uint256 requestId) internal onlyDropOn {
+        RequestStatus storage rs = _vrfRequests[requestId];
+        rs.executed = true;
+        if (rs.t != AirdropVrfType.DropNative) {
+            revert CommonError.InvalidParams();
+        }
+
+        uint256[] memory topTens = _getTopNTokenId(10);
+        uint256[] memory topTenToHundreds = _getFirstNTokenIdByOffSet(10, 50);
+
+        uint256 nativeTopAmount;
+        uint256 nativeRaffleAmount;
+        uint256 totalDropAmount;
+
+        unchecked {
+            nativeTopAmount =
+                (uint256(_dropConf._nativeTopDropRatio) *
+                    _seasonData[_season]._jackpot) /
+                PortalLib.PERCENTAGE_BASE;
+            nativeRaffleAmount =
+                (uint256(_dropConf._nativeRaffleDropRatio) *
+                    _seasonData[_season]._jackpot) /
+                PortalLib.PERCENTAGE_BASE;
+            // remove the amount from jackpot
+            totalDropAmount = (nativeTopAmount + nativeRaffleAmount) * 10;
+            _seasonData[_season]._jackpot -= totalDropAmount;
+        }
+
+        uint256[] memory selectedTokenIds = new uint256[](10);
+
+        uint256 r = rs.randomWords;
+        for (uint256 i = 0; i < 10; ) {
+            selectedTokenIds[i] = topTenToHundreds[r % 40];
+            r = uint256(keccak256(abi.encode(r)));
+            unchecked {
+                i++;
+            }
+        }
+
+        // transfer reward to airdrop vault
+        payable(address(airdropVault)).transfer(totalDropAmount);
+
+        _pendingDrops.remove(requestId);
+
+        emit AirdropNative(
+            topTens,
+            nativeTopAmount,
+            selectedTokenIds,
+            nativeRaffleAmount
+        );
     }
 
     function _requestDropReborn() internal onlyDropOn {
@@ -877,23 +939,6 @@ contract RebornPortal is
 
             _pendingDrops.insert(requestId);
         }
-    }
-
-    /**
-     * @dev user claim a drop from a pool
-     */
-    function _claimPoolDrop(uint256 tokenId) internal nonReentrant {
-        PortalLib._claimPoolNativeDrop(
-            tokenId,
-            _dropConf,
-            _seasonData[_season]
-        );
-        PortalLib._claimPoolRebornDrop(
-            tokenId,
-            vault,
-            _dropConf,
-            _seasonData[_season]
-        );
     }
 
     /**
@@ -1054,6 +1099,12 @@ contract RebornPortal is
      */
     function getJackPot() public view returns (uint256) {
         return _seasonData[_season]._jackpot;
+    }
+
+    function getAirdropDebt(
+        address user
+    ) public view returns (AirDropDebt memory) {
+        return _airdropDebt[user];
     }
 
     function readCharProperty(

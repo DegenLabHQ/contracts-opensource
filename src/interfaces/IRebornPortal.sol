@@ -59,6 +59,24 @@ interface IRebornDefination {
         uint256 _jackpot;
     }
 
+    struct AirDropDebt {
+        uint128 nativeDebt;
+        uint128 degenDebt;
+    }
+
+    event AirdropNative(
+        uint256[] topTokenIds,
+        uint256 topAmountPer,
+        uint256[] raffleTokenIds,
+        uint256 raffleAmountPer
+    );
+    event AirdropDegen(
+        uint256[] topTokenIds,
+        uint256 topAmountPer,
+        uint256[] raffleTokenIds,
+        uint256 raffleAmountPer
+    );
+
     enum AirdropVrfType {
         Invalid,
         DropReborn,
@@ -138,6 +156,8 @@ interface IRebornDefination {
     /// @dev event about the vault address is set
     event VaultSet(address rewardVault);
 
+    event AirdropVaultSet(address airdropVault);
+
     event NewSeason(uint256);
 
     event NewIncarnationLimit(uint256 limit);
@@ -151,6 +171,12 @@ interface IRebornDefination {
     event SetNewPiggyBank(address piggyBank);
 
     event SetNewPiggyBankFee(uint256 piggyBankFee);
+
+    event ClaimNativeAirDrop(uint256 amount);
+    event ClaimDegenAirDrop(uint256 amount);
+
+    event NativeDropRootSet(bytes32, uint256);
+    event DegenDropRootSet(bytes32, uint256);
 
     /// @dev revert when msg.value is insufficient
     error InsufficientAmount();
@@ -174,7 +200,13 @@ interface IRebornDefination {
 
     error DropLocked();
 
+    error InvalidProof();
+
+    error NoRemainingReward();
+
     error SeasonAlreadyStoped();
+
+    error CannotSetRootWithoutAirdropLock();
 }
 
 interface IRebornPortal is IRebornDefination {
@@ -283,17 +315,15 @@ interface IRebornPortal is IRebornDefination {
      */
     function setVrfConf(PortalLib.VrfConf calldata conf) external;
 
-    /**
-     * @dev user claim many pools' native token airdrop
-     * @param tokenIds pools' tokenId array to claim
-     */
-    function claimNativeDrops(uint256[] calldata tokenIds) external;
+    function claimNativeDrops(
+        uint256 totalAmount,
+        bytes32[] calldata proof
+    ) external;
 
-    /**
-     * @dev user claim many pools' reborn token airdrop
-     * @param tokenIds pools' tokenId array to claim
-     */
-    function claimRebornDrops(uint256[] calldata tokenIds) external;
+    function claimDegenDrops(
+        uint256 totalAmount,
+        bytes32[] calldata proof
+    ) external;
 
     /**
      * @dev switch to next season, call by owner
