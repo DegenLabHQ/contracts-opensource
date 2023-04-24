@@ -59,30 +59,30 @@ contract RankUpgradeableTest is Test {
 
     function testExitScoreTrank() public {
         // enter 100 values, from 1 to 100
-        for (uint256 i = 1; i <= 100; i++) {
+        for (uint256 i = 1; i <= 50; i++) {
             rank.enterScoreRank(i, i);
         }
 
         uint256 min;
         // enter 101, the smallest should be 2
-        rank.enterScoreRank(101, 101);
-        min = rank.getNthScoreTokenId(99);
+        rank.enterScoreRank(51, 51);
+        min = rank.getNthScoreTokenId(49);
         assertEq(min, 2);
 
-        rank.enterScoreRank(102, 102);
-        min = rank.getNthScoreTokenId(99);
+        rank.enterScoreRank(52, 52);
+        min = rank.getNthScoreTokenId(49);
         assertEq(min, 3);
 
-        rank.enterScoreRank(103, 3);
-        min = rank.getNthScoreTokenId(99);
+        rank.enterScoreRank(53, 3);
+        min = rank.getNthScoreTokenId(49);
         assertEq(min, 3);
 
-        rank.enterScoreRank(104, 2);
-        min = rank.getNthScoreTokenId(99);
+        rank.enterScoreRank(54, 2);
+        min = rank.getNthScoreTokenId(49);
         assertEq(min, 3);
 
-        rank.enterScoreRank(105, 5);
-        min = rank.getNthScoreTokenId(99);
+        rank.enterScoreRank(55, 5);
+        min = rank.getNthScoreTokenId(49);
         assertEq(min, 4);
     }
 }
