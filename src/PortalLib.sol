@@ -63,7 +63,8 @@ library PortalLib {
         uint112 totalReverseTribute;
         uint32 lastDropNativeTime;
         uint32 lastDropRebornTime;
-        uint192 placeholder;
+        uint128 validTVL;
+        uint64 placeholder;
     }
 
     //
@@ -396,6 +397,9 @@ library PortalLib {
             portfolio.totalReverseTribute += uint112(amount);
         }
         totalPoolTribute = _getTotalTributeOfPool(pool, curseMultiplier);
+
+        // update valid TVL on every change
+        pool.validTVL = uint128(totalPoolTribute);
     }
 
     function _decreaseFromPool(
@@ -406,7 +410,7 @@ library PortalLib {
     )
         internal
         returns (
-            uint256 totalTribute,
+            uint256 totalPoolTribute,
             IRebornDefination.TributeDirection tributeDirection
         )
     {
@@ -433,7 +437,10 @@ library PortalLib {
             tributeDirection = IRebornDefination.TributeDirection.Forward;
         }
 
-        totalTribute = _getTotalTributeOfPool(pool, curseMultiplier);
+        totalPoolTribute = _getTotalTributeOfPool(pool, curseMultiplier);
+
+        // update valid TVL on every change
+        pool.validTVL = uint128(totalPoolTribute);
     }
 
     function _getTotalTributeOfPool(

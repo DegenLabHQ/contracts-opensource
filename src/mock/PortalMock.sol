@@ -12,7 +12,11 @@ contract PortalMock is RebornPortal {
     }
 
     function getTvlRank() public view returns (uint256[] memory) {
-        return _seasonData[_season]._tributeRank.get(0, 100);
+        return _seasonData[_season]._tributeRank.get(0, 50);
+    }
+
+    function getScoreRank() public view returns (uint256[] memory) {
+        return _seasonData[_season]._scoreRank.get(0, 50);
     }
 
     function mockIncarnet(

@@ -786,6 +786,41 @@ contract RebornPortal is
 
         uint256[] memory topTens = _getTopNTokenId(10);
         uint256[] memory topTenToHundreds = _getFirstNTokenIdByOffSet(10, 50);
+        uint256[] memory raffledTokenIds = new uint256[](10);
+        uint256 topDropCount = 10;
+        uint256 raffleDropCount = 10;
+
+        uint256 r = rs.randomWords;
+        for (uint256 i = 0; i < 10; ) {
+            raffledTokenIds[i] = topTenToHundreds[r % 40];
+            r = uint256(keccak256(abi.encode(r)));
+            unchecked {
+                i++;
+            }
+        }
+
+        // filter 0 tvl from topTens and raffled
+        for (uint256 i = 0; i < 10; ) {
+            // check topTops
+            uint256 tokenId = topTens[i];
+            uint256 tvl = _seasonData[_season].pools[tokenId].validTVL;
+            if (tvl == 0) {
+                topTens[i] = 0;
+                topDropCount -= 1;
+            }
+
+            // check raffled
+            tokenId = raffledTokenIds[i];
+            tvl = _seasonData[_season].pools[tokenId].validTVL;
+            if (tvl == 0) {
+                raffledTokenIds[i] = 0;
+                raffleDropCount -= 1;
+            }
+
+            unchecked {
+                i++;
+            }
+        }
 
         uint256 dropTopAmount;
         uint256 dropRaffleAmount;
@@ -797,18 +832,11 @@ contract RebornPortal is
                 uint256(_dropConf._rebornRaffleEthAmount) *
                 1 ether;
 
-            totalAmount = (dropTopAmount + dropRaffleAmount) * 10;
-        }
-
-        uint256[] memory selectedTokenIds = new uint256[](10);
-
-        uint256 r = rs.randomWords;
-        for (uint256 i = 0; i < 10; ) {
-            selectedTokenIds[i] = topTenToHundreds[r % 40];
-            r = uint256(keccak256(abi.encode(r)));
-            unchecked {
-                i++;
-            }
+            totalAmount =
+                dropTopAmount *
+                topDropCount +
+                dropRaffleAmount *
+                raffleDropCount;
         }
 
         vault.reward(address(airdropVault), totalAmount);
@@ -818,7 +846,7 @@ contract RebornPortal is
         emit AirdropDegen(
             topTens,
             dropTopAmount,
-            selectedTokenIds,
+            raffledTokenIds,
             dropRaffleAmount
         );
     }
@@ -837,6 +865,41 @@ contract RebornPortal is
 
         uint256[] memory topTens = _getTopNTokenId(10);
         uint256[] memory topTenToHundreds = _getFirstNTokenIdByOffSet(10, 50);
+        uint256[] memory raffledTokenIds = new uint256[](10);
+        uint256 topDropCount = 10;
+        uint256 raffleDropCount = 10;
+
+        uint256 r = rs.randomWords;
+        for (uint256 i = 0; i < 10; ) {
+            raffledTokenIds[i] = topTenToHundreds[r % 40];
+            r = uint256(keccak256(abi.encode(r)));
+            unchecked {
+                i++;
+            }
+        }
+
+        // filter 0 tvl from topTens and raffled
+        for (uint256 i = 0; i < 10; ) {
+            // check topTops
+            uint256 tokenId = topTens[i];
+            uint256 tvl = _seasonData[_season].pools[tokenId].validTVL;
+            if (tvl == 0) {
+                topTens[i] = 0;
+                topDropCount -= 1;
+            }
+
+            // check raffled
+            tokenId = raffledTokenIds[i];
+            tvl = _seasonData[_season].pools[tokenId].validTVL;
+            if (tvl == 0) {
+                raffledTokenIds[i] = 0;
+                raffleDropCount -= 1;
+            }
+
+            unchecked {
+                i++;
+            }
+        }
 
         uint256 nativeTopAmount;
         uint256 nativeRaffleAmount;
@@ -856,17 +919,6 @@ contract RebornPortal is
             _seasonData[_season]._jackpot -= totalDropAmount;
         }
 
-        uint256[] memory selectedTokenIds = new uint256[](10);
-
-        uint256 r = rs.randomWords;
-        for (uint256 i = 0; i < 10; ) {
-            selectedTokenIds[i] = topTenToHundreds[r % 40];
-            r = uint256(keccak256(abi.encode(r)));
-            unchecked {
-                i++;
-            }
-        }
-
         // transfer reward to airdrop vault
         payable(address(airdropVault)).transfer(totalDropAmount);
 
@@ -875,7 +927,7 @@ contract RebornPortal is
         emit AirdropNative(
             topTens,
             nativeTopAmount,
-            selectedTokenIds,
+            raffledTokenIds,
             nativeRaffleAmount
         );
     }
