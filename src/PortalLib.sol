@@ -361,6 +361,7 @@ library PortalLib {
     function _increasePool(
         uint256 tokenId,
         uint256 amount,
+        uint256 curseMultiplier,
         IRebornDefination.TributeDirection tributeDirection,
         IRebornDefination.SeasonData storage _seasonData
     ) internal returns (uint256 totalPoolTribute) {
@@ -371,23 +372,6 @@ library PortalLib {
 
         // update coinday
         _updateCoinday(portfolio, pool);
-
-        // if user have no stake before, should flatten debt
-        if (portfolio.accumulativeAmount == 0) {
-            unchecked {
-                // flatten native reward
-                portfolio.nativeRewardDebt = uint128(
-                    (portfolio.coindayCumulant * pool.accNativePerShare) /
-                        PERSHARE_BASE
-                );
-
-                // flatten reborn reward
-                portfolio.rebornRewardDebt = uint128(
-                    (portfolio.coindayCumulant * pool.accRebornPerShare) /
-                        PERSHARE_BASE
-                );
-            }
-        }
 
         unchecked {
             portfolio.accumulativeAmount += amount;
@@ -411,12 +395,13 @@ library PortalLib {
             pool.totalReverseTribute += uint112(amount);
             portfolio.totalReverseTribute += uint112(amount);
         }
-        totalPoolTribute = _getTotalTributeOfPool(pool);
+        totalPoolTribute = _getTotalTributeOfPool(pool, curseMultiplier);
     }
 
     function _decreaseFromPool(
         uint256 tokenId,
         uint256 amount,
+        uint256 curseMultiplier,
         IRebornDefination.SeasonData storage _seasonData
     )
         internal
@@ -448,15 +433,17 @@ library PortalLib {
             tributeDirection = IRebornDefination.TributeDirection.Forward;
         }
 
-        totalTribute = _getTotalTributeOfPool(pool);
+        totalTribute = _getTotalTributeOfPool(pool, curseMultiplier);
     }
 
     function _getTotalTributeOfPool(
-        PortalLib.Pool storage pool
+        PortalLib.Pool storage pool,
+        uint256 curseMultiplier
     ) public view returns (uint256) {
+        uint256 curseValidTribute = pool.totalReverseTribute * curseMultiplier;
         return
-            pool.totalForwardTribute > pool.totalReverseTribute
-                ? pool.totalForwardTribute - pool.totalReverseTribute
+            pool.totalForwardTribute > curseValidTribute
+                ? pool.totalForwardTribute - curseValidTribute
                 : 0;
     }
 

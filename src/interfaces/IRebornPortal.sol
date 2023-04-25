@@ -178,6 +178,8 @@ interface IRebornDefination {
     event NativeDropRootSet(bytes32, uint256);
     event DegenDropRootSet(bytes32, uint256);
 
+    event CurseMultiplierSet(uint256);
+
     /// @dev revert when msg.value is insufficient
     error InsufficientAmount();
 
@@ -314,6 +316,13 @@ interface IRebornPortal is IRebornDefination {
      * @dev set new chainlink vrf v2 config
      */
     function setVrfConf(PortalLib.VrfConf calldata conf) external;
+
+    /**
+     * @dev set curse multilplier
+     */
+    function setCurseMultiplier(
+        uint256 multiplier
+    ) external;
 
     function claimNativeDrops(
         uint256 totalAmount,

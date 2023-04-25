@@ -403,6 +403,16 @@ contract RebornPortal is
     }
 
     /**
+     * @inheritdoc IRebornPortal
+     */
+    function setCurseMultiplier(
+        uint256 multiplier
+    ) external override onlyOwner {
+        _curseMultiplier = uint16(multiplier);
+        emit CurseMultiplierSet(multiplier);
+    }
+
+    /**
      * @dev set vault
      * @param vault_ new vault address
      */
@@ -962,7 +972,12 @@ contract RebornPortal is
      */
     function _decreaseFromPool(uint256 tokenId, uint256 amount) internal {
         (uint256 totalTribute, TributeDirection tributeDirection) = PortalLib
-            ._decreaseFromPool(tokenId, amount, _seasonData[_season]);
+            ._decreaseFromPool(
+                tokenId,
+                amount,
+                _curseMultiplier,
+                _seasonData[_season]
+            );
 
         _enterTvlRank(tokenId, totalTribute);
 
@@ -1000,6 +1015,7 @@ contract RebornPortal is
         uint256 totalPoolTribute = PortalLib._increasePool(
             tokenId,
             amount,
+            _curseMultiplier,
             tributeDirection,
             _seasonData[_season]
         );

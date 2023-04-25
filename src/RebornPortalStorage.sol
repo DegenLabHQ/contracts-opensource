@@ -66,6 +66,9 @@ contract RebornPortalStorage is IRebornDefination {
     bytes32 internal _dropNativeRoot;
     bytes32 internal _dropDegenRoot;
 
+    uint16 internal _curseMultiplier;
+    uint240 internal _placeholder;
+
     /// @dev gap for potential variable
-    uint256[23] private _gap;
+    uint256[22] private _gap;
 }
