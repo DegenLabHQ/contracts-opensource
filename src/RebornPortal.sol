@@ -317,7 +317,9 @@ contract RebornPortal is
     function toNextSeason() external onlyOwner {
         piggyBank.stop(_season);
 
-        _season += 1;
+        unchecked {
+            _season += 1;
+        }
 
         // update piggyBank
         piggyBank.newSeason(_season, block.timestamp);
@@ -777,77 +779,14 @@ contract RebornPortal is
      * @dev raffle 10 from top 11 - top 50
      */
     function _fulfillDropReborn(uint256 requestId) internal onlyDropOn {
-        RequestStatus storage rs = _vrfRequests[requestId];
-        rs.executed = true;
-
-        if (rs.t != AirdropVrfType.DropReborn) {
-            revert CommonError.InvalidParams();
-        }
-
-        uint256[] memory topTens = _getTopNTokenId(10);
-        uint256[] memory topTenToHundreds = _getFirstNTokenIdByOffSet(10, 50);
-        uint256[] memory raffledTokenIds = new uint256[](10);
-        uint256 topDropCount = 10;
-        uint256 raffleDropCount = 10;
-
-        uint256 r = rs.randomWords;
-        for (uint256 i = 0; i < 10; ) {
-            raffledTokenIds[i] = topTenToHundreds[r % 40];
-            r = uint256(keccak256(abi.encode(r)));
-            unchecked {
-                i++;
-            }
-        }
-
-        // filter 0 tvl from topTens and raffled
-        for (uint256 i = 0; i < 10; ) {
-            // check topTops
-            uint256 tokenId = topTens[i];
-            uint256 tvl = _seasonData[_season].pools[tokenId].validTVL;
-            if (tvl == 0) {
-                topTens[i] = 0;
-                topDropCount -= 1;
-            }
-
-            // check raffled
-            tokenId = raffledTokenIds[i];
-            tvl = _seasonData[_season].pools[tokenId].validTVL;
-            if (tvl == 0) {
-                raffledTokenIds[i] = 0;
-                raffleDropCount -= 1;
-            }
-
-            unchecked {
-                i++;
-            }
-        }
-
-        uint256 dropTopAmount;
-        uint256 dropRaffleAmount;
-        uint256 totalAmount;
-
-        unchecked {
-            dropTopAmount = uint256(_dropConf._rebornTopEthAmount) * 1 ether;
-            dropRaffleAmount =
-                uint256(_dropConf._rebornRaffleEthAmount) *
-                1 ether;
-
-            totalAmount =
-                dropTopAmount *
-                topDropCount +
-                dropRaffleAmount *
-                raffleDropCount;
-        }
-
-        vault.reward(address(airdropVault), totalAmount);
-
-        _pendingDrops.remove(requestId);
-
-        emit AirdropDegen(
-            topTens,
-            dropTopAmount,
-            raffledTokenIds,
-            dropRaffleAmount
+        PortalLib._fulfillDropReborn(
+            requestId,
+            _vrfRequests,
+            _seasonData[_season],
+            _dropConf,
+            _pendingDrops,
+            vault,
+            airdropVault
         );
     }
 
@@ -857,78 +796,13 @@ contract RebornPortal is
      * @dev raffle 10 from top 11 - top 50
      */
     function _fulfillDropNative(uint256 requestId) internal onlyDropOn {
-        RequestStatus storage rs = _vrfRequests[requestId];
-        rs.executed = true;
-        if (rs.t != AirdropVrfType.DropNative) {
-            revert CommonError.InvalidParams();
-        }
-
-        uint256[] memory topTens = _getTopNTokenId(10);
-        uint256[] memory topTenToHundreds = _getFirstNTokenIdByOffSet(10, 50);
-        uint256[] memory raffledTokenIds = new uint256[](10);
-        uint256 topDropCount = 10;
-        uint256 raffleDropCount = 10;
-
-        uint256 r = rs.randomWords;
-        for (uint256 i = 0; i < 10; ) {
-            raffledTokenIds[i] = topTenToHundreds[r % 40];
-            r = uint256(keccak256(abi.encode(r)));
-            unchecked {
-                i++;
-            }
-        }
-
-        // filter 0 tvl from topTens and raffled
-        for (uint256 i = 0; i < 10; ) {
-            // check topTops
-            uint256 tokenId = topTens[i];
-            uint256 tvl = _seasonData[_season].pools[tokenId].validTVL;
-            if (tvl == 0) {
-                topTens[i] = 0;
-                topDropCount -= 1;
-            }
-
-            // check raffled
-            tokenId = raffledTokenIds[i];
-            tvl = _seasonData[_season].pools[tokenId].validTVL;
-            if (tvl == 0) {
-                raffledTokenIds[i] = 0;
-                raffleDropCount -= 1;
-            }
-
-            unchecked {
-                i++;
-            }
-        }
-
-        uint256 nativeTopAmount;
-        uint256 nativeRaffleAmount;
-        uint256 totalDropAmount;
-
-        unchecked {
-            nativeTopAmount =
-                (uint256(_dropConf._nativeTopDropRatio) *
-                    _seasonData[_season]._jackpot) /
-                PortalLib.PERCENTAGE_BASE;
-            nativeRaffleAmount =
-                (uint256(_dropConf._nativeRaffleDropRatio) *
-                    _seasonData[_season]._jackpot) /
-                PortalLib.PERCENTAGE_BASE;
-            // remove the amount from jackpot
-            totalDropAmount = (nativeTopAmount + nativeRaffleAmount) * 10;
-            _seasonData[_season]._jackpot -= totalDropAmount;
-        }
-
-        // transfer reward to airdrop vault
-        payable(address(airdropVault)).transfer(totalDropAmount);
-
-        _pendingDrops.remove(requestId);
-
-        emit AirdropNative(
-            topTens,
-            nativeTopAmount,
-            raffledTokenIds,
-            nativeRaffleAmount
+        PortalLib._fulfillDropNative(
+            requestId,
+            _vrfRequests,
+            _seasonData[_season],
+            _dropConf,
+            _pendingDrops,
+            airdropVault
         );
     }
 

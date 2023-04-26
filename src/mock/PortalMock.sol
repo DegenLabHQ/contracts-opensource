@@ -7,16 +7,30 @@ import "src/lib/SingleRanking.sol";
 contract PortalMock is RebornPortal {
     using SingleRanking for SingleRanking.Data;
 
+    function getMinScoreInRank() public view returns (uint256) {
+        return _seasonData[_season]._minScore;
+    }
+
     function getSeason() public view returns (uint256) {
         return _season;
     }
 
     function getTvlRank() public view returns (uint256[] memory) {
-        return _seasonData[_season]._tributeRank.get(0, 50);
+        return _seasonData[_season]._tributeRank.get(0, 100);
     }
 
     function getScoreRank() public view returns (uint256[] memory) {
-        return _seasonData[_season]._scoreRank.get(0, 50);
+        return _seasonData[_season]._scoreRank.get(0, 100);
+    }
+
+    function getTokenIdTVL(uint256 tokenId) public view returns (uint256) {
+        PortalLib.Pool storage pool = _seasonData[_season].pools[tokenId];
+
+        return PortalLib._getTotalTributeOfPool(pool, _curseMultiplier);
+    }
+
+    function getTokenLifeScore(uint256 tokenId) public view returns (uint256) {
+        return details[tokenId].score;
     }
 
     function mockIncarnet(
