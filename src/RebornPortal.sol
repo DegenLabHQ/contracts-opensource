@@ -131,7 +131,7 @@ contract RebornPortal is
         uint256 nativeCost,
         uint256 rebornCost,
         string calldata creatorName
-    ) external override whenNotStoped onlySigner {
+    ) external override onlySigner {
         if (_seeds.get(uint256(seed))) {
             revert SameSeed();
         }
@@ -183,7 +183,7 @@ contract RebornPortal is
         address user,
         uint256 amount,
         uint256 baptiseType
-    ) external override whenNotStoped onlySigner {
+    ) external override onlySigner {
         vault.reward(user, amount);
 
         emit Baptise(user, amount, baptiseType);
