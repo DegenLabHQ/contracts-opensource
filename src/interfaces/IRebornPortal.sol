@@ -64,19 +64,6 @@ interface IRebornDefination {
         uint128 degenDebt;
     }
 
-    event AirdropNative(
-        uint256[] topTokenIds,
-        uint256 topAmountPer,
-        uint256[] raffleTokenIds,
-        uint256 raffleAmountPer
-    );
-    event AirdropDegen(
-        uint256[] topTokenIds,
-        uint256 topAmountPer,
-        uint256[] raffleTokenIds,
-        uint256 raffleAmountPer
-    );
-
     enum AirdropVrfType {
         Invalid,
         DropReborn,
@@ -320,9 +307,7 @@ interface IRebornPortal is IRebornDefination {
     /**
      * @dev set curse multilplier
      */
-    function setCurseMultiplier(
-        uint256 multiplier
-    ) external;
+    function setCurseMultiplier(uint256 multiplier) external;
 
     function claimNativeDrops(
         uint256 totalAmount,

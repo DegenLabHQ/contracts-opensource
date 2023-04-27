@@ -20,7 +20,7 @@ contract RankMock is RankUpgradeable {
     function getTopNTokenId(
         uint256 n
     ) public view returns (uint256[] memory values) {
-        return _getTopNTokenId(n);
+        return _seasonData[_season]._tributeRank.get(0, n);
     }
 
     function getNthScoreTokenId(uint256 n) public view returns (uint256) {

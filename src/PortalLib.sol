@@ -5,8 +5,14 @@ import {IERC721} from "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import {RewardVault} from "src/RewardVault.sol";
 import {CommonError} from "src/lib/CommonError.sol";
 import {ECDSAUpgradeable} from "src/oz/contracts-upgradeable/utils/cryptography/ECDSAUpgradeable.sol";
+import {FastArray} from "src/lib/FastArray.sol";
+import {AirdropVault} from "src/AirdropVault.sol";
+import {SingleRanking} from "src/lib/SingleRanking.sol";
 
 library PortalLib {
+    using SingleRanking for SingleRanking.Data;
+    using FastArray for FastArray.Data;
+
     uint256 public constant PERSHARE_BASE = 10e18;
     // percentage base of refer reward fees
     uint256 public constant PERCENTAGE_BASE = 10000;
@@ -130,6 +136,20 @@ library PortalLib {
     );
     event Refer(address referee, address referrer);
 
+    event AirdropNative(
+        uint256[] topTokenIds,
+        uint256 topAmountPer,
+        uint256[] raffleTokenIds,
+        uint256 raffleAmountPer
+    );
+
+    event AirdropDegen(
+        uint256[] topTokenIds,
+        uint256 topAmountPer,
+        uint256[] raffleTokenIds,
+        uint256 raffleAmountPer
+    );
+
     function _toLastHour(uint256 timestamp) internal pure returns (uint256) {
         return timestamp - (timestamp % (1 hours));
     }
@@ -209,7 +229,7 @@ library PortalLib {
         uint16 refL1Fee,
         uint16 refL2Fee,
         RewardType rewardType
-    ) external {
+    ) public {
         if (rewardType == RewardType.NativeToken) {
             rewardFees.incarnateRef1Fee = refL1Fee;
             rewardFees.incarnateRef2Fee = refL2Fee;
@@ -491,7 +511,7 @@ library PortalLib {
         uint256[] calldata tokenIds,
         CharacterParams[] calldata charParams,
         mapping(uint256 => CharacterProperty) storage _characterProperties
-    ) external {
+    ) public {
         uint256 tokenIdLength = tokenIds.length;
         uint256 charParamsLength = charParams.length;
         if (tokenIdLength != charParamsLength) {
@@ -523,7 +543,7 @@ library PortalLib {
     function _refer(
         mapping(address => address) storage referrals,
         address referrer
-    ) external {
+    ) public {
         if (
             referrals[msg.sender] == address(0) &&
             referrer != address(0) &&
@@ -626,5 +646,212 @@ library PortalLib {
         charProperty.currentAP = uint8(_calculateCurrentAP(charProperty));
 
         return charProperty;
+    }
+
+    function _clearZeroTVLTokenId(
+        uint256[] memory tokenIds,
+        mapping(uint256 => Pool) storage pools
+    ) public view returns (uint256[] memory, uint256 validCount) {
+        validCount = tokenIds.length;
+        for (uint256 i = 0; i < 10; ) {
+            // check topTops
+            uint256 tokenId = tokenIds[i];
+            uint256 tvl = pools[tokenId].validTVL;
+            if (tvl == 0) {
+                tokenIds[i] = 0;
+                validCount -= 1;
+            }
+            unchecked {
+                i++;
+            }
+        }
+
+        return (tokenIds, validCount);
+    }
+
+    /**
+     * TODO: old data should have higher priority when value is the same
+     */
+    function _getTopNTokenId(
+        uint256 n,
+        IRebornDefination.SeasonData storage _seasonData
+    ) internal view returns (uint256[] memory values) {
+        return _seasonData._tributeRank.get(0, n);
+    }
+
+    /**
+     * TODO: old data should have higher priority when value is the same
+     */
+    function _getFirstNTokenIdByOffSet(
+        uint256 offSet,
+        uint256 n,
+        IRebornDefination.SeasonData storage _seasonData
+    ) internal view returns (uint256[] memory values) {
+        return _seasonData._tributeRank.get(offSet, n);
+    }
+
+    /**
+     * @dev drop count may be lower than 10, if one pool has tvl of 0
+     */
+    function _fetchDroppedTokenIds(
+        uint256 randomwWords,
+        IRebornDefination.SeasonData storage _seasonData
+    )
+        public
+        returns (
+            uint256[] memory topTokenIds,
+            uint256 topDropCount,
+            uint256[] memory raffledTokenIds,
+            uint256 raffleDropCount
+        )
+    {
+        topTokenIds = _getTopNTokenId(10, _seasonData);
+        uint256[] memory topElevenToFifty = _getFirstNTokenIdByOffSet(
+            10,
+            50,
+            _seasonData
+        );
+
+        raffledTokenIds = new uint256[](10);
+
+        for (uint256 i = 0; i < 10; ) {
+            raffledTokenIds[i] = topElevenToFifty[randomwWords % 40];
+            randomwWords = uint256(keccak256(abi.encode(randomwWords)));
+            unchecked {
+                i++;
+            }
+        }
+
+        // filter 0 tvl from topTens and raffled
+        (topTokenIds, topDropCount) = _clearZeroTVLTokenId(
+            topTokenIds,
+            _seasonData.pools
+        );
+
+        (raffledTokenIds, raffleDropCount) = _clearZeroTVLTokenId(
+            raffledTokenIds,
+            _seasonData.pools
+        );
+    }
+
+    /**
+     * @dev airdrop to top 50 tvl pool
+     * @dev directly drop to top 10
+     * @dev raffle 10 from top 11 - top 50
+     */
+    function _fulfillDropReborn(
+        uint256 requestId,
+        mapping(uint256 => IRebornDefination.RequestStatus)
+            storage _vrfRequests,
+        IRebornDefination.SeasonData storage _seasonData,
+        AirdropConf storage _dropConf,
+        FastArray.Data storage _pendingDrops,
+        RewardVault vault,
+        AirdropVault airdropVault
+    ) public {
+        IRebornDefination.RequestStatus storage rs = _vrfRequests[requestId];
+        rs.executed = true;
+
+        if (rs.t != IRebornDefination.AirdropVrfType.DropReborn) {
+            revert CommonError.InvalidParams();
+        }
+        uint256 r = rs.randomWords;
+        _pendingDrops.remove(requestId);
+
+        (
+            uint256[] memory topTokenIds,
+            uint256 topDropCount,
+            uint256[] memory raffledTokenIds,
+            uint256 raffleDropCount
+        ) = _fetchDroppedTokenIds(r, _seasonData);
+
+        uint256 dropTopAmount;
+        uint256 dropRaffleAmount;
+        uint256 totalAmount;
+
+        unchecked {
+            dropTopAmount = uint256(_dropConf._rebornTopEthAmount) * 1 ether;
+            dropRaffleAmount =
+                uint256(_dropConf._rebornRaffleEthAmount) *
+                1 ether;
+
+            totalAmount =
+                dropTopAmount *
+                topDropCount +
+                dropRaffleAmount *
+                raffleDropCount;
+        }
+
+        vault.reward(address(airdropVault), totalAmount);
+
+        emit AirdropDegen(
+            topTokenIds,
+            dropTopAmount,
+            raffledTokenIds,
+            dropRaffleAmount
+        );
+    }
+
+    /**
+     * @dev airdrop to top 100 tvl pool
+     * @dev directly drop to top 10
+     * @dev raffle 10 from top 11 - top 50
+     */
+    function _fulfillDropNative(
+        uint256 requestId,
+        mapping(uint256 => IRebornDefination.RequestStatus)
+            storage _vrfRequests,
+        IRebornDefination.SeasonData storage _seasonData,
+        AirdropConf storage _dropConf,
+        FastArray.Data storage _pendingDrops,
+        AirdropVault airdropVault
+    ) public {
+        IRebornDefination.RequestStatus storage rs = _vrfRequests[requestId];
+        rs.executed = true;
+        if (rs.t != IRebornDefination.AirdropVrfType.DropNative) {
+            revert CommonError.InvalidParams();
+        }
+        _pendingDrops.remove(requestId);
+
+        uint256 r = rs.randomWords;
+
+        (
+            uint256[] memory topTokenIds,
+            uint256 topDropCount,
+            uint256[] memory raffledTokenIds,
+            uint256 raffleDropCount
+        ) = _fetchDroppedTokenIds(r, _seasonData);
+
+        uint256 nativeTopAmount;
+        uint256 nativeRaffleAmount;
+        uint256 totalDropAmount;
+
+        unchecked {
+            nativeTopAmount =
+                (uint256(_dropConf._nativeTopDropRatio) *
+                    _seasonData._jackpot) /
+                PortalLib.PERCENTAGE_BASE;
+            nativeRaffleAmount =
+                (uint256(_dropConf._nativeRaffleDropRatio) *
+                    _seasonData._jackpot) /
+                PortalLib.PERCENTAGE_BASE;
+            // remove the amount from jackpot
+            totalDropAmount =
+                nativeTopAmount *
+                topDropCount +
+                nativeRaffleAmount *
+                raffleDropCount;
+            _seasonData._jackpot -= totalDropAmount;
+        }
+
+        // transfer reward to airdrop vault
+        payable(address(airdropVault)).transfer(totalDropAmount);
+
+        emit AirdropNative(
+            topTokenIds,
+            nativeTopAmount,
+            raffledTokenIds,
+            nativeRaffleAmount
+        );
     }
 }

@@ -38,28 +38,27 @@ contract RebornPortalReg is Test, IRebornDefination, IPiggyBankDefination {
         portal.upgradeTo(address(newImpl));
     }
 
-    function testSimulateInfuse() public {
-        vm.selectFork(bnbMain);
-        portal = PortalMock(0xdec218e6009716d9c5c4AAa3c3a46137605B8b39);
-
-        vm.rollFork(27564051);
+    function testSimulateTributeRank() public {
+        vm.rollFork(29262228);
         mockUpgradeToDevVersion();
 
-        uint256[] memory tokenIds = new uint256[](7);
-        tokenIds[0] = 97000000000000000035;
-        // tokenIds[1] = 97000000000000000037;
-        // tokenIds[2] = 97000000000000000038;
-        // tokenIds[3] = 97000000000000000030;
-        // tokenIds[4] = 97000000000000000031;
-        // tokenIds[5] = 97000000000000000034;
-        // tokenIds[6] = 97000000000000000032;
+        uint256[] memory rank = portal.getTvlRank();
 
-        vm.prank(0x679658Be03475D0A5393c70ea0E9A1158Dfae1Ff);
+        console2.log("tvl min value : ", portal.getMinScoreInRank());
 
-        portal.infuse(
-            56000000000000000014,
-            25469892200298411315640594,
-            TributeDirection.Forward
+        console2.log("TVL rank: ");
+        for (uint256 i = 0; i < rank.length; ) {
+            console2.log("rank: ", i + 1, "tokenId: ", rank[i]);
+
+            unchecked {
+                i++;
+            }
+        }
+
+        console2.log(
+            97000000000000000091,
+            "tvl: ",
+            portal.getTokenIdTVL(97000000000000000091)
         );
     }
 }

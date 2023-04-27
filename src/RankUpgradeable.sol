@@ -34,27 +34,4 @@ abstract contract RankUpgradeable is RebornPortalStorage {
             value
         );
     }
-
-    function _exitRank(uint256 tokenId, uint256 oldValue) internal {
-        DegenRank._exitRank(_seasonData[_season], tokenId, oldValue);
-    }
-
-    /**
-     * TODO: old data should have higher priority when value is the same
-     */
-    function _getTopNTokenId(
-        uint256 n
-    ) internal view returns (uint256[] memory values) {
-        return _seasonData[_season]._tributeRank.get(0, n);
-    }
-
-    /**
-     * TODO: old data should have higher priority when value is the same
-     */
-    function _getFirstNTokenIdByOffSet(
-        uint256 offSet,
-        uint256 n
-    ) internal view returns (uint256[] memory values) {
-        return _seasonData[_season]._tributeRank.get(offSet, n);
-    }
 }
