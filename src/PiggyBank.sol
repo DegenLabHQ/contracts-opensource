@@ -28,6 +28,7 @@ contract PiggyBank is SafeOwnableUpgradeable, UUPSUpgradeable, IPiggyBank {
         internal users;
 
     uint32 public countDownTimeLong;
+    bool public isClaimOpened;
 
     uint256[43] internal _gap;
 
@@ -139,6 +140,10 @@ contract PiggyBank is SafeOwnableUpgradeable, UUPSUpgradeable, IPiggyBank {
             revert SeasonNotOver();
         }
 
+        if (!isClaimOpened) {
+            revert CanNotClaim();
+        }
+
         SeasonInfo memory seasonInfo = seasons[season];
         RoundInfo memory roundInfo = rounds[season];
         UserInfo storage userInfo = users[msg.sender][season][
@@ -195,6 +200,12 @@ contract PiggyBank is SafeOwnableUpgradeable, UUPSUpgradeable, IPiggyBank {
         seasons[season].verifySigner = verifySigner;
 
         emit SetStopedHash(season, stopedHash, verifySigner);
+    }
+
+    function setIsClaimOpened(bool isClaimOpened_) external onlyOwner {
+        isClaimOpened = isClaimOpened_;
+
+        emit SetIsClaimOpened(isClaimOpened);
     }
 
     function _toNextRound(
